@@ -26,7 +26,14 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Deploy dedicated Amantusi Worker
-        run: npx wrangler deploy
+        shell: bash
+        run: |
+          if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
+            npx wrangler deploy
+          else
+            echo "Cloudflare repository secrets are not configured; publishing a temporary preview instead."
+            npx wrangler deploy --temporary
+          fi
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
