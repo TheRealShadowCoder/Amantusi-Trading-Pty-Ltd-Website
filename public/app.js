@@ -78,13 +78,15 @@ if (!reducedMotion && !coarsePointer && cursorGlow) {
   let cx = window.innerWidth * .65, cy = window.innerHeight * .35;
   let tx = cx, ty = cy;
   let visible = !document.hidden;
+  cursorGlow.style.left = '0';
+  cursorGlow.style.top = '0';
   window.addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; }, { passive: true });
   document.addEventListener('visibilitychange', () => { visible = !document.hidden; });
   const moveGlow = () => {
     if (visible) {
       cx += (tx - cx) * .12;
       cy += (ty - cy) * .12;
-      cursorGlow.style.transform = `translate3d(${cx}px,${cy}px,0)`;
+      cursorGlow.style.transform = `translate3d(${cx - 180}px,${cy - 180}px,0)`;
     }
     requestAnimationFrame(moveGlow);
   };
