@@ -79,7 +79,7 @@ The production dependency tree is checked separately with `npm audit --omit=dev 
 
 Every production deployment validates dependencies, JavaScript and Wrangler configuration, verifies the permanent Cloudflare account, deploys the same Worker, then runs homepage/admin/platform smoke tests, Playwright desktop/mobile production tests, Lighthouse budgets and report artifact upload.
 
-Current validated Lighthouse scores on the permanent production Worker: Performance 63, Accessibility 99, Best Practices 100, SEO 100. The production Playwright suite passed 9 checks with one intentional desktop skip for a mobile-only navigation test.
+Latest validated Lighthouse scores on the permanent production Worker: Performance 56, Accessibility 99, Best Practices 100, SEO 100. Performance is intentionally kept above the current 50 release budget while the immersive Three.js experience remains enabled. The production Playwright suite passed 9 checks with one intentional desktop skip for a mobile-only navigation test.
 
 ## Remaining external activation/configuration
 
