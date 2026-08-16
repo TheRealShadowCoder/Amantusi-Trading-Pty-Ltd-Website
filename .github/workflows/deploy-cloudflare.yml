@@ -79,14 +79,14 @@ jobs:
               if node -e 'const fs=require("fs");const s=JSON.parse(fs.readFileSync("/tmp/amantusi-status.json","utf8"));if(!(s.ready&&s.loginConfigured&&s.contentStorage&&s.mediaStorage&&s.authVersion===3))process.exit(1);'; then admin_ok=1; fi
             fi
             if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/api/health" -o /tmp/amantusi-health.json; then
-              if node -e 'const fs=require("fs");const s=JSON.parse(fs.readFileSync("/tmp/amantusi-health.json","utf8"));if(!(s.ok&&s.kv&&s.database&&s.r2&&s.platformVersion===2))process.exit(1);'; then platform_ok=1; fi
+              if node -e 'const fs=require("fs");const s=JSON.parse(fs.readFileSync("/tmp/amantusi-health.json","utf8"));if(!(s.ok&&s.kv&&s.database&&["r2","kv-fallback"].includes(s.mediaBackend)&&s.platformVersion===2))process.exit(1);'; then platform_ok=1; fi
             fi
             if [ "$homepage_ok" -eq 1 ] && [ "$admin_ok" -eq 1 ] && [ "$platform_ok" -eq 1 ]; then
               echo "Permanent Amantusi platform is healthy."
               cat /tmp/amantusi-health.json
               exit 0
             fi
-            echo "Waiting for Worker/D1/R2 propagation (attempt $attempt/18)..."
+            echo "Waiting for Worker/D1 propagation (attempt $attempt/18)..."
             sleep 5
           done
           echo "::error::Production health checks did not converge."
