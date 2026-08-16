@@ -1,13 +1,14 @@
 # Amantusi Catering CMS & Admin Security
 
-The production target is now the dedicated permanent Cloudflare Worker:
+The production target is the dedicated permanent Cloudflare Worker:
 
-- Cloudflare account ID: `c699a25ded4880f486b14d5f125ba92e`
+- Cloudflare account ID: `3b4dba2eec2c69b95eae20d70941e9b2`
 - Worker name: `amantusi-trading-pty-ltd-website`
 - GitHub repository: `TheRealShadowCoder/Amantusi-Trading-Pty-Ltd-Website`
 - Production branch: `main`
+- Current workers.dev URL: `https://amantusi-trading-pty-ltd-website.dolomite-computer.workers.dev`
 
-The repository must never deploy to a temporary Cloudflare account. Every successful push to `main` is intended to update this same Worker.
+Every successful push to `main` updates this same Worker. The repository does not use temporary Cloudflare account deployment.
 
 ## Pages
 
@@ -36,7 +37,9 @@ The Worker uses a KV-first production architecture. `CMS_KV` stores:
 - security events
 - baseline uploaded catering images
 
-R2 is optional. If an `CMS_MEDIA` R2 binding is added later, new uploads can use R2; otherwise image uploads use KV and are served through `/media/*`.
+The production deployment automatically provisioned the KV namespace `amantusi-trading-pty-ltd-website-cms-kv` and bound it to `CMS_KV`.
+
+R2 is optional. If a `CMS_MEDIA` R2 binding is added later, new uploads can use R2; otherwise image uploads use KV and are served through `/media/*`.
 
 The session-signing secret is generated server-side and stored in KV. It is never sent to the browser or committed to GitHub.
 
@@ -88,20 +91,19 @@ GitHub Actions needs one repository secret:
 
 - `CLOUDFLARE_API_TOKEN`
 
-That token **must belong to Cloudflare account `c699a25ded4880f486b14d5f125ba92e`** and must have permission to edit Workers and the resources required by this Worker. A token belonging to any temporary Cloudflare account will fail authentication and must not be used.
+That token must authenticate to Cloudflare account `3b4dba2eec2c69b95eae20d70941e9b2` and have permission to edit the Worker and required account resources.
 
-`wrangler.jsonc` pins the permanent Cloudflare account ID and Worker name, so a normal deployment always targets `amantusi-trading-pty-ltd-website` in the permanent account.
+`wrangler.jsonc` pins this account ID and the Worker name `amantusi-trading-pty-ltd-website`.
 
 The GitHub workflow performs:
 
 1. JavaScript syntax validation.
 2. Wrangler dry-run validation.
-3. Deployment to the permanent Worker.
-4. Discovery of the production `workers.dev` URL returned by Wrangler.
-5. Live homepage smoke test.
-6. Live `/api/admin/status` health check for CMS storage and Admin Security v3.
-
-The workflow does not create a temporary Cloudflare account.
+3. Verification that the API token authenticates to account `3b4dba2eec2c69b95eae20d70941e9b2`.
+4. Deployment to `amantusi-trading-pty-ltd-website`.
+5. Discovery of the production `workers.dev` URL returned by Wrangler.
+6. Live homepage smoke test.
+7. Live `/api/admin/status` health check for CMS storage and Admin Security v3.
 
 ## CMS capabilities
 
@@ -117,6 +119,6 @@ Administrators can add/edit catering items, upload JPG/PNG/WEBP images, update d
 6. The administrator selects a new password of at least 14 characters.
 7. The reset token is destroyed after successful use and previous sessions for the account are invalidated.
 
-## Current production blocker
+## Current production status
 
-If GitHub Actions reports that the API token is associated with another Cloudflare account, replace the GitHub `CLOUDFLARE_API_TOKEN` repository secret with a token created inside account `c699a25ded4880f486b14d5f125ba92e`. Once the correct token is installed, re-run the deployment. No further account or Worker-name migration should be required.
+The permanent Worker deployment is active. The latest production health check reports the CMS KV binding, login backend, bootstrap authentication path and media storage are available. Email/WhatsApp alert delivery and emailed password-reset delivery remain disabled until their provider credentials are configured as Worker secrets.
