@@ -1,0 +1,254 @@
+/* Amantusi responsive system — loaded after page-specific styles. */
+:root{
+  --responsive-gutter:clamp(16px,4vw,40px);
+  --responsive-section:clamp(64px,9vw,128px);
+}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-top:92px}
+body{min-width:0;max-width:100%;overflow-x:hidden}
+img,video,canvas,svg{max-width:100%}
+input,select,textarea,button{max-width:100%}
+.container{width:min(1180px,calc(100% - (var(--responsive-gutter) * 2)))!important}
+.section{padding-block:var(--responsive-section)!important}
+.hero,.menu-hero,.profile-hero,.brochure-cover{min-width:0}
+.hero-grid,.split-layout,.section-heading,.government-grid,.quote-grid,.contact-grid,.footer-grid,.menu-hero-grid,.menu-heading,.brochure-grid,.profile-hero-grid,.profile-columns,.brand-grid,.credentials-grid{min-width:0}
+.hero-grid>* ,.split-layout>* ,.government-grid>* ,.quote-grid>* ,.menu-hero-grid>* ,.profile-hero-grid>*{min-width:0}
+.hero-title,.section-intro h2,.section-heading h2,.government h2,.quote-copy h2,.contact-strip h2,.menu-hero h1,.profile-hero h1,.brochure-cover h1{overflow-wrap:anywhere;text-wrap:balance}
+.hero-lead,.prose,.section-heading>p,.government-copy,.quote-copy,.menu-heading>p,.brochure-card p,.profile-block p,.brand-panel p{overflow-wrap:anywhere}
+
+/* Touch ergonomics */
+a,button,[role="button"],[role="link"]{touch-action:manipulation}
+button,.button,.menu-btn,.nav-cta{min-height:44px}
+input,select,textarea{font-size:16px}
+
+/* Large laptop / tablet landscape */
+@media (max-width:1180px){
+  .nav-shell{width:calc(100% - 28px)!important;gap:18px!important}
+  .nav-links{gap:16px!important;font-size:12px!important}
+  .hero-grid{gap:clamp(28px,4vw,52px)!important;grid-template-columns:minmax(0,1.08fr) minmax(300px,.92fr)!important}
+  .hero-art{min-height:470px!important;height:auto!important}
+  .orbital-card{width:min(430px,92%)!important}
+  .logo-plaque{width:178px!important;height:178px!important}
+  .logo-plaque img{width:142px!important;height:142px!important}
+  .government-grid,.quote-grid{gap:clamp(36px,5vw,70px)!important}
+  .split-layout{gap:clamp(42px,6vw,72px)!important}
+  .subsite-nav{width:calc(100% - 28px)!important}
+}
+
+/* Tablet and smaller desktops */
+@media (max-width:980px){
+  html{scroll-padding-top:78px}
+  .site-header{padding:10px 0!important}
+  .menu-button{display:block!important;position:relative;z-index:3}
+  .nav-shell{position:relative!important}
+  .nav-links{
+    position:absolute!important;
+    top:calc(100% + 10px)!important;
+    left:0!important;
+    right:0!important;
+    display:grid!important;
+    gap:0!important;
+    padding:10px!important;
+    background:rgba(5,20,28,.97)!important;
+    border:1px solid rgba(255,255,255,.09)!important;
+    box-shadow:0 24px 70px rgba(0,0,0,.28)!important;
+    backdrop-filter:blur(22px)!important;
+    opacity:0!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+    transform:translateY(-8px)!important;
+    transition:opacity .25s ease,transform .25s ease,visibility .25s ease!important;
+    max-height:min(70vh,560px)!important;
+    overflow:auto!important;
+  }
+  .nav-links.open{opacity:1!important;visibility:visible!important;pointer-events:auto!important;transform:none!important}
+  .nav-links>a{padding:14px 12px!important;border-bottom:1px solid rgba(255,255,255,.07)!important}
+  .nav-links>a:last-child{border-bottom:0!important}
+  .nav-cta{margin-top:6px!important;border-radius:10px!important;text-align:center!important}
+
+  .hero{padding-top:116px!important;min-height:auto!important}
+  .hero-grid{grid-template-columns:1fr!important;min-height:0!important;gap:28px!important}
+  .hero-copy{max-width:840px!important}
+  .hero-title{font-size:clamp(48px,8.8vw,78px)!important;line-height:.94!important}
+  .hero-lead{max-width:760px!important}
+  .hero-art{min-height:390px!important;height:390px!important;margin-top:-20px!important;opacity:.52!important}
+  .orbital-card{width:min(380px,78vw)!important}
+  .hero-meta{max-width:none!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;margin-top:34px!important}
+  .hero-meta strong{white-space:normal!important;overflow-wrap:anywhere!important}
+  .trust-grid{grid-template-columns:repeat(2,1fr)!important}
+  .trust-item:nth-child(2){border-right:0!important}
+  .trust-item:nth-child(-n+2){border-bottom:1px solid rgba(255,255,255,.07)!important}
+
+  .split-layout,.government-grid,.quote-grid,.contact-grid{grid-template-columns:1fr!important;gap:40px!important}
+  .section-heading{align-items:flex-start!important;flex-direction:column!important;gap:18px!important}
+  .section-heading>p{max-width:680px!important}
+  .government-panel{transform:none!important}
+  .quote-copy{max-width:760px!important}
+  .field-grid{grid-template-columns:1fr 1fr!important}
+  .process-line{grid-template-columns:repeat(2,1fr)!important;display:grid!important}
+  .process-step{border-right:1px solid rgba(16,35,44,.09)!important;border-bottom:1px solid rgba(16,35,44,.09)!important;min-height:210px!important}
+  .process-step:nth-child(even){border-right:0!important}
+  .process-step:last-child{grid-column:1/-1!important;border-right:0!important}
+  .contact-links{width:100%!important}
+
+  .capability-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .cap-card:nth-child(n){grid-column:auto!important;min-height:280px!important}
+
+  /* Catering / brochure / profile */
+  .subsite-header{position:sticky!important;top:0!important;z-index:80!important}
+  .subsite-nav{gap:18px!important;align-items:center!important}
+  .subsite-links{display:flex!important;gap:8px!important;overflow-x:auto!important;overscroll-behavior-inline:contain!important;scrollbar-width:none!important;padding-bottom:2px!important;white-space:nowrap!important;max-width:68vw!important}
+  .subsite-links::-webkit-scrollbar{display:none!important}
+  .subsite-links a{flex:0 0 auto!important}
+  .menu-hero-grid,.profile-hero-grid{grid-template-columns:1fr!important;gap:36px!important}
+  .menu-visual{min-height:350px!important}
+  .menu-heading{display:grid!important;grid-template-columns:1fr!important;gap:16px!important}
+  .menu-heading>p{max-width:720px!important}
+  .menu-trust-grid{grid-template-columns:repeat(2,1fr)!important}
+  .menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .brochure-grid,.profile-columns,.brand-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .credentials-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .palette{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .brochure-nav-print{right:18px!important;bottom:18px!important;top:auto!important;position:fixed!important;z-index:85!important}
+
+  /* Admin */
+  .admin-shell{display:block!important;min-height:100svh!important}
+  .admin-side{position:sticky!important;top:0!important;width:100%!important;height:auto!important;min-height:0!important;z-index:90!important;padding:10px 14px!important;display:flex!important;align-items:center!important;gap:14px!important;overflow:hidden!important}
+  .admin-side .subsite-brand{flex:0 0 auto!important}
+  .admin-nav{display:flex!important;gap:6px!important;overflow-x:auto!important;white-space:nowrap!important;padding:4px 0!important;scrollbar-width:none!important;flex:1!important}
+  .admin-nav::-webkit-scrollbar{display:none!important}
+  .admin-nav>*{flex:0 0 auto!important;margin:0!important}
+  .admin-main{margin-left:0!important;width:100%!important;padding:clamp(22px,4vw,48px)!important}
+  .admin-top{gap:18px!important;align-items:flex-start!important;flex-wrap:wrap!important}
+  .admin-panel{max-width:100%!important}
+}
+
+/* Mobile */
+@media (max-width:700px){
+  :root{--responsive-gutter:16px;--responsive-section:72px}
+  html{scroll-padding-top:74px}
+  .brand-mark{width:44px!important;height:44px!important;border-radius:10px!important}
+  .brand-mark img{width:38px!important;height:38px!important}
+  .brand-copy strong{font-size:12px!important}
+  .brand-copy small{font-size:7px!important;letter-spacing:.16em!important}
+  .menu-button{padding:8px!important}
+
+  .hero{padding-top:98px!important}
+  .hero-grid{display:block!important}
+  .hero-title{font-size:clamp(42px,13vw,64px)!important;line-height:.94!important;letter-spacing:-.05em!important}
+  .hero-lead{font-size:15px!important;line-height:1.65!important;margin:22px 0 26px!important}
+  .hero-actions{display:grid!important;grid-template-columns:1fr!important;width:100%!important;gap:10px!important}
+  .hero-actions .button{width:100%!important}
+  .hero-meta{grid-template-columns:1fr!important;gap:0!important;border-top:1px solid rgba(255,255,255,.12)!important;padding-top:0!important;margin-top:30px!important}
+  .hero-meta span{padding:14px 0!important;border-bottom:1px solid rgba(255,255,255,.08)!important}
+  .hero-meta span:last-child{border-bottom:0!important}
+  .hero-meta span::after{display:none!important}
+  .hero-art{height:300px!important;min-height:300px!important;margin:10px 0 -8px!important;transform:none!important}
+  .orbital-card{width:min(300px,82vw)!important}
+  .logo-plaque{width:132px!important;height:132px!important;border-radius:20px!important}
+  .logo-plaque img{width:105px!important;height:105px!important}
+  .capability-chip{font-size:8px!important;padding:7px 9px!important;letter-spacing:.03em!important}
+  .chip-a{top:8%!important;left:-3%!important}.chip-b{top:22%!important;right:-4%!important}.chip-c{bottom:17%!important;left:-3%!important}.chip-d{bottom:7%!important;right:-2%!important}
+  .trust-grid{grid-template-columns:1fr!important}
+  .trust-item{border-right:0!important;border-bottom:1px solid rgba(255,255,255,.07)!important;padding:18px 12px!important}
+  .trust-item:last-child{border-bottom:0!important}
+
+  .section-intro h2,.section-heading h2,.government h2,.quote-copy h2,.contact-strip h2{font-size:clamp(38px,11vw,54px)!important;line-height:.98!important}
+  .prose .large-copy{font-size:21px!important}
+  .capability-grid{grid-template-columns:1fr!important}
+  .cap-card:nth-child(n){grid-column:1!important;min-height:250px!important;padding:26px!important}
+  .cap-card h3{font-size:27px!important}
+  .panel-line{grid-template-columns:36px 1fr!important;gap:10px!important;padding:18px 0!important}
+  .panel-line p{grid-column:2!important;margin-top:3px!important}
+
+  .field-grid{grid-template-columns:1fr!important}
+  .quote-form{padding:22px!important}
+  .quote-contact-card{padding:20px!important}
+  .process-line{display:block!important;border-top:0!important}
+  .process-step{min-height:0!important;border-right:0!important;border-bottom:1px solid rgba(16,35,44,.09)!important;padding:24px 8px!important}
+  .process-step:last-child{border-bottom:0!important}
+  .process-progress{display:none!important}
+  .contact-links a{padding-block:16px!important;display:block!important}
+  .contact-links strong{font-size:15px!important;overflow-wrap:anywhere!important}
+  .footer-grid{grid-template-columns:1fr!important;gap:20px!important;text-align:left!important}
+  .footer-legal{align-items:flex-start!important;text-align:left!important}
+  .spatial-index,.spatial-cursor,.cursor-glow{display:none!important}
+
+  /* Catering */
+  .subsite-nav{width:calc(100% - 24px)!important;display:grid!important;grid-template-columns:1fr!important;gap:8px!important;padding-block:10px!important}
+  .subsite-brand{justify-self:start!important}
+  .subsite-links{max-width:100%!important;width:100%!important;padding-bottom:6px!important}
+  .subsite-links a{font-size:11px!important;padding:8px 10px!important}
+  .menu-hero{padding-top:56px!important;padding-bottom:60px!important}
+  .menu-hero h1,.profile-hero h1,.brochure-cover h1{font-size:clamp(42px,12vw,62px)!important;line-height:.96!important}
+  .menu-actions{display:grid!important;grid-template-columns:1fr!important;width:100%!important}
+  .menu-actions .menu-btn{width:100%!important;text-align:center!important}
+  .menu-visual{min-height:260px!important}
+  .menu-plate{transform:scale(.82)!important}
+  .menu-trust-grid{grid-template-columns:1fr!important}
+  .menu-grid,.brochure-grid,.profile-columns,.brand-grid,.credentials-grid,.palette{grid-template-columns:1fr!important}
+  .category-tabs{display:flex!important;overflow-x:auto!important;flex-wrap:nowrap!important;scrollbar-width:none!important;overscroll-behavior-inline:contain!important;padding-bottom:5px!important}
+  .category-tabs::-webkit-scrollbar{display:none!important}
+  .category-tab{flex:0 0 auto!important;white-space:nowrap!important}
+  .menu-card{min-width:0!important}
+  .menu-card-top{align-items:flex-start!important;gap:12px!important;flex-wrap:wrap!important}
+  .menu-price{margin-left:0!important}
+  .brochure-cover{min-height:70svh!important;padding:80px 18px!important}
+  .profile-logo-box{min-height:220px!important}
+  .brochure-nav-print{right:12px!important;bottom:12px!important;font-size:11px!important;padding-inline:14px!important}
+
+  /* Admin */
+  .login-wrap{padding:22px 14px!important;min-height:100svh!important}
+  .login-card{width:100%!important;max-width:520px!important;padding:26px 20px!important;border-radius:18px!important}
+  .admin-side{display:block!important;padding:10px 12px!important}
+  .admin-side .subsite-brand{margin-bottom:8px!important}
+  .admin-nav{width:100%!important}
+  .admin-main{padding:20px 14px 40px!important}
+  .admin-top h1{font-size:34px!important}
+  .admin-section{min-width:0!important}
+  .admin-panel{padding:20px 16px!important;border-radius:16px!important;overflow:hidden!important}
+  .admin-panel form,.security-form{min-width:0!important}
+  .admin-panel input,.admin-panel select,.admin-panel textarea,.security-form input{width:100%!important;min-width:0!important}
+  .item-row{grid-template-columns:64px minmax(0,1fr)!important;gap:12px!important;padding:14px 0!important}
+  .item-row>.category,.item-row>.price,.item-row>.item-actions{grid-column:2!important}
+  .item-actions{display:flex!important;flex-wrap:wrap!important;gap:6px!important}
+  .admin-button{width:100%!important;justify-content:center!important}
+  .cms-status{max-width:100%!important;white-space:normal!important}
+}
+
+/* Very small phones */
+@media (max-width:390px){
+  :root{--responsive-gutter:13px}
+  .brand-copy small{display:none!important}
+  .hero-title{font-size:40px!important}
+  .hero-art{height:260px!important;min-height:260px!important}
+  .orbital-card{width:250px!important}
+  .capability-chip{display:none!important}
+  .menu-hero h1,.profile-hero h1,.brochure-cover h1{font-size:40px!important}
+  .subsite-brand span small{font-size:7px!important;letter-spacing:.1em!important}
+}
+
+/* Touch devices should never inherit desktop hover transforms. */
+@media (hover:none),(pointer:coarse){
+  .cursor-glow,.spatial-cursor{display:none!important}
+  [data-tilt],.magnetic,.cap-card,.menu-card,.brochure-card,.profile-block,.brand-panel{transform:none!important}
+  .button:hover,.menu-btn:hover,.cap-card:hover,.menu-card:hover{transform:none!important}
+}
+
+/* Landscape phones */
+@media (max-height:520px) and (orientation:landscape){
+  .site-header{position:absolute!important}
+  .hero{padding-top:88px!important}
+  .hero-grid{grid-template-columns:1.12fr .88fr!important;display:grid!important;gap:18px!important}
+  .hero-title{font-size:clamp(36px,7vw,52px)!important}
+  .hero-lead{font-size:13px!important;line-height:1.5!important;margin:14px 0 16px!important}
+  .hero-art{height:260px!important;min-height:260px!important;margin:0!important}
+  .hero-meta{display:none!important}
+  .trust-ribbon{display:none!important}
+}
+
+/* Accessibility / performance */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto!important}
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .experience-canvas,.particle-layer,.cursor-glow,.page-glow{display:none!important}
+}
