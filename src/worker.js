@@ -11,6 +11,7 @@ import {
 
 const MAX_CONTENT_BYTES = 750000;
 const MAX_IMAGE_BYTES = 8000000;
+const KV_MEDIA_PREFIX = "media:";
 
 function sameOrigin(request) {
   const origin = request.headers.get("origin");
@@ -60,7 +61,7 @@ async function saveContent(request, env) {
   if (!sameOrigin(request)) return json({ error: "Origin rejected." }, 403);
   const admin = await getAdminSession(request, env);
   if (!admin) return json({ error: "Administrator login required." }, 401);
-  if (!env.CMS_KV) return json({ error: "CMS_KV is not connected to this Worker." }, 503);
+  if (!env.CMS_KV) return json({ error: "CMS storage is not connected to this Worker." }, 503);
 
   const text = await request.text();
   if (new TextEncoder().encode(text).byteLength > MAX_CONTENT_BYTES) {
@@ -86,11 +87,17 @@ function safeExtension(type) {
   return ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" })[type] || null;
 }
 
+function mediaPath(request) {
+  const raw = decodeURIComponent(new URL(request.url).pathname.replace(/^\/media\//, ""));
+  if (!raw || raw.includes("..") || raw.startsWith("/")) return null;
+  return raw;
+}
+
 async function uploadMedia(request, env) {
   if (!sameOrigin(request)) return json({ error: "Origin rejected." }, 403);
   const admin = await getAdminSession(request, env);
   if (!admin) return json({ error: "Administrator login required." }, 401);
-  if (!env.CMS_MEDIA) return json({ error: "CMS_MEDIA R2 storage is not connected to this Worker." }, 503);
+  if (!env.CMS_MEDIA && !env.CMS_KV) return json({ error: "Media storage is not connected to this Worker." }, 503);
 
   let form;
   try { form = await request.formData(); }
@@ -104,27 +111,61 @@ async function uploadMedia(request, env) {
   if (!extension) return json({ error: "Only JPG, PNG and WEBP images are allowed." }, 415);
 
   const key = `catering/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}.${extension}`;
-  await env.CMS_MEDIA.put(key, file.stream(), {
-    httpMetadata: { contentType: file.type, cacheControl: "public, max-age=31536000, immutable" },
-    customMetadata: { originalName: file.name || "upload", uploadedBy: admin.email }
-  });
+  const metadata = {
+    contentType: file.type,
+    cacheControl: "public, max-age=31536000, immutable",
+    originalName: file.name || "upload",
+    uploadedBy: admin.email,
+    uploadedAt: new Date().toISOString()
+  };
 
-  return json({ ok: true, key, url: `/media/${key}` });
+  if (env.CMS_MEDIA) {
+    await env.CMS_MEDIA.put(key, file.stream(), {
+      httpMetadata: { contentType: file.type, cacheControl: metadata.cacheControl },
+      customMetadata: {
+        originalName: metadata.originalName,
+        uploadedBy: metadata.uploadedBy,
+        uploadedAt: metadata.uploadedAt
+      }
+    });
+    return json({ ok: true, key, url: `/media/${key}`, backend: "r2" });
+  }
+
+  const buffer = await file.arrayBuffer();
+  await env.CMS_KV.put(`${KV_MEDIA_PREFIX}${key}`, buffer, { metadata });
+  return json({ ok: true, key, url: `/media/${key}`, backend: "kv" });
 }
 
 async function serveMedia(request, env) {
-  if (!env.CMS_MEDIA) return new Response("Media storage not configured.", { status: 404 });
-  const key = decodeURIComponent(new URL(request.url).pathname.replace(/^\/media\//, ""));
-  if (!key || key.includes("..")) return new Response("Not found.", { status: 404 });
+  const key = mediaPath(request);
+  if (!key) return new Response("Not found.", { status: 404 });
 
-  const object = await env.CMS_MEDIA.get(key);
-  if (!object) return new Response("Not found.", { status: 404 });
+  if (env.CMS_MEDIA) {
+    const object = await env.CMS_MEDIA.get(key);
+    if (object) {
+      const headers = new Headers();
+      object.writeHttpMetadata(headers);
+      headers.set("etag", object.httpEtag);
+      headers.set("cache-control", headers.get("cache-control") || "public, max-age=31536000, immutable");
+      headers.set("x-content-type-options", "nosniff");
+      return new Response(object.body, { headers });
+    }
+  }
 
-  const headers = new Headers();
-  object.writeHttpMetadata(headers);
-  headers.set("etag", object.httpEtag);
-  headers.set("cache-control", headers.get("cache-control") || "public, max-age=31536000, immutable");
-  return new Response(object.body, { headers });
+  if (env.CMS_KV) {
+    const result = await env.CMS_KV.getWithMetadata(`${KV_MEDIA_PREFIX}${key}`, { type: "arrayBuffer" });
+    if (result?.value) {
+      const metadata = result.metadata || {};
+      const headers = new Headers({
+        "content-type": metadata.contentType || "application/octet-stream",
+        "cache-control": metadata.cacheControl || "public, max-age=31536000, immutable",
+        "x-content-type-options": "nosniff"
+      });
+      return new Response(result.value, { headers });
+    }
+  }
+
+  return new Response("Not found.", { status: 404 });
 }
 
 export default {
