@@ -1,6 +1,6 @@
 # Amantusi Catering CMS & Admin Security
 
-The Amantusi Worker now self-initializes its core CMS and administrator security storage. The goal is that a fresh Cloudflare deployment can provide working administrator login, session storage, menu publishing and media storage without requiring hand-written resource IDs in the repository.
+The Amantusi Worker now uses a KV-first production architecture so the core CMS and administrator security backend can start with one Cloudflare storage binding. This supports administrator login, sessions, menu publishing, security counters, reset tokens and uploaded catering images without requiring an R2 bucket for the initial production release.
 
 ## Pages
 
@@ -19,14 +19,13 @@ Both identities have full CMS privileges.
 
 ## Core backend
 
-`wrangler.jsonc` declares these Cloudflare resources:
+`wrangler.jsonc` declares one automatically provisionable Cloudflare binding:
 
-- `CMS_KV` — published CMS content, administrator credentials, signed-session key material, failed-login counters, reset tokens and security events
-- `CMS_MEDIA` — uploaded catering images
+- `CMS_KV` — published CMS content, administrator credentials, signed-session key material, failed-login counters, reset tokens, security events and the baseline media store for catering images.
 
-Wrangler automatic provisioning is used by declaring the bindings without hard-coded resource IDs or bucket names. On an authenticated permanent deployment, Cloudflare can provision the resources and bind them to the Worker.
+The application is still written so an `CMS_MEDIA` R2 binding can be added later. If R2 is connected, new uploads automatically use R2 first; otherwise image uploads are stored in KV and served through `/media/*`.
 
-The administrator security module also self-generates a random session-signing secret and stores it server-side in KV. It is never sent to the browser and does not need to be committed to GitHub.
+The administrator security module self-generates a random session-signing secret and stores it server-side in KV. It is never sent to the browser and does not need to be committed to GitHub.
 
 ## Initial administrator password
 
@@ -81,23 +80,25 @@ npx wrangler secret put WHATSAPP_TEMPLATE_LANGUAGE
 
 The owner number must be supplied in international format and the configured WhatsApp template must be an approved business-initiated template compatible with the Worker payload.
 
-## Deployment
+## Permanent deployment
 
-Permanent deployment requires the GitHub repository to have:
+Permanent GitHub deployment requires these repository secrets:
 
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
 
-When those are present, the GitHub Action runs a normal `wrangler deploy` against the real Cloudflare account. If they are absent, the workflow uses a temporary Cloudflare preview for visual/testing purposes only.
+When they are present, the GitHub Action runs a normal `wrangler deploy` against the permanent Cloudflare account. When they are absent, the production workflow exits safely instead of creating a new temporary account for every commit.
 
 ```bash
 npm install
 npm run deploy
 ```
 
+Wrangler can automatically provision the declared `CMS_KV` namespace during deployment when the authenticated Cloudflare account permits resource provisioning.
+
 ## CMS capabilities
 
-The administrator can add/edit catering items, upload JPG/PNG/WEBP images, update descriptions and pricing, use price labels such as `From R95 pp` or `Request pricing`, hide/show items, add categories, reorder items, update brochure copy, update company-profile information, publish content to KV, store images in R2 and export/import JSON backups.
+The administrator can add/edit catering items, upload JPG/PNG/WEBP images, update descriptions and pricing, use price labels such as `From R95 pp` or `Request pricing`, hide/show items, add categories, reorder items, update brochure copy, update company-profile information, publish content to KV, upload images through the KV media fallback, and export/import JSON backups.
 
 ## Password reset flow
 
@@ -109,6 +110,6 @@ The administrator can add/edit catering items, upload JPG/PNG/WEBP images, updat
 6. The administrator chooses a new password of at least 14 characters.
 7. The token is deleted after successful use and previous sessions for that account are invalidated.
 
-## Production hardening still recommended
+## Production completion checklist
 
-Once the Worker is attached to the permanent Cloudflare account, complete the alert-provider configuration, add the permanent Cloudflare GitHub secrets, confirm the owner WhatsApp number, and optionally migrate the initial bootstrap credential to a Cloudflare Worker Secret. The CMS itself no longer depends on `ADMIN_PASSWORD`, `SESSION_SECRET` or `AUTH_PEPPER` environment variables in order to start.
+The application code and KV-first backend are ready. To make the existing Cloudflare Worker a permanent production deployment, attach it to the intended Cloudflare account and configure the GitHub `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Then configure the optional Resend and WhatsApp credentials if email password recovery and breach notifications are required. The CMS itself no longer depends on `ADMIN_PASSWORD`, `SESSION_SECRET`, `AUTH_PEPPER` or R2 in order to start.
