@@ -1,8 +1,7 @@
-name: Deploy Amantusi Temporary Cloudflare Preview
+name: Deploy Amantusi to Cloudflare
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -19,5 +18,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install
-      - name: Deploy temporary Cloudflare preview
-        run: npx wrangler deploy --temporary
+      - name: Deploy to permanent Cloudflare account
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
