@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "amantusi-trading-pty-ltd-site",
-  "account_id": "62853128aae54c3f48f696e8b1355294",
+  "account_id": "3b4dba2eec2c69b95eae20d70941e9b2",
   "compatibility_date": "2026-08-16",
   "main": "./src/worker.js",
   "workers_dev": true,
