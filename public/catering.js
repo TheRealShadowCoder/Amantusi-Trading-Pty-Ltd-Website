@@ -1,4 +1,13 @@
 const AMANTUSI_PREVIEW_KEY = "amantusi-catering-preview";
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+
+const luxuryStyles = document.createElement('link');
+luxuryStyles.rel = 'stylesheet';
+luxuryStyles.href = '/catering-experience.css';
+document.head.appendChild(luxuryStyles);
+
+document.documentElement.classList.add('catering-luxury');
 
 async function getCateringContent() {
   let data = null;
@@ -30,6 +39,26 @@ function esc(value = "") {
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
   })[ch]);
 }
+
+function decorateCards(scope = document) {
+  const cards = scope.querySelectorAll('.menu-card,.brochure-card,.profile-block,.brand-panel');
+  cards.forEach((card) => {
+    card.classList.add('lux-reveal');
+    if (reducedMotion || coarsePointer || card.dataset.luxBound) return;
+    card.dataset.luxBound = 'true';
+    card.addEventListener('pointermove', (event) => {
+      const rect = card.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width - .5;
+      const y = (event.clientY - rect.top) / rect.height - .5;
+      card.style.transform = `perspective(1100px) rotateX(${-y * 2.2}deg) rotateY(${x * 2.8}deg) translateY(-4px)`;
+    });
+    card.addEventListener('pointerleave', () => { card.style.transform = ''; });
+  });
+  requestAnimationFrame(() => revealObserver?.takeRecords());
+  cards.forEach((card) => revealObserver?.observe(card));
+}
+
+let revealObserver = null;
 
 async function initMenu() {
   const grid = document.querySelector("[data-menu-grid]");
@@ -78,6 +107,7 @@ async function initMenu() {
           </div>
         </article>`;
     }).join("");
+    decorateCards(grid);
   };
 
   if (content.brand?.cateringTitle) {
@@ -109,7 +139,51 @@ function initPrintButtons() {
   document.querySelectorAll("[data-print]").forEach((button) => button.addEventListener("click", () => window.print()));
 }
 
+function initLuxuryMotion() {
+  const progress = document.createElement('div');
+  progress.className = 'subsite-scroll-progress';
+  progress.innerHTML = '<span></span>';
+  document.body.appendChild(progress);
+  const bar = progress.querySelector('span');
+
+  const updateProgress = () => {
+    const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+    bar.style.width = `${Math.min(100, scrollY / max * 100)}%`;
+  };
+  updateProgress();
+  addEventListener('scroll', updateProgress, { passive: true });
+  addEventListener('resize', updateProgress, { passive: true });
+
+  revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: .12, rootMargin: '0px 0px -5% 0px' });
+
+  document.querySelectorAll('.menu-heading,.menu-trust-grid>div,.profile-hero-grid>*,.brochure-cover-inner,.process-step').forEach((node) => {
+    node.classList.add('lux-reveal');
+    revealObserver.observe(node);
+  });
+  decorateCards(document);
+
+  if (!reducedMotion && !coarsePointer) {
+    document.querySelectorAll('.menu-plate,.profile-logo-box').forEach((object) => {
+      object.addEventListener('pointermove', (event) => {
+        const rect = object.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width - .5;
+        const y = (event.clientY - rect.top) / rect.height - .5;
+        object.style.transform = `perspective(1100px) rotateX(${-y * 5}deg) rotateY(${x * 6}deg) translate3d(${x * 4}px,${y * 4}px,0)`;
+      });
+      object.addEventListener('pointerleave', () => { object.style.transform = ''; });
+    });
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  initLuxuryMotion();
   initMenu();
   initDynamicProfile();
   initPrintButtons();
