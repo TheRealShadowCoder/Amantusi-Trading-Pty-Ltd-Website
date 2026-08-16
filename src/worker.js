@@ -7,7 +7,7 @@ import {
   requestReset,
   confirmReset,
   status
-} from "./security.js";
+} from "./security-v2.js";
 
 const MAX_CONTENT_BYTES = 750000;
 const MAX_IMAGE_BYTES = 8000000;
