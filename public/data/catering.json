@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "updatedAt": "2026-08-16",
+    "currency": "ZAR",
+    "priceNote": "Final pricing may vary by guest count, menu selection, venue, service level and delivery requirements.",
+    "contactEmail": "zodwangema37@gmail.com",
+    "contactPhone": "073 247 6716"
+  },
+  "brand": {
+    "cateringTitle": "Amantusi Catering",
+    "cateringSubtitle": "Professional catering for meetings, functions, institutions and events.",
+    "brochureIntro": "Flexible catering solutions designed around the client's brief, guest count, service format and delivery requirements."
+  },
+  "categories": [
+    {"id":"breakfast","name":"Breakfast & Meetings","description":"Morning meetings, workshops, boardrooms and training sessions."},
+    {"id":"platters","name":"Platters & Light Bites","description":"Shareable selections for meetings, receptions and informal functions."},
+    {"id":"meals","name":"Hot Meals","description":"Individually portioned or buffet-style meal options for organised functions."},
+    {"id":"events","name":"Events & Functions","description":"Custom menu planning for corporate, institutional and private functions."},
+    {"id":"beverages","name":"Beverages","description":"Hot and cold beverage service matched to the event format."}
+  ],
+  "items": [
+    {"id":"starter-1","category":"breakfast","name":"Custom Breakfast Package","description":"Built to the client's brief, guest count and service requirements.","price":"","priceLabel":"Request pricing","image":"","active":true},
+    {"id":"starter-2","category":"platters","name":"Custom Platter Selection","description":"A configurable platter option for meetings, functions and receptions.","price":"","priceLabel":"Request pricing","image":"","active":true},
+    {"id":"starter-3","category":"meals","name":"Custom Hot Meal Package","description":"Meal service configured around dietary, quantity and delivery requirements.","price":"","priceLabel":"Request pricing","image":"","active":true},
+    {"id":"starter-4","category":"events","name":"Event Catering Package","description":"Menu planning and service scope tailored to the event brief.","price":"","priceLabel":"Request pricing","image":"","active":true},
+    {"id":"starter-5","category":"beverages","name":"Beverage Service","description":"Hot and cold beverage options arranged to suit the event format.","price":"","priceLabel":"Request pricing","image":"","active":true}
+  ],
+  "profile": {
+    "legalName":"Amantusi Trading Pty Ltd",
+    "registration":"2016/443097/07",
+    "csd":"MAAA0100552",
+    "address":"2 Phoenix Court, 99 Selbourne Road, Kenneth Gardens, Umbilo, 4001",
+    "email":"zodwangema37@gmail.com",
+    "phone":"073 247 6716",
+    "positioning":"Integrated Procurement, Supply & Service Solutions",
+    "overview":"Amantusi Trading is a diversified procurement, supply and service business positioned to respond to RFQs, purchase requirements and tender opportunities across multiple product and service categories."
+  }
+}
