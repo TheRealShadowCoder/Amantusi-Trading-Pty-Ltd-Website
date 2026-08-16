@@ -5,27 +5,45 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#071923">
   <meta name="robots" content="noindex,nofollow">
-  <title>Amantusi Admin | Catering & Brand Content</title>
+  <title>Amantusi Admin | Secure Content Management</title>
   <link rel="icon" href="/assets/amantusi-logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/catering.css">
+  <link rel="stylesheet" href="/admin-security.css">
 </head>
 <body class="admin-body">
   <section class="login-wrap" id="login-view">
-    <form class="login-card" id="login-form">
+    <div class="login-card secure-login-card">
       <img src="/assets/amantusi-logo.svg" alt="Amantusi Trading">
       <p class="menu-kicker">Secure content management</p>
       <h1>Amantusi Admin</h1>
-      <p>Manage catering menu items, images, pricing, brochure wording and the company profile from one place.</p>
-      <input id="admin-password" name="password" type="password" autocomplete="current-password" placeholder="Admin password" required>
-      <button class="admin-button gold" style="width:100%;margin-top:12px" type="submit">Login as Administrator</button>
-      <p class="login-error" id="login-error" aria-live="polite"></p>
-      <div class="preview-warning hidden" id="preview-option">
-        Cloudflare CMS storage is not connected to this Worker yet. You can still open the local preview editor to design the menu. Preview changes remain on this browser only until the Cloudflare KV/R2 bindings are configured.
-        <button class="admin-button secondary" id="preview-login" type="button" style="margin-top:10px">Open Local Preview Editor</button>
+      <p>Authorized administrators can manage the catering menu, uploaded images, pricing, brochure wording, brand identity and company profile.</p>
+
+      <form id="login-form" class="security-form">
+        <label class="security-label" for="admin-email">Administrator email</label>
+        <input id="admin-email" name="email" type="email" autocomplete="username" placeholder="admin@email.com" required>
+        <label class="security-label" for="admin-password">Password</label>
+        <input id="admin-password" name="password" type="password" autocomplete="current-password" placeholder="Admin password" required>
+        <button class="admin-button gold security-primary" type="submit">Login as Administrator</button>
+        <p class="login-error" id="login-error" aria-live="polite"></p>
+      </form>
+
+      <button class="forgot-link" id="forgot-toggle" type="button">Forgot password?</button>
+
+      <form id="reset-request-form" class="reset-request-box hidden">
+        <p><strong>Password reset</strong></p>
+        <p>Enter your authorized administrator email. A time-limited reset link will be sent only if the address is approved.</p>
+        <label class="security-label" for="reset-email">Administrator email</label>
+        <input id="reset-email" name="email" type="email" autocomplete="email" placeholder="admin@email.com" required>
+        <button class="admin-button secondary security-primary" type="submit">Email Reset Link</button>
+        <p class="reset-status" id="reset-request-status" aria-live="polite"></p>
+      </form>
+
+      <div class="security-notice">
+        <strong>Protected administration area</strong>
+        <span>Repeated failed sign-in attempts are monitored. Security notifications can be sent to authorized administrators and the owner's configured WhatsApp number.</span>
       </div>
-      <p style="font-size:10px;color:#89959c;margin-top:20px">No password is stored in this page. The production admin password is supplied as a Cloudflare Worker secret.</p>
-    </form>
+    </div>
   </section>
 
   <section class="admin-shell hidden" id="admin-view">
@@ -38,7 +56,7 @@
         <button class="active" type="button" data-panel-target="menu-panel">Catering Menu</button>
         <button type="button" data-panel-target="brand-panel">Brochure & Brand</button>
         <button type="button" data-panel-target="profile-panel">Company Profile</button>
-        <button type="button" data-panel-target="backup-panel">Backup / Import</button>
+        <button type="button" data-panel-target="backup-panel">Backup / Security</button>
         <a href="/catering-menu.html" target="_blank">Preview Menu ↗</a>
         <a href="/catering-brochure.html" target="_blank">Preview Brochure ↗</a>
         <a href="/company-profile.html" target="_blank">Preview Profile ↗</a>
@@ -48,7 +66,11 @@
 
     <main class="admin-main">
       <div class="admin-top">
-        <div><p class="menu-kicker">Content management</p><h1>Admin Dashboard</h1></div>
+        <div>
+          <p class="menu-kicker">Content management</p>
+          <h1>Admin Dashboard</h1>
+          <small class="admin-identity" id="admin-identity"></small>
+        </div>
         <span class="cms-status" id="cms-status">Checking storage…</span>
       </div>
 
@@ -86,8 +108,17 @@
       </section>
 
       <section id="backup-panel" class="admin-section hidden">
-        <div class="admin-panel"><h2>Backup & Restore</h2><p style="font-size:13px;color:#66747e">Export the complete menu and profile as JSON before major changes. You can import the same file later to restore or move content.</p><div class="admin-toolbar"><button class="admin-button gold" id="export-json" type="button">Export JSON Backup</button><label class="admin-button secondary" style="cursor:pointer">Import JSON<input id="import-json" type="file" accept="application/json" hidden></label><button class="admin-button danger" id="reset-preview" type="button">Clear Local Preview</button></div></div>
-        <div class="admin-panel"><h2>Production CMS Setup</h2><p style="font-size:13px;color:#66747e">The production design is prepared for Cloudflare Workers KV to store menu/profile JSON, R2 to store uploaded images, and Worker secrets for the admin password and session signing. The CMS setup guide in GitHub contains the exact setup commands.</p></div>
+        <div class="admin-panel">
+          <h2>Backup & Restore</h2>
+          <p style="font-size:13px;color:#66747e">Export the complete menu and profile as JSON before major changes. You can import the same file later to restore or move content.</p>
+          <div class="admin-toolbar"><button class="admin-button gold" id="export-json" type="button">Export JSON Backup</button><label class="admin-button secondary" style="cursor:pointer">Import JSON<input id="import-json" type="file" accept="application/json" hidden></label></div>
+        </div>
+        <div class="admin-panel">
+          <h2>Administrator Security</h2>
+          <p style="font-size:13px;color:#66747e">Passwords are not stored in the public website. Password recovery is handled using one-time email links. Repeated failed login attempts are monitored and can trigger email and WhatsApp security alerts when the provider credentials are connected in Cloudflare.</p>
+          <div class="admin-toolbar"><button class="admin-button secondary" id="dashboard-reset-password" type="button">Reset My Password by Email</button></div>
+          <p class="reset-status" id="dashboard-reset-status" aria-live="polite"></p>
+        </div>
       </section>
     </main>
   </section>
