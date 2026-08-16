@@ -32,7 +32,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node --check src/security-v2.js
+          node --check src/security-v3.js
           node --check src/worker.js
           node --check public/touch.js
           node --check public/admin.js
@@ -60,7 +60,7 @@ jobs:
               homepage_ok=1
             fi
             if curl --fail --silent --show-error --max-time 15 "$PRODUCTION_URL/api/admin/status" -o /tmp/amantusi-status.json; then
-              if node -e 'const fs=require("fs"); const s=JSON.parse(fs.readFileSync("/tmp/amantusi-status.json","utf8")); if(!(s.ready && s.loginConfigured && s.contentStorage && s.mediaStorage)) process.exit(1);'; then
+              if node -e 'const fs=require("fs"); const s=JSON.parse(fs.readFileSync("/tmp/amantusi-status.json","utf8")); if(!(s.ready && s.loginConfigured && s.contentStorage && s.mediaStorage && s.authVersion === 3 && s.bootstrapReady)) process.exit(1);'; then
                 status_ok=1
               fi
             fi
