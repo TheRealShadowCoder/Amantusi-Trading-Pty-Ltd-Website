@@ -1,6 +1,13 @@
 # Amantusi Catering CMS & Admin Security
 
-The Amantusi Worker now uses a KV-first production architecture so the core CMS and administrator security backend can start with one Cloudflare storage binding. This supports administrator login, sessions, menu publishing, security counters, reset tokens and uploaded catering images without requiring an R2 bucket for the initial production release.
+The production target is now the dedicated permanent Cloudflare Worker:
+
+- Cloudflare account ID: `c699a25ded4880f486b14d5f125ba92e`
+- Worker name: `amantusi-trading-pty-ltd-website`
+- GitHub repository: `TheRealShadowCoder/Amantusi-Trading-Pty-Ltd-Website`
+- Production branch: `main`
+
+The repository must never deploy to a temporary Cloudflare account. Every successful push to `main` is intended to update this same Worker.
 
 ## Pages
 
@@ -19,55 +26,50 @@ Both identities have full CMS privileges.
 
 ## Core backend
 
-`wrangler.jsonc` declares one automatically provisionable Cloudflare binding:
+The Worker uses a KV-first production architecture. `CMS_KV` stores:
 
-- `CMS_KV` — published CMS content, administrator credentials, signed-session key material, failed-login counters, reset tokens, security events and the baseline media store for catering images.
+- published catering/menu/profile content
+- administrator credential verifiers
+- signed-session key material
+- failed-login counters and temporary lock state
+- password reset tokens
+- security events
+- baseline uploaded catering images
 
-The application is still written so an `CMS_MEDIA` R2 binding can be added later. If R2 is connected, new uploads automatically use R2 first; otherwise image uploads are stored in KV and served through `/media/*`.
+R2 is optional. If an `CMS_MEDIA` R2 binding is added later, new uploads can use R2; otherwise image uploads use KV and are served through `/media/*`.
 
-The administrator security module self-generates a random session-signing secret and stores it server-side in KV. It is never sent to the browser and does not need to be committed to GitHub.
+The session-signing secret is generated server-side and stored in KV. It is never sent to the browser or committed to GitHub.
 
 ## Initial administrator password
 
-The plaintext initial administrator password is not stored in GitHub or browser JavaScript.
-
-The repository contains only a salted PBKDF2-SHA256 bootstrap verifier. On the first successful sign-in for each approved administrator account, the Worker creates a fresh per-account salt and verifier in KV. Subsequent password changes are stored only as salted password verifiers in KV.
-
-For a permanent high-assurance production deployment, the bootstrap mechanism can later be replaced with a Cloudflare Worker Secret after the permanent account is connected. The current implementation is designed so login works immediately when KV is available while still avoiding plaintext credentials in source.
+The plaintext initial administrator password is not stored in GitHub or public JavaScript. The source contains only a salted PBKDF2-SHA256 verifier. Security v3 allows the approved bootstrap credential to initialise each approved administrator account. After an administrator explicitly changes their password through the reset flow, the bootstrap credential is disabled for that account.
 
 ## Security behaviour
 
 - Email + password are required.
 - Sessions are signed server-side and expire after 8 hours.
-- A password change increments the credential version and invalidates older sessions for that account.
-- Failed sign-ins are tracked per attempted administrator email + source IP.
-- The 4th failed attempt in the attempt window creates a security incident and attempts configured notifications.
+- Password changes invalidate older sessions for that account.
+- Failed sign-ins are tracked by attempted administrator email and source IP.
+- The 4th failed attempt creates a security incident and attempts configured notifications.
 - From the 5th failed attempt, that IP/account combination is temporarily locked for 15 minutes.
-- Security incidents are retained temporarily in KV.
-- The attempted password is never stored in the alert record.
+- The attempted password is never stored in security event records.
 - Password reset tokens are random, one-time use and expire after 15 minutes.
-- Password reset requests return a generic response to avoid exposing which email addresses are authorized.
+- Password reset requests use a generic response so authorized account addresses are not exposed.
 
 ## Email security alerts and password resets
 
-Email delivery is optional until a provider is configured. The Worker currently supports the Resend HTTP API through these Worker secrets:
+Email delivery activates when these Cloudflare Worker secrets are configured:
 
 ```bash
 npx wrangler secret put RESEND_API_KEY
 npx wrangler secret put ALERT_FROM_EMAIL
 ```
 
-When configured:
-
-- failed-login threshold alerts are sent to both approved administrators
-- a password reset link is sent only to the approved account that requested it
-- password-change alerts are sent to both administrators
-
-Without these email secrets, administrator login and CMS publishing still work, but email reset delivery and email alerts remain disabled.
+When configured, failed-login threshold alerts are sent to both approved administrators, reset links are sent only to the approved requesting account, and password-change alerts are sent to both administrators.
 
 ## WhatsApp security alerts
 
-WhatsApp alerts remain optional and activate when all of these Worker secrets are configured:
+WhatsApp alerts activate when these Cloudflare Worker secrets are configured:
 
 ```bash
 npx wrangler secret put WHATSAPP_ACCESS_TOKEN
@@ -78,38 +80,43 @@ npx wrangler secret put WHATSAPP_ALERT_TEMPLATE
 npx wrangler secret put WHATSAPP_TEMPLATE_LANGUAGE
 ```
 
-The owner number must be supplied in international format and the configured WhatsApp template must be an approved business-initiated template compatible with the Worker payload.
+The owner number must be in international format and the template must be an approved WhatsApp Business template compatible with the Worker payload.
 
-## Permanent deployment
+## GitHub → Cloudflare production deployment
 
-Permanent GitHub deployment requires these repository secrets:
+GitHub Actions needs one repository secret:
 
 - `CLOUDFLARE_API_TOKEN`
-- `CLOUDFLARE_ACCOUNT_ID`
 
-When they are present, the GitHub Action runs a normal `wrangler deploy` against the permanent Cloudflare account. When they are absent, the production workflow exits safely instead of creating a new temporary account for every commit.
+That token **must belong to Cloudflare account `c699a25ded4880f486b14d5f125ba92e`** and must have permission to edit Workers and the resources required by this Worker. A token belonging to any temporary Cloudflare account will fail authentication and must not be used.
 
-```bash
-npm install
-npm run deploy
-```
+`wrangler.jsonc` pins the permanent Cloudflare account ID and Worker name, so a normal deployment always targets `amantusi-trading-pty-ltd-website` in the permanent account.
 
-Wrangler can automatically provision the declared `CMS_KV` namespace during deployment when the authenticated Cloudflare account permits resource provisioning.
+The GitHub workflow performs:
+
+1. JavaScript syntax validation.
+2. Wrangler dry-run validation.
+3. Deployment to the permanent Worker.
+4. Discovery of the production `workers.dev` URL returned by Wrangler.
+5. Live homepage smoke test.
+6. Live `/api/admin/status` health check for CMS storage and Admin Security v3.
+
+The workflow does not create a temporary Cloudflare account.
 
 ## CMS capabilities
 
-The administrator can add/edit catering items, upload JPG/PNG/WEBP images, update descriptions and pricing, use price labels such as `From R95 pp` or `Request pricing`, hide/show items, add categories, reorder items, update brochure copy, update company-profile information, publish content to KV, upload images through the KV media fallback, and export/import JSON backups.
+Administrators can add/edit catering items, upload JPG/PNG/WEBP images, update descriptions and pricing, use labels such as `From R95 pp` or `Request pricing`, hide/show items, add categories, reorder items, update brochure copy, update company-profile information, publish content, and export/import JSON backups.
 
 ## Password reset flow
 
 1. Open `/admin.html` and choose **Forgot password?**.
 2. Enter an authorized administrator email.
 3. The Worker returns a generic response regardless of authorization status.
-4. If email delivery is configured and the account is authorized, a random reset token is created and only its digest is stored in KV.
-5. The account receives a one-time link to `/admin-reset.html`.
-6. The administrator chooses a new password of at least 14 characters.
-7. The token is deleted after successful use and previous sessions for that account are invalidated.
+4. If email delivery is configured, a random reset token is generated and only its digest is stored in KV.
+5. The approved account receives the one-time `/admin-reset.html` link.
+6. The administrator selects a new password of at least 14 characters.
+7. The reset token is destroyed after successful use and previous sessions for the account are invalidated.
 
-## Production completion checklist
+## Current production blocker
 
-The application code and KV-first backend are ready. To make the existing Cloudflare Worker a permanent production deployment, attach it to the intended Cloudflare account and configure the GitHub `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Then configure the optional Resend and WhatsApp credentials if email password recovery and breach notifications are required. The CMS itself no longer depends on `ADMIN_PASSWORD`, `SESSION_SECRET`, `AUTH_PEPPER` or R2 in order to start.
+If GitHub Actions reports that the API token is associated with another Cloudflare account, replace the GitHub `CLOUDFLARE_API_TOKEN` repository secret with a token created inside account `c699a25ded4880f486b14d5f125ba92e`. Once the correct token is installed, re-run the deployment. No further account or Worker-name migration should be required.
