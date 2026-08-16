@@ -11,8 +11,21 @@
   <title>Amantusi Trading Pty Ltd | Procurement, Supply & Service Solutions</title>
   <link rel="icon" type="image/svg+xml" href="/assets/amantusi-logo.svg" />
   <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/experience.css" />
 </head>
-<body>
+<body data-scene="home">
+  <div id="experience-loader" aria-live="polite" aria-label="Loading Amantusi interactive experience">
+    <div class="experience-loader-inner">
+      <div class="experience-loader-mark"><img src="/assets/amantusi-logo.svg" alt="" /></div>
+      <div>
+        <p class="experience-loader-kicker">Amantusi Trading Pty Ltd</p>
+        <h1 class="experience-loader-title">Procurement in motion.</h1>
+      </div>
+      <div class="experience-loader-track"><span id="experience-loader-bar"></span></div>
+      <div id="experience-loader-label">Preparing spatial interface</div>
+    </div>
+  </div>
+
   <div class="scroll-progress" aria-hidden="true"><span></span></div>
   <div class="cursor-glow" aria-hidden="true"></div>
   <div class="page-glow" aria-hidden="true"></div>
@@ -42,7 +55,7 @@
       <div class="hero-grid container">
         <div class="hero-copy reveal">
           <p class="eyebrow">Integrated procurement • supply • service</p>
-          <h1 class="hero-title">Supplying what organisations need.<br /><em>Delivering with purpose.</em></h1>
+          <h1 class="hero-title">Complex requirements.<br /><em>Precisely supplied.</em></h1>
           <p class="hero-lead">Amantusi Trading Pty Ltd sources and supplies goods and services for government, institutional and private sector requirements across FMCG, catering, hygiene, office supply and general procurement categories.</p>
           <div class="hero-actions">
             <a class="button button-gold magnetic" href="#quote">Request a Quotation</a>
@@ -202,6 +215,7 @@
     </div>
   </footer>
 
+  <script type="module" src="/experience.js"></script>
   <script src="/app.js" defer></script>
 </body>
 </html>
