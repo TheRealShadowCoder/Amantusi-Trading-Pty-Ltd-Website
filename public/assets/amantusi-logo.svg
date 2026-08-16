@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" role="img" aria-label="Amantusi Trading logo">
+  <rect width="500" height="500" rx="34" fill="#071923"/>
+  <g fill="none" stroke="#c8aa5d" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M178 220 L250 92 L322 220"/>
+    <path d="M211 166 H289"/>
+    <path d="M250 92 V235"/>
+    <path d="M220 235 H280"/>
+  </g>
+  <text x="250" y="303" text-anchor="middle" fill="#ffffff" font-family="Georgia,serif" font-size="39" letter-spacing="12">AMANTUSI</text>
+  <text x="250" y="339" text-anchor="middle" fill="#c8aa5d" font-family="Arial,sans-serif" font-size="13" letter-spacing="8">TRADING PTY LTD</text>
+  <line x1="140" y1="367" x2="360" y2="367" stroke="#c8aa5d" stroke-width="1" opacity=".7"/>
+</svg>
