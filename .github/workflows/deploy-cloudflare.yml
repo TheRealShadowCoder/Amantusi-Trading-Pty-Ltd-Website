@@ -25,6 +25,16 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install
+      - name: Validate Worker and client scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check src/security-v2.js
+          node --check src/worker.js
+          node --check public/touch.js
+          node --check public/admin.js
+          node --check public/app.js
+          npx wrangler deploy --dry-run --outdir .wrangler-dry-run
       - name: Deploy the same Amantusi Worker
         shell: bash
         run: |
