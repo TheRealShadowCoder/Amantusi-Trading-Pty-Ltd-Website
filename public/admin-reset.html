@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#071923">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Reset Amantusi Admin Password</title>
+  <link rel="icon" href="/assets/amantusi-logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/catering.css">
+  <link rel="stylesheet" href="/admin-security.css">
+</head>
+<body class="admin-body">
+  <section class="login-wrap">
+    <div class="login-card secure-login-card">
+      <img src="/assets/amantusi-logo.svg" alt="Amantusi Trading">
+      <p class="menu-kicker">Administrator security</p>
+      <h1>Reset Password</h1>
+      <p>This link is valid only for the authorized administrator email it was sent to and expires shortly after issue.</p>
+
+      <form id="reset-form" class="security-form">
+        <label class="security-label" for="new-password">New password</label>
+        <input id="new-password" type="password" autocomplete="new-password" minlength="14" maxlength="128" required placeholder="At least 14 characters">
+
+        <label class="security-label" for="confirm-password">Confirm new password</label>
+        <input id="confirm-password" type="password" autocomplete="new-password" minlength="14" maxlength="128" required placeholder="Repeat new password">
+
+        <button class="admin-button gold security-primary" type="submit">Set New Password</button>
+        <p class="reset-status" id="reset-status" aria-live="polite"></p>
+      </form>
+
+      <div class="security-notice">
+        <strong>One-time reset link</strong>
+        <span>Once the password is changed, the link cannot be reused and existing sessions for that administrator account are invalidated.</span>
+      </div>
+
+      <p style="margin-top:20px"><a href="/admin.html" class="forgot-link">Return to admin login</a></p>
+    </div>
+  </section>
+  <script src="/admin-reset.js" defer></script>
+</body>
+</html>
