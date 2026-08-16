@@ -13,6 +13,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  PRODUCTION_URL: https://amantusi-trading-pty-ltd-site.dolomite-computer.workers.dev
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -38,10 +41,38 @@ jobs:
       - name: Deploy the same Amantusi Worker
         shell: bash
         run: |
+          set -euo pipefail
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "Permanent deployment skipped. Add CLOUDFLARE_API_TOKEN as a GitHub Actions repository secret."
-            exit 0
+            echo "::error::CLOUDFLARE_API_TOKEN is not configured."
+            exit 1
           fi
           npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      - name: Smoke test production website and admin backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          homepage_ok=0
+          status_ok=0
+          for attempt in $(seq 1 12); do
+            if curl --fail --silent --show-error --max-time 15 "$PRODUCTION_URL/" -o /tmp/amantusi-home.html && grep -qi "AMANTUSI" /tmp/amantusi-home.html; then
+              homepage_ok=1
+            fi
+            if curl --fail --silent --show-error --max-time 15 "$PRODUCTION_URL/api/admin/status" -o /tmp/amantusi-status.json; then
+              if node -e 'const fs=require("fs"); const s=JSON.parse(fs.readFileSync("/tmp/amantusi-status.json","utf8")); if(!(s.ready && s.loginConfigured && s.contentStorage && s.mediaStorage)) process.exit(1);'; then
+                status_ok=1
+              fi
+            fi
+            if [ "$homepage_ok" -eq 1 ] && [ "$status_ok" -eq 1 ]; then
+              echo "Permanent Amantusi Worker and admin backend are healthy."
+              cat /tmp/amantusi-status.json
+              exit 0
+            fi
+            echo "Waiting for Worker propagation (attempt $attempt/12)..."
+            sleep 5
+          done
+          echo "Homepage check: $homepage_ok"
+          echo "Admin backend check: $status_ok"
+          [ -f /tmp/amantusi-status.json ] && cat /tmp/amantusi-status.json || true
+          exit 1
