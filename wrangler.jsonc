@@ -20,6 +20,10 @@
     { "binding": "CMS_KV" }
   ],
   "d1_databases": [
-    { "binding": "DB" }
+    {
+      "binding": "DB",
+      "database_name": "amantusi-trading-pty-ltd-website-db",
+      "database_id": "8932440b-8295-46db-9f11-bc3b12668830"
+    }
   ]
 }
