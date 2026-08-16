@@ -7,7 +7,7 @@ import {
   requestReset,
   confirmReset,
   status
-} from "./security-v2.js";
+} from "./security-v3.js";
 
 const MAX_CONTENT_BYTES = 750000;
 const MAX_IMAGE_BYTES = 8000000;
@@ -203,7 +203,7 @@ export default {
     if (url.pathname === "/api/admin/status" && request.method === "GET") return status(env);
     if (url.pathname === "/api/admin/me" && request.method === "GET") return me(request, env);
     if (url.pathname === "/api/admin/session" && request.method === "POST") return login(request, env);
-    if (url.pathname === "/api/admin/logout" && request.method === "POST") return logout();
+    if (url.pathname === "/api/admin/logout" && request.method === "POST") return logout(request, env);
     if (url.pathname === "/api/admin/password-reset/request" && request.method === "POST") return requestReset(request, env);
     if (url.pathname === "/api/admin/password-reset/confirm" && request.method === "POST") return confirmReset(request, env);
     if (url.pathname === "/api/admin/content" && request.method === "POST") return saveContent(request, env);
