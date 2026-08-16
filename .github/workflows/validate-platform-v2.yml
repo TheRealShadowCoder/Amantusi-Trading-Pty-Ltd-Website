@@ -18,6 +18,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install
+      - name: Audit production dependency tree
+        run: npm audit --omit=dev --audit-level=high
       - name: Syntax and Wrangler validation
         run: |
           set -euo pipefail
