@@ -24,10 +24,8 @@ function updateScrollUI() {
   scrollFrame = 0;
   const y = window.scrollY;
   header?.classList.toggle('scrolled', y > 24);
-
   const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
   if (progress) progress.style.transform = `scaleX(${Math.min(1, y / max)})`;
-
   if (!coarsePointer && processProgress && processWrap) {
     const rect = processWrap.getBoundingClientRect();
     const start = window.innerHeight * .78;
@@ -36,12 +34,10 @@ function updateScrollUI() {
     processProgress.style.transform = `scaleX(${local})`;
   }
 }
-
 function scheduleScrollUI() {
   if (scrollFrame) return;
   scrollFrame = requestAnimationFrame(updateScrollUI);
 }
-
 updateScrollUI();
 window.addEventListener('scroll', scheduleScrollUI, { passive: true });
 window.addEventListener('resize', scheduleScrollUI, { passive: true });
@@ -69,7 +65,6 @@ const observer = new IntersectionObserver(entries => {
     observer.unobserve(entry.target);
   });
 }, { threshold: 0.1, rootMargin: '0px 0px -3% 0px' });
-
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 const year = document.getElementById('year');
 if (year) year.textContent = new Date().getFullYear();
@@ -128,18 +123,14 @@ if (!reducedMotion && !coarsePointer) {
         const rect = card.getBoundingClientRect();
         const x = (latest.clientX - rect.left) / rect.width;
         const y = (latest.clientY - rect.top) / rect.height;
-        const rx = (.5 - y) * 5.5;
-        const ry = (x - .5) * 7;
-        card.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-3px)`;
+        card.style.transform = `perspective(1000px) rotateX(${(.5 - y) * 5.5}deg) rotateY(${(x - .5) * 7}deg) translateY(-3px)`;
         card.style.setProperty('--mx', `${x * 100}%`);
         card.style.setProperty('--my', `${y * 100}%`);
       });
     }, { passive: true });
     card.addEventListener('pointerleave', () => {
       if (frame) cancelAnimationFrame(frame);
-      frame = 0;
-      latest = null;
-      card.style.transform = '';
+      frame = 0; latest = null; card.style.transform = '';
     }, { passive: true });
   });
 
@@ -151,6 +142,7 @@ if (!reducedMotion && !coarsePointer) {
       if (frame) return;
       frame = requestAnimationFrame(() => {
         frame = 0;
+        if (!latest) return;
         const rect = el.getBoundingClientRect();
         const x = latest.clientX - (rect.left + rect.width / 2);
         const y = latest.clientY - (rect.top + rect.height / 2);
@@ -159,41 +151,52 @@ if (!reducedMotion && !coarsePointer) {
     }, { passive: true });
     el.addEventListener('pointerleave', () => {
       if (frame) cancelAnimationFrame(frame);
-      frame = 0;
-      latest = null;
-      el.style.transform = '';
+      frame = 0; latest = null; el.style.transform = '';
     }, { passive: true });
   });
 }
 
+document.addEventListener('click', (event) => {
+  const target = event.target.closest('[data-href]');
+  if (target) location.href = target.dataset.href;
+});
+document.addEventListener('keydown', (event) => {
+  const target = event.target.closest?.('[data-href]');
+  if (target && (event.key === 'Enter' || event.key === ' ')) {
+    event.preventDefault();
+    location.href = target.dataset.href;
+  }
+});
+
 const quoteForm = document.getElementById('quote-form');
 const status = document.getElementById('form-status');
-quoteForm?.addEventListener('submit', event => {
+quoteForm?.addEventListener('submit', async (event) => {
   event.preventDefault();
-  const data = new FormData(quoteForm);
-  const org = data.get('organisation') || '';
-  const contact = data.get('contact') || '';
-  const email = data.get('email') || '';
-  const phone = data.get('phone') || '';
-  const type = data.get('type') || '';
-  const reference = data.get('reference') || 'N/A';
-  const deadline = data.get('deadline') || 'Not specified';
-  const location = data.get('location') || 'Not specified';
-  const requirements = data.get('requirements') || '';
-  const subject = `Quotation Request - ${org}${reference && reference !== 'N/A' ? ` - ${reference}` : ''}`;
-  const body = [
-    'AMANTUSI TRADING - QUOTATION REQUEST', '',
-    `Organisation / Department: ${org}`,
-    `Contact Person: ${contact}`,
-    `Email: ${email}`,
-    `Cell: ${phone || 'Not supplied'}`,
-    `Request Type: ${type}`,
-    `RFQ / Tender / PO Reference: ${reference}`,
-    `Required By: ${deadline}`,
-    `Delivery Location: ${location}`, '',
-    'ITEMS / SERVICES REQUIRED', requirements, '',
-    'Please advise on pricing, availability, delivery / lead time and applicable terms.'
-  ].join('\n');
-  if (status) status.textContent = 'Opening your email application with the request prepared…';
-  window.location.href = `mailto:zodwangema37@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const submit = quoteForm.querySelector('button[type="submit"]');
+  if (submit) submit.disabled = true;
+  if (status) {
+    status.className = 'form-status';
+    status.textContent = 'Sending your quotation request securely…';
+  }
+
+  try {
+    const response = await fetch('/api/quote', { method: 'POST', body: new FormData(quoteForm) });
+    let payload = {};
+    try { payload = await response.json(); } catch (_) {}
+    if (!response.ok) throw new Error(payload.error || 'Could not submit your quotation request.');
+    quoteForm.reset();
+    if (status) {
+      status.className = 'form-status success';
+      status.innerHTML = `Request received successfully.<span class="quote-reference">Reference: ${String(payload.reference || '').replace(/[<>&]/g, '')}</span>`;
+    }
+    window.amantusiTrack?.('generate_lead', { reference: payload.reference, files: payload.files || 0 });
+  } catch (error) {
+    if (status) {
+      status.className = 'form-status error';
+      status.textContent = `${error.message || 'Submission failed.'} You can also email zodwangema37@gmail.com or call 073 247 6716.`;
+    }
+    window.amantusiTrack?.('lead_submit_error');
+  } finally {
+    if (submit) submit.disabled = false;
+  }
 });
