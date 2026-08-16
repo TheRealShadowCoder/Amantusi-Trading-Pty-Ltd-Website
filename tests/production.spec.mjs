@@ -26,9 +26,9 @@ test('admin exposes passkey and operations surfaces without indexing', async ({ 
   const response = await page.goto('/admin.html');
   expect(response?.ok()).toBeTruthy();
   await expect(page.locator('#passkey-login')).toBeVisible();
-  await expect(page.locator('[data-panel-target="leads-panel"]')).toHaveCount(1);
-  await expect(page.locator('[data-panel-target="suppliers-panel"]')).toHaveCount(1);
-  await expect(page.locator('[data-panel-target="products-panel"]')).toHaveCount(1);
+  await expect(page.locator('.admin-nav [data-panel-target="leads-panel"]')).toHaveCount(1);
+  await expect(page.locator('.admin-nav [data-panel-target="suppliers-panel"]')).toHaveCount(1);
+  await expect(page.locator('.admin-nav [data-panel-target="products-panel"]')).toHaveCount(1);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/i);
 });
 
