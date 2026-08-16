@@ -7,6 +7,11 @@ luxuryStyles.rel = 'stylesheet';
 luxuryStyles.href = '/catering-experience.css';
 document.head.appendChild(luxuryStyles);
 
+const responsiveStyles = document.createElement('link');
+responsiveStyles.rel = 'stylesheet';
+responsiveStyles.href = '/responsive.css';
+document.head.appendChild(responsiveStyles);
+
 document.documentElement.classList.add('catering-luxury');
 
 async function getCateringContent() {
