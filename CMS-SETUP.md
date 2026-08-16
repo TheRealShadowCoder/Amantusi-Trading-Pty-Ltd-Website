@@ -1,35 +1,49 @@
-# Amantusi Catering CMS Setup
+# Amantusi Catering CMS & Admin Security Setup
 
-The website now includes a catering and digital-branding content system.
+The Amantusi website includes a catering CMS, brochure/profile editor and a protected multi-administrator security system.
 
-## Public pages
+## Public and admin pages
 
-- `/catering-menu.html` — editable digital catering menu
-- `/catering-brochure.html` — print-friendly catering services brochure
+- `/catering-menu.html` — digital catering menu
+- `/catering-brochure.html` — print-friendly catering brochure
 - `/company-profile.html` — digital company profile and brand identity
-- `/admin.html` — administrator content manager
+- `/admin.html` — secure administrator content manager
+- `/admin-reset.html` — one-time password reset destination
 
-## Production content storage
+## Authorized full administrators
 
-The public menu works immediately from `public/data/catering.json`.
+The Worker currently authorizes these two email identities with full CMS privileges:
 
-For the administrator to publish changes for every visitor, connect these Cloudflare resources:
+- `zodwangema37@gmail.com` — Owner
+- `s.k.businessline@gmail.com` — Administrator
 
-1. **Workers KV** to store the menu, brochure copy and company profile JSON.
-2. **R2** to store catering images uploaded by the administrator.
-3. **Worker secrets** for the administrator password and session-signing secret.
+Both accounts can edit and publish all CMS content. Each account can request a password reset only through a one-time link sent to its own authorized email address.
 
-The website does not hard-code the production admin password.
+## Security behaviour
 
-## 1. Create the KV namespace
+- Email + password are required to sign in.
+- Passwords are not committed to GitHub or exposed in browser JavaScript.
+- The initial password is supplied as the Cloudflare secret `ADMIN_PASSWORD`.
+- On the first valid bootstrap login, a keyed password verifier is stored in Workers KV for both approved administrator accounts.
+- Per-account password resets can then create independent passwords.
+- Admin sessions are signed and expire after 8 hours.
+- Password reset links expire after 15 minutes and are one-time use.
+- Changing a password increments the account credential version, invalidating existing sessions for that account.
+- Failed sign-ins are tracked per attempted email + source IP.
+- The 4th failed attempt in the current attempt window triggers a security incident notification.
+- From the 5th failed attempt, that source IP + attempted account is temporarily locked for 15 minutes.
+- Alert records are also retained temporarily in KV.
+- The production admin page does not offer the old unauthenticated local-preview bypass.
 
-Run from the repository root while authenticated to the correct Cloudflare account:
+## 1. Create Workers KV
+
+The same namespace stores published CMS JSON plus authentication state, reset tokens and security counters.
 
 ```bash
 npx wrangler kv namespace create CMS_KV
 ```
 
-Copy the generated namespace ID into `wrangler.jsonc`:
+Add the returned namespace ID to `wrangler.jsonc`:
 
 ```jsonc
 "kv_namespaces": [
@@ -40,13 +54,13 @@ Copy the generated namespace ID into `wrangler.jsonc`:
 ]
 ```
 
-## 2. Create the R2 bucket
+## 2. Create R2 media storage
 
 ```bash
 npx wrangler r2 bucket create amantusi-catering-media
 ```
 
-Add the binding to `wrangler.jsonc`:
+Add the binding:
 
 ```jsonc
 "r2_buckets": [
@@ -57,27 +71,70 @@ Add the binding to `wrangler.jsonc`:
 ]
 ```
 
-## 3. Add administrator secrets
+## 3. Add the core security secrets
+
+Never place the actual values in GitHub, `wrangler.jsonc`, HTML, JavaScript or documentation.
 
 ```bash
 npx wrangler secret put ADMIN_PASSWORD
 npx wrangler secret put SESSION_SECRET
+npx wrangler secret put AUTH_PEPPER
 ```
 
-Use a strong private password for `ADMIN_PASSWORD`. Use a long random value for `SESSION_SECRET`. Never commit either value to GitHub.
+For `ADMIN_PASSWORD`, enter the agreed bootstrap administrator password privately in Cloudflare. Do not commit it.
 
-## 4. Deploy
+For `SESSION_SECRET` and `AUTH_PEPPER`, use separate long random values.
+
+After both account verifiers have been created in KV, the bootstrap password is no longer used for accounts that already have credential records. It may then be rotated or removed according to your operating procedure.
+
+## 4. Configure email alerts and password-reset delivery
+
+The Worker uses the Resend HTTP API for security alerts and password reset links.
+
+Create and verify a sending domain in Resend, then add:
+
+```bash
+npx wrangler secret put RESEND_API_KEY
+npx wrangler secret put ALERT_FROM_EMAIL
+```
+
+`ALERT_FROM_EMAIL` must be a sender address permitted by the configured email provider, for example an address on a verified Amantusi domain.
+
+Security emails after the failed-login threshold are sent to both authorized administrator emails. Password reset links are sent only to the authorized account that requested the reset.
+
+## 5. Configure WhatsApp security alerts
+
+WhatsApp alerts are sent only when all Meta WhatsApp Cloud API settings below are present.
+
+```bash
+npx wrangler secret put WHATSAPP_ACCESS_TOKEN
+npx wrangler secret put WHATSAPP_PHONE_NUMBER_ID
+npx wrangler secret put OWNER_WHATSAPP_NUMBER
+npx wrangler secret put WHATSAPP_GRAPH_VERSION
+npx wrangler secret put WHATSAPP_ALERT_TEMPLATE
+npx wrangler secret put WHATSAPP_TEMPLATE_LANGUAGE
+```
+
+Notes:
+
+- `OWNER_WHATSAPP_NUMBER` must be the owner's intended security-alert WhatsApp number in international format.
+- `WHATSAPP_GRAPH_VERSION` is deliberately configurable instead of being hard-coded.
+- `WHATSAPP_ALERT_TEMPLATE` should be the approved WhatsApp message template used for business-initiated security alerts.
+- The current code expects one text variable in the template body containing the incident summary.
+- `WHATSAPP_TEMPLATE_LANGUAGE` may normally be set to `en` if that is the approved template language.
+
+## 6. Deploy
 
 ```bash
 npm install
 npm run deploy
 ```
 
-Then open `/admin.html` on the deployed Worker and log in using the password stored in `ADMIN_PASSWORD`.
+Then open `/admin.html` on the deployed Worker.
 
-## Admin capabilities
+## CMS capabilities
 
-The CMS can:
+The administrator can:
 
 - add and edit catering menu items
 - upload JPG, PNG and WEBP menu images
@@ -86,12 +143,28 @@ The CMS can:
 - hide or show menu items
 - add categories
 - reorder menu items
-- change the catering title and brochure wording
+- change catering title and brochure wording
 - change company profile details
 - publish content to Workers KV
 - store uploaded images in R2
 - export and import JSON backups
 
-## Preview mode
+## Password reset flow
 
-If KV, R2 or Worker secrets have not yet been configured, `/admin.html` offers a local preview editor. Preview changes are stored only in that browser and are useful for designing the menu before the permanent Cloudflare CMS resources are connected.
+1. Open `/admin.html` and choose **Forgot password?**.
+2. Enter the authorized administrator email.
+3. The response is intentionally generic whether or not the address is authorized.
+4. For an authorized account, the Worker generates a random reset token and stores only its SHA-256 digest in KV.
+5. A one-time reset link is emailed to that administrator.
+6. The administrator chooses a new password of at least 14 characters.
+7. The reset token is deleted after successful use and old sessions for that account are invalidated.
+
+## Security-alert flow
+
+On the 4th failed login attempt in the attempt window, the Worker builds an incident record containing the attempted administrator email, timestamp, source IP, Cloudflare location metadata when available and browser/user-agent information. The attempted password is never included in the alert.
+
+Email and WhatsApp delivery are attempted independently, so one provider failing does not block the other notification attempt.
+
+## Important deployment note
+
+The GitHub repository intentionally contains no administrator password, email API key, WhatsApp token or session secret. These values must exist in the Cloudflare Worker environment before the related security features become active.
