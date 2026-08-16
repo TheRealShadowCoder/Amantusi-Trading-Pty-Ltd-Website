@@ -1,9 +1,8 @@
-name: Deploy Amantusi to Permanent Cloudflare Worker
+name: Deploy Amantusi Platform to Permanent Cloudflare Worker
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -28,17 +27,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Validate Worker and client scripts
+      - name: Validate Worker and client platform
         shell: bash
         run: |
           set -euo pipefail
-          node --check src/security-v3.js
-          node --check src/worker.js
-          node --check public/touch.js
-          node --check public/admin.js
-          node --check public/app.js
-          node --check public/catering.js
-          node --check public/experience.js
+          npm run check
           npx wrangler deploy --dry-run --outdir .wrangler-dry-run
 
       - name: Verify permanent Cloudflare account
@@ -48,16 +41,13 @@ jobs:
         run: |
           set -euo pipefail
           EXPECTED_ACCOUNT_ID="3b4dba2eec2c69b95eae20d70941e9b2"
-
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
             echo "::error::CLOUDFLARE_API_TOKEN is not configured."
             exit 1
           fi
-
           npx wrangler whoami 2>&1 | tee /tmp/wrangler-whoami.log
-
           if ! grep -q "$EXPECTED_ACCOUNT_ID" /tmp/wrangler-whoami.log; then
-            echo "::error::The Cloudflare API token does not belong to the confirmed Amantusi account $EXPECTED_ACCOUNT_ID. Replace the GitHub CLOUDFLARE_API_TOKEN secret before deploying."
+            echo "::error::Cloudflare token is not scoped to the permanent Amantusi account $EXPECTED_ACCOUNT_ID."
             exit 1
           fi
 
@@ -68,45 +58,63 @@ jobs:
         run: |
           set -euo pipefail
           npx wrangler deploy 2>&1 | tee /tmp/wrangler-deploy.log
-
           PRODUCTION_URL=$(grep -Eo 'https://[A-Za-z0-9.-]+\.workers\.dev' /tmp/wrangler-deploy.log | tail -n 1 || true)
           if [ -z "$PRODUCTION_URL" ]; then
-            echo "::error::Wrangler did not report a workers.dev production URL."
+            echo "::error::Wrangler did not report the production workers.dev URL."
             exit 1
           fi
-
           echo "PRODUCTION_URL=$PRODUCTION_URL" >> "$GITHUB_ENV"
           echo "Production URL: $PRODUCTION_URL"
 
-      - name: Smoke test production website and admin backend
+      - name: Smoke test platform resources and admin backend
         shell: bash
         run: |
           set -euo pipefail
-          homepage_ok=0
-          status_ok=0
-
-          for attempt in $(seq 1 12); do
-            if curl --fail --silent --show-error --max-time 15 "$PRODUCTION_URL/" -o /tmp/amantusi-home.html && grep -qi "AMANTUSI" /tmp/amantusi-home.html; then
-              homepage_ok=1
+          for attempt in $(seq 1 18); do
+            homepage_ok=0
+            admin_ok=0
+            platform_ok=0
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/" -o /tmp/amantusi-home.html && grep -qi "AMANTUSI" /tmp/amantusi-home.html; then homepage_ok=1; fi
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/api/admin/status" -o /tmp/amantusi-status.json; then
+              if node -e 'const fs=require("fs");const s=JSON.parse(fs.readFileSync("/tmp/amantusi-status.json","utf8"));if(!(s.ready&&s.loginConfigured&&s.contentStorage&&s.mediaStorage&&s.authVersion===3))process.exit(1);'; then admin_ok=1; fi
             fi
-
-            if curl --fail --silent --show-error --max-time 15 "$PRODUCTION_URL/api/admin/status" -o /tmp/amantusi-status.json; then
-              if node -e 'const fs=require("fs"); const s=JSON.parse(fs.readFileSync("/tmp/amantusi-status.json","utf8")); if(!(s.ready && s.loginConfigured && s.contentStorage && s.mediaStorage && s.authVersion === 3 && s.bootstrapReady)) process.exit(1);'; then
-                status_ok=1
-              fi
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/api/health" -o /tmp/amantusi-health.json; then
+              if node -e 'const fs=require("fs");const s=JSON.parse(fs.readFileSync("/tmp/amantusi-health.json","utf8"));if(!(s.ok&&s.kv&&s.database&&s.r2&&s.platformVersion===2))process.exit(1);'; then platform_ok=1; fi
             fi
-
-            if [ "$homepage_ok" -eq 1 ] && [ "$status_ok" -eq 1 ]; then
-              echo "Permanent Amantusi Worker and admin backend are healthy."
-              cat /tmp/amantusi-status.json
+            if [ "$homepage_ok" -eq 1 ] && [ "$admin_ok" -eq 1 ] && [ "$platform_ok" -eq 1 ]; then
+              echo "Permanent Amantusi platform is healthy."
+              cat /tmp/amantusi-health.json
               exit 0
             fi
-
-            echo "Waiting for Worker propagation (attempt $attempt/12)..."
+            echo "Waiting for Worker/D1/R2 propagation (attempt $attempt/18)..."
             sleep 5
           done
-
-          echo "Homepage check: $homepage_ok"
-          echo "Admin backend check: $status_ok"
+          echo "::error::Production health checks did not converge."
           [ -f /tmp/amantusi-status.json ] && cat /tmp/amantusi-status.json || true
+          [ -f /tmp/amantusi-health.json ] && cat /tmp/amantusi-health.json || true
           exit 1
+
+      - name: Install Chromium for production QA
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright production tests
+        env:
+          BASE_URL: ${{ env.PRODUCTION_URL }}
+        run: npm run test:e2e
+
+      - name: Run Lighthouse budgets
+        env:
+          BASE_URL: ${{ env.PRODUCTION_URL }}
+        run: npm run test:lighthouse
+
+      - name: Upload QA reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amantusi-production-qa-${{ github.run_number }}
+          path: |
+            playwright-report
+            test-results
+            lighthouse-report
+          if-no-files-found: ignore
+          retention-days: 14
