@@ -376,7 +376,7 @@ export async function login(request, env) {
     role: account.role,
     label: account.label,
     cmsStorage: true,
-    mediaStorage: Boolean(env.CMS_MEDIA)
+    mediaStorage: Boolean(env.CMS_MEDIA || env.CMS_KV)
   }, 200, {
     "set-cookie": `${SESSION_COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${SESSION_HOURS * 3600}`
   });
@@ -501,7 +501,8 @@ export async function status(env) {
     credentialsReady: credentialCount === EMAILS.length,
     credentialCount,
     contentStorage: Boolean(env.CMS_KV),
-    mediaStorage: Boolean(env.CMS_MEDIA),
+    mediaStorage: Boolean(env.CMS_MEDIA || env.CMS_KV),
+    mediaBackend: env.CMS_MEDIA ? "r2" : (env.CMS_KV ? "kv" : "none"),
     emailAlerts: Boolean(env.RESEND_API_KEY && env.ALERT_FROM_EMAIL),
     whatsappAlerts: Boolean(
       env.WHATSAPP_GRAPH_VERSION &&
