@@ -1,7 +1,14 @@
 name: Deploy Amantusi to Cloudflare
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
+
+concurrency:
+  group: amantusi-production
+  cancel-in-progress: true
 
 permissions:
   contents: read
