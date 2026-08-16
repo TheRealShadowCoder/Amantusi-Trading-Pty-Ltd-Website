@@ -1,0 +1,129 @@
+/* Amantusi touch-first interaction layer */
+:root{
+  --touch-x:50vw;
+  --touch-y:50vh;
+  --touch-local-x:50%;
+  --touch-local-y:50%;
+  --app-vh:1vh;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-right:env(safe-area-inset-right,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);
+}
+html.touch-device{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:auto}
+html.touch-device body{min-height:calc(var(--app-vh) * 100)}
+html.touch-device button,
+html.touch-device a,
+html.touch-device [role="button"],
+html.touch-device [role="link"]{touch-action:manipulation}
+
+.touch-fx-layer{position:fixed;inset:0;pointer-events:none;z-index:9998;overflow:hidden;contain:strict}
+.touch-shockwave{position:fixed;width:20px;height:20px;border:1px solid rgba(223,199,127,.82);border-radius:999px;transform:translate(-50%,-50%) scale(.3);opacity:.9;box-shadow:0 0 28px rgba(184,158,86,.28),inset 0 0 18px rgba(255,240,178,.18);animation:amantusiShock .72s cubic-bezier(.16,.84,.32,1) forwards}
+.touch-shockwave.super{border-width:2px;box-shadow:0 0 42px rgba(223,199,127,.48),inset 0 0 26px rgba(255,245,200,.28);animation-duration:.92s}
+.touch-contact{position:fixed;width:150px;height:150px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(229,202,117,.24) 0%,rgba(184,158,86,.12) 24%,rgba(184,158,86,0) 70%);filter:blur(3px);mix-blend-mode:screen;opacity:.82;transition:opacity .28s ease}
+.touch-contact.release{opacity:0}
+.touch-particle{position:fixed;width:4px;height:4px;border-radius:50%;background:#dfc77f;box-shadow:0 0 9px rgba(223,199,127,.88);transform:translate(-50%,-50%);animation:amantusiParticle var(--p-dur,.72s) cubic-bezier(.15,.75,.2,1) forwards}
+.touch-trail{position:fixed;width:5px;height:5px;border-radius:99px;background:rgba(223,199,127,.74);box-shadow:0 0 12px rgba(223,199,127,.6);transform:translate(-50%,-50%);animation:amantusiTrail .7s ease-out forwards}
+.touch-ring{position:fixed;width:92px;height:92px;border-radius:50%;border:1px solid rgba(223,199,127,.82);transform:translate(-50%,-50%);box-shadow:0 0 30px rgba(184,158,86,.22);animation:amantusiRing 1.1s linear infinite}
+.touch-ring::before,.touch-ring::after{content:"";position:absolute;inset:8px;border-radius:inherit;border:1px dashed rgba(223,199,127,.46)}
+.touch-ring::after{inset:20px;border-style:solid;border-color:rgba(255,255,255,.18)}
+.touch-lens{position:fixed;width:128px;height:128px;border-radius:50%;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 0 40px rgba(184,158,86,.12),0 0 36px rgba(0,0,0,.18);backdrop-filter:brightness(1.08) saturate(1.12);opacity:0;animation:amantusiLens .24s ease forwards}
+
+.touch-reactive{position:relative;isolation:isolate;--drag-x:0px;--drag-y:0px;--tilt-x:0deg;--tilt-y:0deg;transition:transform .32s cubic-bezier(.2,.8,.2,1),filter .32s ease,box-shadow .32s ease}
+.touch-reactive::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;background:radial-gradient(circle at var(--touch-local-x) var(--touch-local-y),rgba(255,239,180,.22),rgba(184,158,86,.08) 20%,transparent 58%);mix-blend-mode:screen;transition:opacity .24s ease;z-index:3}
+.touch-reactive.touch-active{transform:translate3d(var(--drag-x),var(--drag-y),0) rotateX(var(--tilt-x)) rotateY(var(--tilt-y)) scale(.982);filter:brightness(1.055) saturate(1.06)}
+.touch-reactive.touch-active::after,.touch-reactive.touch-charged::after{opacity:1}
+.touch-reactive.touch-charged{filter:brightness(1.09) saturate(1.12);box-shadow:0 0 0 1px rgba(223,199,127,.32),0 18px 46px rgba(6,22,30,.14)}
+.touch-reactive.touch-double{animation:amantusiObjectPulse .6s cubic-bezier(.2,.8,.2,1)}
+.touch-reactive.touch-swipe-left{animation:amantusiSwipeLeft .48s cubic-bezier(.2,.8,.2,1)}
+.touch-reactive.touch-swipe-right{animation:amantusiSwipeRight .48s cubic-bezier(.2,.8,.2,1)}
+.touch-reactive.touch-swipe-up{animation:amantusiSwipeUp .48s cubic-bezier(.2,.8,.2,1)}
+.touch-reactive.touch-swipe-down{animation:amantusiSwipeDown .48s cubic-bezier(.2,.8,.2,1)}
+
+.touch-text{transition:text-shadow .28s ease,color .28s ease,transform .28s cubic-bezier(.2,.8,.2,1)}
+.touch-text.touch-active-text{transform:scale(1.012);text-shadow:0 0 20px rgba(223,199,127,.28)}
+.touch-text.touch-double-text{animation:amantusiTypePulse .62s ease}
+
+/* liquid-glass / spotlight illusion without blocking native pinch-zoom */
+html.touch-device .hero-art,
+html.touch-device .cap-card,
+html.touch-device .menu-card,
+html.touch-device .brochure-card,
+html.touch-device .profile-block,
+html.touch-device .brand-panel,
+html.touch-device .government-panel,
+html.touch-device .quote-form,
+html.touch-device .login-card{transform-style:preserve-3d;backface-visibility:hidden}
+html.touch-device .menu-card img,
+html.touch-device .profile-logo-box img,
+html.touch-device .hero-art img{transition:transform .42s cubic-bezier(.2,.8,.2,1),filter .42s ease}
+html.touch-device .touch-charged img{transform:scale(1.025);filter:brightness(1.06) saturate(1.08)}
+
+/* touch-size and safe-area refinements */
+@media (pointer:coarse), (hover:none){
+  .button,.menu-btn,.admin-button,.nav-cta,.forgot-link,.category-tab,.admin-nav button,.admin-nav a{min-height:48px}
+  .hero-actions .button,.security-primary{min-height:52px}
+  input,select,textarea{font-size:16px!important}
+  .site-header{padding-top:max(10px,var(--safe-top))}
+  .subsite-header{padding-top:var(--safe-top)}
+  .admin-side{padding-left:max(12px,var(--safe-left))!important;padding-right:max(12px,var(--safe-right))!important}
+  footer{padding-bottom:max(22px,var(--safe-bottom))}
+}
+
+@media (max-width:860px){
+  .hero,.menu-hero,.profile-hero,.brochure-cover{min-height:auto!important}
+  .hero-art{pointer-events:auto}
+  .nav-links{padding-bottom:max(10px,var(--safe-bottom))!important}
+  .subsite-links{scroll-snap-type:x proximity}
+  .subsite-links a,.category-tab,.admin-nav>*{scroll-snap-align:start}
+}
+
+@media (max-width:600px){
+  .container{width:min(100% - 28px,1180px)!important}
+  .hero-title,.menu-hero h1,.profile-hero h1,.brochure-cover h1{text-wrap:balance;overflow-wrap:anywhere}
+  .hero-lead,.menu-heading p,.profile-block p,.brochure-card p{overflow-wrap:anywhere}
+  .menu-grid,.capability-grid,.profile-columns,.brochure-grid,.brand-grid,.credentials-grid{min-width:0}
+  .menu-card,.cap-card,.profile-block,.brochure-card,.brand-panel{min-width:0}
+  .admin-main{padding-bottom:max(40px,calc(var(--safe-bottom) + 26px))!important}
+}
+
+@media (max-width:430px){
+  .hero-title{font-size:clamp(40px,13vw,58px)!important}
+  .menu-hero h1,.profile-hero h1,.brochure-cover h1{font-size:clamp(38px,12vw,54px)!important}
+  .hero-actions,.menu-actions{gap:9px!important}
+  .hero-art{height:270px!important;min-height:270px!important}
+}
+
+@media (max-width:360px){
+  :root{--responsive-gutter:12px}
+  .container{width:min(100% - 22px,1180px)!important}
+  .hero-title{font-size:38px!important}
+  .brand-copy small,.subsite-brand small{letter-spacing:.1em!important}
+  .cap-card,.menu-card,.brochure-card,.profile-block,.brand-panel{padding-left:18px!important;padding-right:18px!important}
+}
+
+@media (max-height:560px) and (orientation:landscape){
+  .hero{padding-top:82px!important}
+  .hero-grid{grid-template-columns:minmax(0,1.2fr) minmax(250px,.8fr)!important;gap:20px!important}
+  .hero-art{height:260px!important;min-height:260px!important;margin:0!important}
+  .hero-title{font-size:clamp(38px,7vw,62px)!important}
+  .menu-hero-grid,.profile-hero-grid{grid-template-columns:1fr 1fr!important;align-items:center!important}
+  .menu-visual{min-height:250px!important}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .touch-shockwave,.touch-particle,.touch-trail,.touch-ring,.touch-lens{display:none!important}
+  .touch-reactive,.touch-text{transition:none!important;animation:none!important}
+}
+
+@keyframes amantusiShock{0%{opacity:.9;transform:translate(-50%,-50%) scale(.25)}70%{opacity:.26}100%{opacity:0;transform:translate(-50%,-50%) scale(8.5)}}
+@keyframes amantusiParticle{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.25)}}
+@keyframes amantusiTrail{0%{opacity:.82;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.2)}}
+@keyframes amantusiRing{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes amantusiLens{to{opacity:1}}
+@keyframes amantusiObjectPulse{0%,100%{transform:scale(1)}35%{transform:scale(.975)}65%{transform:scale(1.018)}}
+@keyframes amantusiTypePulse{0%,100%{text-shadow:none}45%{text-shadow:0 0 28px rgba(223,199,127,.55);transform:scale(1.025)}}
+@keyframes amantusiSwipeLeft{50%{transform:translateX(-12px)}}
+@keyframes amantusiSwipeRight{50%{transform:translateX(12px)}}
+@keyframes amantusiSwipeUp{50%{transform:translateY(-10px)}}
+@keyframes amantusiSwipeDown{50%{transform:translateY(10px)}}
