@@ -12,10 +12,5 @@
     {
       "binding": "CMS_KV"
     }
-  ],
-  "r2_buckets": [
-    {
-      "binding": "CMS_MEDIA"
-    }
   ]
 }
