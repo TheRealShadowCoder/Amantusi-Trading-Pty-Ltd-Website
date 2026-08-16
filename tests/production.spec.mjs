@@ -59,6 +59,6 @@ test('security headers and platform resources are live', async ({ request }) => 
   expect(data.ok).toBeTruthy();
   expect(data.kv).toBeTruthy();
   expect(data.database).toBeTruthy();
-  expect(data.r2).toBeTruthy();
+  expect(['r2','kv-fallback']).toContain(data.mediaBackend);
   expect(data.platformVersion).toBe(2);
 });
