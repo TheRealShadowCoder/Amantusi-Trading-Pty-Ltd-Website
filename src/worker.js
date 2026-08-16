@@ -12,6 +12,10 @@ import {
 const MAX_CONTENT_BYTES = 750000;
 const MAX_IMAGE_BYTES = 8000000;
 const KV_MEDIA_PREFIX = "media:";
+const ENHANCED_HTML = new Set([
+  "/", "/index.html", "/catering-menu.html", "/catering-brochure.html",
+  "/company-profile.html", "/admin.html", "/admin-reset.html"
+]);
 
 function sameOrigin(request) {
   const origin = request.headers.get("origin");
@@ -20,25 +24,44 @@ function sameOrigin(request) {
   catch (_) { return false; }
 }
 
-async function serveHome(request, env) {
-  const response = await env.ASSETS.fetch(request);
+function enhanceHtml(response, { home = false } = {}) {
   if (!response.ok) return response;
-  return new HTMLRewriter()
-    .on("#main-nav", {
+  let rewriter = new HTMLRewriter()
+    .on("head", {
       element(element) {
-        element.append('<a href="/catering-menu.html">Catering Menu</a><a href="/company-profile.html">Company Profile</a>', { html: true });
+        element.append('<link rel="stylesheet" href="/responsive.css"><link rel="stylesheet" href="/touch.css">', { html: true });
       }
     })
-    .on(".capability-grid .cap-card:nth-child(3)", {
+    .on("body", {
       element(element) {
-        element.setAttribute("role", "link");
-        element.setAttribute("tabindex", "0");
-        element.setAttribute("onclick", "location.href='/catering-menu.html'");
-        element.setAttribute("onkeydown", "if(event.key==='Enter'||event.key===' '){location.href='/catering-menu.html'}");
-        element.setAttribute("style", "cursor:pointer");
+        element.append('<script src="/touch.js" defer></script>', { html: true });
       }
-    })
-    .transform(response);
+    });
+
+  if (home) {
+    rewriter = rewriter
+      .on("#main-nav", {
+        element(element) {
+          element.append('<a href="/catering-menu.html">Catering Menu</a><a href="/company-profile.html">Company Profile</a>', { html: true });
+        }
+      })
+      .on(".capability-grid .cap-card:nth-child(3)", {
+        element(element) {
+          element.setAttribute("role", "link");
+          element.setAttribute("tabindex", "0");
+          element.setAttribute("onclick", "location.href='/catering-menu.html'");
+          element.setAttribute("onkeydown", "if(event.key==='Enter'||event.key===' '){location.href='/catering-menu.html'}");
+          element.setAttribute("style", "cursor:pointer");
+        }
+      });
+  }
+
+  return rewriter.transform(response);
+}
+
+async function serveEnhancedPage(request, env, home = false) {
+  const response = await env.ASSETS.fetch(request);
+  return enhanceHtml(response, { home });
 }
 
 async function publicContent(request, env) {
@@ -172,7 +195,9 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    if ((url.pathname === "/" || url.pathname === "/index.html") && request.method === "GET") return serveHome(request, env);
+    if (request.method === "GET" && ENHANCED_HTML.has(url.pathname)) {
+      return serveEnhancedPage(request, env, url.pathname === "/" || url.pathname === "/index.html");
+    }
     if (url.pathname === "/api/catering-content" && request.method === "GET") return publicContent(request, env);
 
     if (url.pathname === "/api/admin/status" && request.method === "GET") return status(env);
