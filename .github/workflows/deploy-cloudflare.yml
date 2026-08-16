@@ -45,7 +45,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           set -euo pipefail
-          EXPECTED_ACCOUNT_ID="c699a25ded4880f486b14d5f125ba92e"
+          EXPECTED_ACCOUNT_ID="3b4dba2eec2c69b95eae20d70941e9b2"
 
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
             echo "::error::CLOUDFLARE_API_TOKEN is not configured."
@@ -55,7 +55,7 @@ jobs:
           npx wrangler whoami 2>&1 | tee /tmp/wrangler-whoami.log
 
           if ! grep -q "$EXPECTED_ACCOUNT_ID" /tmp/wrangler-whoami.log; then
-            echo "::error::The Cloudflare API token does not belong to the permanent Amantusi account $EXPECTED_ACCOUNT_ID. Replace the GitHub CLOUDFLARE_API_TOKEN secret before deploying."
+            echo "::error::The Cloudflare API token does not belong to the confirmed Amantusi account $EXPECTED_ACCOUNT_ID. Replace the GitHub CLOUDFLARE_API_TOKEN secret before deploying."
             exit 1
           fi
 
