@@ -8,6 +8,17 @@ const processWrap = document.querySelector('.process-wrap');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarsePointer = window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(hover: none)').matches || navigator.maxTouchPoints > 0;
 
+if (progress) {
+  progress.style.width = '100%';
+  progress.style.transformOrigin = 'left center';
+  progress.style.transform = 'scaleX(0)';
+}
+if (processProgress) {
+  processProgress.style.width = '100%';
+  processProgress.style.transformOrigin = 'left center';
+  processProgress.style.transform = 'scaleX(0)';
+}
+
 let scrollFrame = 0;
 function updateScrollUI() {
   scrollFrame = 0;
