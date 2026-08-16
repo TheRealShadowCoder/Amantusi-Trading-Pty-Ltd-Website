@@ -37,6 +37,8 @@ jobs:
           node --check public/touch.js
           node --check public/admin.js
           node --check public/app.js
+          node --check public/catering.js
+          node --check public/experience.js
           npx wrangler deploy --dry-run --outdir .wrangler-dry-run
 
       - name: Verify permanent Cloudflare account
