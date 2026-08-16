@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#071923">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Amantusi Admin | Catering & Brand Content</title>
+  <link rel="icon" href="/assets/amantusi-logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/catering.css">
+</head>
+<body class="admin-body">
+  <section class="login-wrap" id="login-view">
+    <form class="login-card" id="login-form">
+      <img src="/assets/amantusi-logo.svg" alt="Amantusi Trading">
+      <p class="menu-kicker">Secure content management</p>
+      <h1>Amantusi Admin</h1>
+      <p>Manage catering menu items, images, pricing, brochure wording and the company profile from one place.</p>
+      <input id="admin-password" name="password" type="password" autocomplete="current-password" placeholder="Admin password" required>
+      <button class="admin-button gold" style="width:100%;margin-top:12px" type="submit">Login as Administrator</button>
+      <p class="login-error" id="login-error" aria-live="polite"></p>
+      <div class="preview-warning hidden" id="preview-option">
+        Cloudflare CMS storage is not connected to this Worker yet. You can still open the local preview editor to design the menu. Preview changes remain on this browser only until the Cloudflare KV/R2 bindings are configured.
+        <button class="admin-button secondary" id="preview-login" type="button" style="margin-top:10px">Open Local Preview Editor</button>
+      </div>
+      <p style="font-size:10px;color:#89959c;margin-top:20px">No password is stored in this page. The production admin password is supplied as a Cloudflare Worker secret.</p>
+    </form>
+  </section>
+
+  <section class="admin-shell hidden" id="admin-view">
+    <aside class="admin-side">
+      <a class="subsite-brand" href="/">
+        <img src="/assets/amantusi-logo.svg" alt="">
+        <span><strong>AMANTUSI</strong><small>ADMIN CMS</small></span>
+      </a>
+      <nav class="admin-nav">
+        <button class="active" type="button" data-panel-target="menu-panel">Catering Menu</button>
+        <button type="button" data-panel-target="brand-panel">Brochure & Brand</button>
+        <button type="button" data-panel-target="profile-panel">Company Profile</button>
+        <button type="button" data-panel-target="backup-panel">Backup / Import</button>
+        <a href="/catering-menu.html" target="_blank">Preview Menu ↗</a>
+        <a href="/catering-brochure.html" target="_blank">Preview Brochure ↗</a>
+        <a href="/company-profile.html" target="_blank">Preview Profile ↗</a>
+        <button type="button" id="logout-btn">Logout</button>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <div class="admin-top">
+        <div><p class="menu-kicker">Content management</p><h1>Admin Dashboard</h1></div>
+        <span class="cms-status" id="cms-status">Checking storage…</span>
+      </div>
+
+      <section id="menu-panel" class="admin-section">
+        <div class="admin-panel">
+          <h2>Add / Edit Menu Item</h2>
+          <form id="item-form">
+            <input type="hidden" id="item-id"><input type="hidden" id="item-image-existing">
+            <div class="admin-grid">
+              <div class="admin-field"><label>Category</label><select id="item-category"></select></div>
+              <div class="admin-field"><label>Item Name</label><input id="item-name" required placeholder="e.g. Executive Breakfast Package"></div>
+              <div class="admin-field full"><label>Description</label><textarea id="item-description" rows="3" placeholder="Describe what is included, serving format or important details"></textarea></div>
+              <div class="admin-field"><label>Price (ZAR)</label><input id="item-price" type="number" min="0" step="0.01" placeholder="Leave blank for custom pricing"></div>
+              <div class="admin-field"><label>Price Label</label><input id="item-price-label" placeholder="e.g. From R95 pp or Request pricing"></div>
+              <div class="admin-field"><label>Menu Image</label><input id="item-image" type="file" accept="image/png,image/jpeg,image/webp"></div>
+              <div class="admin-field"><label>Visible on menu</label><select id="item-active"><option value="true">Yes</option><option value="false">No</option></select></div>
+            </div>
+            <div class="admin-toolbar"><button class="admin-button gold" type="submit">Save Item</button><button class="admin-button secondary" id="cancel-edit" type="button">Clear Form</button><button class="admin-button" id="publish-content" type="button">Publish All Changes</button></div>
+          </form>
+        </div>
+
+        <div class="admin-panel">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap"><h2 style="margin:0">Current Menu</h2><button class="admin-button secondary" id="add-category" type="button">Add Category</button></div>
+          <div id="category-editor" class="hidden" style="margin-top:16px"><div class="admin-grid"><div class="admin-field"><label>Category Name</label><input id="category-name" placeholder="Category name"></div><div class="admin-field"><label>Short Description</label><input id="category-description" placeholder="What this category covers"></div></div><div class="admin-toolbar"><button class="admin-button gold" id="save-category" type="button">Save Category</button></div></div>
+          <div id="items-list"></div>
+        </div>
+      </section>
+
+      <section id="brand-panel" class="admin-section hidden">
+        <div class="admin-panel"><h2>Catering Brochure & Brand Copy</h2><div class="admin-grid"><div class="admin-field"><label>Catering Title</label><input id="brand-title"></div><div class="admin-field"><label>Catering Subtitle</label><input id="brand-subtitle"></div><div class="admin-field full"><label>Brochure Introduction</label><textarea id="brand-intro" rows="4"></textarea></div><div class="admin-field full"><label>Pricing Note</label><textarea id="price-note" rows="3"></textarea></div></div><div class="admin-toolbar"><button class="admin-button gold" id="save-brand" type="button">Save Brand Copy</button><button class="admin-button" data-publish type="button">Publish All Changes</button></div></div>
+      </section>
+
+      <section id="profile-panel" class="admin-section hidden">
+        <div class="admin-panel"><h2>Company Profile Details</h2><div class="admin-grid"><div class="admin-field"><label>Legal Name</label><input id="profile-legal"></div><div class="admin-field"><label>Positioning Line</label><input id="profile-positioning"></div><div class="admin-field"><label>Registration</label><input id="profile-registration"></div><div class="admin-field"><label>CSD No.</label><input id="profile-csd"></div><div class="admin-field"><label>Email</label><input id="profile-email" type="email"></div><div class="admin-field"><label>Cell</label><input id="profile-phone"></div><div class="admin-field full"><label>Address</label><input id="profile-address"></div><div class="admin-field full"><label>Company Overview</label><textarea id="profile-overview" rows="5"></textarea></div></div><div class="admin-toolbar"><button class="admin-button gold" id="save-profile" type="button">Save Profile</button><button class="admin-button" data-publish type="button">Publish All Changes</button></div></div>
+      </section>
+
+      <section id="backup-panel" class="admin-section hidden">
+        <div class="admin-panel"><h2>Backup & Restore</h2><p style="font-size:13px;color:#66747e">Export the complete menu and profile as JSON before major changes. You can import the same file later to restore or move content.</p><div class="admin-toolbar"><button class="admin-button gold" id="export-json" type="button">Export JSON Backup</button><label class="admin-button secondary" style="cursor:pointer">Import JSON<input id="import-json" type="file" accept="application/json" hidden></label><button class="admin-button danger" id="reset-preview" type="button">Clear Local Preview</button></div></div>
+        <div class="admin-panel"><h2>Production CMS Setup</h2><p style="font-size:13px;color:#66747e">The production design is prepared for Cloudflare Workers KV to store menu/profile JSON, R2 to store uploaded images, and Worker secrets for the admin password and session signing. The CMS setup guide in GitHub contains the exact setup commands.</p></div>
+      </section>
+    </main>
+  </section>
+  <script src="/admin.js" defer></script>
+</body>
+</html>
