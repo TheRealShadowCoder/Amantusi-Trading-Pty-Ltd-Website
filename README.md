@@ -1,6 +1,6 @@
-# Amantusi Trading Pty Ltd Website
+# Amantusi Trading Pty Ltd Digital Procurement Platform
 
-Official corporate website for **Amantusi Trading Pty Ltd**.
+Official corporate website and procurement operations platform for **Amantusi Trading Pty Ltd**.
 
 ## Company details
 
@@ -9,18 +9,23 @@ Official corporate website for **Amantusi Trading Pty Ltd**.
 - Email: zodwangema37@gmail.com
 - Cell: 073 247 6716
 
-## Website focus
+## Platform capabilities
 
-Elegant procurement and supply company website covering government procurement, FMCG and institutional supply, catering, cleaning and hygiene, office supply, general trading and RFQ enquiries.
+The public experience covers government procurement, FMCG and institutional supply, catering, cleaning and hygiene, office supply and general trading. The platform also includes server-side RFQ capture and attachments, lead/quotation tracking, supplier and product databases, a protected CMS, passkeys/MFA, first-party analytics, technical SEO, Cloudflare D1/R2/KV storage, monitoring and automated production QA.
 
-## Cloudflare Workers
+## Production architecture
 
-The static site is served from `public/` using Cloudflare Workers static assets.
+- Cloudflare Worker: `amantusi-trading-pty-ltd-website`
+- CMS and authentication state: Cloudflare KV
+- Leads, quotations, suppliers, products and analytics: Cloudflare D1
+- Media and RFQ attachments: Cloudflare R2
+- Deployment: GitHub `main` -> validation -> permanent Cloudflare Worker
+- QA: Playwright desktop/mobile tests and Lighthouse budgets
 
 ```bash
 npm install
+npm run check
 npx wrangler dev
-npx wrangler deploy
 ```
 
-For permanent GitHub Actions deployment, add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as repository secrets, then use the included deployment workflow.
+Production deployment requires the GitHub Actions secret `CLOUDFLARE_API_TOKEN` scoped to the permanent Amantusi Cloudflare account. See `PLATFORM-UPGRADES.md` and `CMS-SETUP.md` for configuration and external integration details.
