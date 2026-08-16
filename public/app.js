@@ -1,3 +1,8 @@
+const responsiveStyles = document.createElement('link');
+responsiveStyles.rel = 'stylesheet';
+responsiveStyles.href = '/responsive.css';
+document.head.appendChild(responsiveStyles);
+
 const header = document.querySelector('.site-header');
 const menuButton = document.querySelector('.menu-button');
 const nav = document.querySelector('.nav-links');
@@ -6,6 +11,7 @@ const cursorGlow = document.querySelector('.cursor-glow');
 const processProgress = document.querySelector('.process-progress span');
 const processWrap = document.querySelector('.process-wrap');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
 
 const updateScrollUI = () => {
   header?.classList.toggle('scrolled', window.scrollY > 24);
@@ -54,7 +60,7 @@ const observer = new IntersectionObserver(entries => {
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 document.getElementById('year').textContent = new Date().getFullYear();
 
-if (!reducedMotion && cursorGlow) {
+if (!reducedMotion && !coarsePointer && cursorGlow) {
   let cx = window.innerWidth * .65, cy = window.innerHeight * .35;
   let tx = cx, ty = cy;
   window.addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; }, { passive: true });
@@ -71,7 +77,8 @@ if (!reducedMotion && cursorGlow) {
 if (!reducedMotion) {
   const layer = document.querySelector('.particle-layer');
   if (layer) {
-    const count = Math.min(26, Math.max(14, Math.round(window.innerWidth / 80)));
+    const base = coarsePointer ? window.innerWidth / 150 : window.innerWidth / 80;
+    const count = Math.min(coarsePointer ? 12 : 26, Math.max(coarsePointer ? 6 : 14, Math.round(base)));
     for (let i = 0; i < count; i++) {
       const p = document.createElement('i');
       p.className = 'particle';
@@ -88,29 +95,31 @@ if (!reducedMotion) {
     }
   }
 
-  document.querySelectorAll('[data-tilt]').forEach(card => {
-    card.addEventListener('pointermove', e => {
-      const rect = card.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = (e.clientY - rect.top) / rect.height;
-      const rx = (0.5 - y) * 5.5;
-      const ry = (x - 0.5) * 7;
-      card.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-3px)`;
-      card.style.setProperty('--mx', `${x * 100}%`);
-      card.style.setProperty('--my', `${y * 100}%`);
+  if (!coarsePointer) {
+    document.querySelectorAll('[data-tilt]').forEach(card => {
+      card.addEventListener('pointermove', e => {
+        const rect = card.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+        const rx = (0.5 - y) * 5.5;
+        const ry = (x - 0.5) * 7;
+        card.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-3px)`;
+        card.style.setProperty('--mx', `${x * 100}%`);
+        card.style.setProperty('--my', `${y * 100}%`);
+      });
+      card.addEventListener('pointerleave', () => { card.style.transform = ''; });
     });
-    card.addEventListener('pointerleave', () => { card.style.transform = ''; });
-  });
 
-  document.querySelectorAll('.magnetic').forEach(el => {
-    el.addEventListener('pointermove', e => {
-      const rect = el.getBoundingClientRect();
-      const x = e.clientX - (rect.left + rect.width / 2);
-      const y = e.clientY - (rect.top + rect.height / 2);
-      el.style.transform = `translate(${x * .08}px, ${y * .10}px)`;
+    document.querySelectorAll('.magnetic').forEach(el => {
+      el.addEventListener('pointermove', e => {
+        const rect = el.getBoundingClientRect();
+        const x = e.clientX - (rect.left + rect.width / 2);
+        const y = e.clientY - (rect.top + rect.height / 2);
+        el.style.transform = `translate(${x * .08}px, ${y * .10}px)`;
+      });
+      el.addEventListener('pointerleave', () => { el.style.transform = ''; });
     });
-    el.addEventListener('pointerleave', () => { el.style.transform = ''; });
-  });
+  }
 }
 
 const quoteForm = document.getElementById('quote-form');
