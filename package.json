@@ -1,12 +1,20 @@
 {
   "name": "amantusi-trading-website",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "check": "node --check src/security-v3.js && node --check src/database.js && node --check src/notifications.js && node --check src/passkeys.js && node --check src/platform.js && node --check src/seo.js && node --check src/worker.js && node --check public/app.js && node --check public/admin.js && node --check public/admin-ops.js && node --check public/analytics.js && node --check public/touch.js && node --check public/catering.js && node --check public/experience.js",
+    "test:e2e": "playwright test",
+    "test:lighthouse": "node scripts/lighthouse-budget.mjs"
+  },
+  "dependencies": {
+    "@simplewebauthn/server": "^13.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.54.0",
+    "lighthouse": "^12.8.0",
     "wrangler": "^4.120.1"
   }
 }
