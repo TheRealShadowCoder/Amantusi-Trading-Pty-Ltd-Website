@@ -68,17 +68,19 @@ function securityHeaders(response, request, { admin = false } = {}) {
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
-function enhanceLayout(response) {
+function enhanceLayout(response, { admin = false } = {}) {
   if (!response.ok) return response;
+  const publicStyles = admin ? '' : '<link rel="stylesheet" href="/cinematic.css">';
+  const publicScripts = admin ? '' : '<script src="/cinematic.js" defer></script>';
   return new HTMLRewriter()
     .on('head', {
       element(element) {
-        element.append('<link rel="stylesheet" href="/responsive.css"><link rel="stylesheet" href="/touch.css"><link rel="stylesheet" href="/platform.css">', { html: true });
+        element.append(`<link rel="stylesheet" href="/responsive.css"><link rel="stylesheet" href="/touch.css"><link rel="stylesheet" href="/platform.css">${publicStyles}`, { html: true });
       }
     })
     .on('body', {
       element(element) {
-        element.append('<script src="/touch.js" defer></script>', { html: true });
+        element.append(`<script src="/touch.js" defer></script>${publicScripts}`, { html: true });
       }
     })
     .on('#quote-form', {
@@ -107,7 +109,7 @@ function enhanceLayout(response) {
 
 async function serveEnhancedPage(request, env, home = false, admin = false) {
   let response = await env.ASSETS.fetch(request);
-  response = enhanceLayout(response);
+  response = enhanceLayout(response, { admin });
   response = await enhanceSeo(request, response, env, { home, admin });
   return response;
 }
