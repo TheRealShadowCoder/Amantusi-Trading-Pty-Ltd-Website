@@ -45,6 +45,7 @@
   const active=[];
   let burstCount=0;
   let lastBurst=0;
+  let settleTimer=0;
   const rand=(min,max)=>min+Math.random()*(max-min);
   const sign=()=>Math.random()<.5?-1:1;
 
@@ -139,7 +140,13 @@
   }
 
   function burstAt(x,y,target,effect=effectFor(target)){
-    if(body.classList.contains('perf-scrolling')||body.classList.contains('perf-wheel-active'))return;
+    if(body.classList.contains('perf-scrolling')||body.classList.contains('perf-wheel-active')){
+      clearTimeout(settleTimer);
+      settleTimer=setTimeout(()=>{
+        if(target.isConnected)burstAt(x,y,target,effect);
+      },140);
+      return;
+    }
     const now=performance.now();
     if(now-lastBurst<(coarse?110:70))return;
     lastBurst=now;
