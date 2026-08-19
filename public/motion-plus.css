@@ -1,0 +1,203 @@
+:root{
+  --motion-micro:.22s;
+  --motion-fast:.42s;
+  --motion-normal:.78s;
+  --motion-cinematic:1.2s;
+  --motion-ambient:8s;
+  --motion-ease:cubic-bezier(.16,1,.3,1);
+  --motion-ease-inout:cubic-bezier(.76,0,.24,1);
+}
+
+/* Animation-only layer. No layout dimensions, content, colors or structure are replaced. */
+
+.motion-plus-intro{
+  will-change:transform,opacity,filter;
+  transition:
+    transform var(--motion-cinematic) var(--motion-ease) calc(var(--motion-delay-index,0) * 90ms),
+    opacity .72s ease calc(var(--motion-delay-index,0) * 90ms),
+    filter .72s ease calc(var(--motion-delay-index,0) * 90ms);
+}
+.motion-plus-intro.motion-rise{transform:translate3d(0,28px,0);opacity:.01;filter:blur(3px)}
+.motion-plus-intro.motion-fade{opacity:.01;filter:blur(2px)}
+.motion-plus-intro.motion-depth{transform:translate3d(0,18px,0) scale(.985);opacity:.01;filter:blur(3px)}
+.motion-plus-intro.motion-plus-visible{transform:none;opacity:1;filter:none}
+
+/* restrained hero ambience, paused whenever hero is off-screen */
+.motion-hero-active .hero-aurora{animation:motion-aurora-breathe 9s ease-in-out infinite alternate}
+.motion-hero-active .fine-ring{animation-duration:calc(13s + var(--motion-ring-offset,0s))!important}
+.motion-hero-active .logo-plaque{animation:motion-plaque-float 7.5s ease-in-out infinite}
+.motion-page-hidden .hero-aurora,
+.motion-page-hidden .fine-ring,
+.motion-page-hidden .logo-plaque{animation-play-state:paused!important}
+@keyframes motion-aurora-breathe{
+  from{transform:translate3d(-1%,0,0) scale(1);opacity:.31}
+  to{transform:translate3d(1.5%,-1%,0) scale(1.045);opacity:.39}
+}
+@keyframes motion-plaque-float{
+  0%,100%{translate:0 0}
+  50%{translate:0 -6px}
+}
+
+/* scroll cue is fixed inside hero and does not consume layout space */
+.lux-scroll-cue{
+  position:absolute;
+  left:50%;
+  bottom:clamp(24px,4vh,52px);
+  z-index:9;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:9px;
+  pointer-events:none;
+  color:rgba(255,255,255,.54);
+  font:700 8px/1 Arial,sans-serif;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  opacity:1;
+  transform:translate3d(-50%,0,0);
+  transition:opacity .4s ease,transform .5s var(--motion-ease);
+}
+.lux-scroll-cue i{position:relative;width:1px;height:38px;background:rgba(255,255,255,.15);overflow:hidden}
+.lux-scroll-cue b{position:absolute;inset:-18px 0 auto;height:18px;background:linear-gradient(to bottom,transparent,var(--cinematic-accent,#c8aa5d));animation:motion-scroll-cue 1.7s var(--motion-ease) infinite}
+.lux-scroll-cue.is-hidden{opacity:0;transform:translate3d(-50%,10px,0)}
+@keyframes motion-scroll-cue{to{transform:translateY(58px)}}
+
+/* generic entrance motion on existing components */
+.motion-reveal-item{
+  --motion-reveal-x:0px;
+  --motion-reveal-y:24px;
+  opacity:.001;
+  transform:translate3d(var(--motion-reveal-x),var(--motion-reveal-y),0) scale(.995);
+  filter:blur(2px);
+  transition:
+    transform .9s var(--motion-ease) calc(var(--motion-reveal-index,0) * 42ms),
+    opacity .62s ease calc(var(--motion-reveal-index,0) * 42ms),
+    filter .62s ease calc(var(--motion-reveal-index,0) * 42ms);
+}
+.motion-reveal-item[data-motion-direction="left"]{--motion-reveal-x:-18px;--motion-reveal-y:0px}
+.motion-reveal-item[data-motion-direction="right"]{--motion-reveal-x:18px;--motion-reveal-y:0px}
+.motion-reveal-item.motion-revealed{opacity:1;transform:none;filter:none}
+
+/* cinematic content imagery - logos/brand marks are intentionally excluded by JS */
+.motion-media{
+  opacity:.001;
+  clip-path:inset(4% 0 4% 0 round 1px);
+  transform:scale(1.028);
+  transition:opacity .6s ease,clip-path .95s var(--motion-ease),transform 1.15s var(--motion-ease);
+  will-change:transform,opacity;
+}
+.motion-media.motion-media-visible{opacity:1;clip-path:inset(0 0 0 0 round 0);transform:scale(1)}
+@media (hover:hover) and (pointer:fine){
+  .menu-card:hover .motion-media,
+  .brochure-card:hover .motion-media,
+  .gallery a:hover .motion-media,
+  .editorial-image:hover .motion-media{transform:scale(1.035)}
+}
+
+/* hide/reveal header uses transform only, preserving layout */
+.site-header,.subsite-header{
+  transition:transform .52s var(--motion-ease),opacity .35s ease!important;
+  will-change:transform;
+}
+.site-header.motion-header-hidden,.subsite-header.motion-header-hidden{
+  transform:translate3d(0,-118%,0);
+  opacity:.15;
+}
+
+/* press physics and tactile response */
+.motion-pressable{
+  transition-property:transform,box-shadow,background-color,border-color,opacity!important;
+  transition-duration:.36s!important;
+  transition-timing-function:var(--motion-ease)!important;
+}
+.motion-pressable.motion-pressed{transform:translate3d(0,1px,0) scale(.975)!important;transition-duration:.11s!important}
+
+@media (hover:hover) and (pointer:fine){
+  .motion-tactile{
+    --motion-local-x:50%;
+    --motion-local-y:50%;
+    --motion-local-rx:0deg;
+    --motion-local-ry:0deg;
+    transform-style:preserve-3d;
+  }
+  .motion-tactile.motion-tactile-active{
+    transform:perspective(1200px) rotateX(var(--motion-local-rx)) rotateY(var(--motion-local-ry)) translate3d(0,-2px,0);
+  }
+  .motion-tactile.motion-tactile-active::after{
+    opacity:1;
+  }
+}
+
+/* form focus motion - field sizes/labels remain unchanged */
+.motion-field-focus{position:relative}
+.motion-field-focus input,
+.motion-field-focus textarea,
+.motion-field-focus select{transform:translate3d(0,-1px,0)}
+.motion-field-focus strong,
+.motion-field-focus>span{transform:translate3d(2px,0,0)}
+
+/* subtle CTA/arrow choreography without replacing button design */
+.text-link span,.button span,.menu-btn span{display:inline-block;transition:transform .42s var(--motion-ease)}
+@media (hover:hover) and (pointer:fine){
+  .text-link:hover span,.button:hover span,.menu-btn:hover span{transform:translate3d(4px,-1px,0)}
+}
+
+/* existing process steps gain a restrained active pulse only */
+.process-step.motion-revealed::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:-3px;
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:var(--cinematic-accent,#c8aa5d);
+  box-shadow:0 0 0 0 rgba(200,170,93,.26);
+  opacity:.58;
+  animation:motion-process-pulse 2.6s ease-out 1;
+}
+@keyframes motion-process-pulse{
+  0%{box-shadow:0 0 0 0 rgba(200,170,93,.28)}
+  100%{box-shadow:0 0 0 16px rgba(200,170,93,0)}
+}
+
+/* quality governor: reduce motion complexity, never content */
+body[data-motion-quality="lite"] .motion-reveal-item,
+body[data-motion-quality="low"] .motion-reveal-item{filter:none;transition-duration:.5s,.38s,.38s}
+body[data-motion-quality="lite"] .motion-tactile,
+body[data-motion-quality="low"] .motion-tactile{transform:none!important}
+body[data-motion-quality="lite"] .hero-aurora,
+body[data-motion-quality="lite"] .logo-plaque{animation:none!important}
+body[data-motion-quality="lite"] .lux-scroll-cue b{animation-duration:2.2s}
+
+/* touch: keep premium feedback but remove hover-only perspective */
+@media (hover:none),(pointer:coarse){
+  .motion-tactile{transform:none!important}
+  .motion-reveal-item{--motion-reveal-x:0px;--motion-reveal-y:16px}
+  .lux-scroll-cue{bottom:max(18px,env(safe-area-inset-bottom))}
+}
+
+@media (max-width:700px){
+  .motion-reveal-item{filter:none;transition-duration:.62s,.42s,.42s}
+  .motion-plus-intro{filter:none;transition-duration:.78s,.52s,.52s}
+  .motion-hero-active .logo-plaque{animation-duration:9s}
+  .lux-scroll-cue{display:none}
+}
+
+/* reduced motion: identical content/functionality, fast fades only */
+@media (prefers-reduced-motion:reduce){
+  .motion-plus-intro,
+  .motion-reveal-item,
+  .motion-media{
+    opacity:1!important;
+    transform:none!important;
+    filter:none!important;
+    clip-path:none!important;
+    transition:none!important;
+    animation:none!important;
+  }
+  .lux-scroll-cue{display:none!important}
+  .site-header,.subsite-header{transform:none!important;opacity:1!important}
+  .motion-hero-active .hero-aurora,
+  .motion-hero-active .logo-plaque{animation:none!important}
+}
