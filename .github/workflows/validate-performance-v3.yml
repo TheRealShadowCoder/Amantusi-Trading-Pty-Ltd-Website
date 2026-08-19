@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - performance-responsive-word-motion
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
