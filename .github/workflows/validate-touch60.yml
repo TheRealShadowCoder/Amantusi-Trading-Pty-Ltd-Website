@@ -1,0 +1,48 @@
+name: Validate Touch 60 Mobile Animations
+
+on:
+  push:
+    branches: [touch60-mobile-engine]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Validate touch-only 60 animation engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run check
+          grep -q "AmantusiTouch60" public/touch-60.js
+          grep -q "pointerType!=='touch'" public/touch-60.js
+          grep -q "touch-ripple-sphere" public/touch-60.js
+          grep -q "touch-quantum-burst" public/touch-60.js
+          grep -q "touch-60.css" src/worker.js
+          grep -q "touch-60-guard.js" src/worker.js
+          grep -q "touch-60.js" src/worker.js
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('public/touch-60.js','utf8');
+          const names=[...src.matchAll(/name:'([^']+)'/g)].map(m=>m[1]);
+          if(names.length!==60) throw new Error(`expected 60 touch effects, got ${names.length}`);
+          if(new Set(names).size!==60) throw new Error('touch effect names are not unique');
+          const ids=[...src.matchAll(/\{id:(\d+),name:/g)].map(m=>Number(m[1]));
+          if(ids.length!==60||ids.some((v,i)=>v!==i+1)) throw new Error('touch effect IDs must be 1..60');
+          const required=['tap','double','long','release','drag','swipe','pinch','rotate','edge','scroll'];
+          for(const g of required) if(!src.includes(`group:'${g}'`)) throw new Error(`missing gesture group ${g}`);
+          NODE
+          npx wrangler deploy --dry-run --outdir .wrangler-dry-run
