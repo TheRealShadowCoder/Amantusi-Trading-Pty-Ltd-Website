@@ -66,7 +66,7 @@ body[data-animation-tier="ultra"] .experience-canvas{filter:saturate(1.015) cont
 body[data-animation-tier="high"] .experience-canvas{filter:saturate(1.008)}
 
 body[data-ar3d-tier="balanced"] .ar3d-cube,body[data-ar3d-tier="balanced"] .ar3d-prism{display:none}
-body[data-ar3d-tier="balanced"] .ar3d-world{opacity:max(.18,.7 * .42)}
+body[data-ar3d-tier="balanced"] .ar3d-world{opacity:.294}
 body[data-ar3d-tier="safe"] .ar3d-stage,body[data-ar3d-tier="lite"] .ar3d-stage{display:none!important}
 .ar3d-paused *{animation-play-state:paused!important}
 
