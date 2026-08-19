@@ -44,6 +44,35 @@ setLoader(8, 'Preparing spatial interface');`,
     'wake-on-demand WebGL loop'
   ],
   [
+    /let loopRunning=true;\n  const markActivity=/,
+    `let cursorFrame=0;
+  const queueCursorFrame=(x,y)=>{
+    cursorTX=x; cursorTY=y;
+    if (!cursor || cursorFrame) return;
+    cursorFrame=requestAnimationFrame(()=>{
+      cursorFrame=0;
+      cursorX=cursorTX; cursorY=cursorTY;
+      cursor.style.transform=\`translate3d(\${cursorX}px,\${cursorY}px,0)\`;
+    });
+  };
+
+  let loopRunning=true;
+  const markActivity=`,
+    'display-rate cursor compositor'
+  ],
+  [
+    /cursorTX=event\.clientX; cursorTY=event\.clientY;/g,
+    `queueCursorFrame(event.clientX,event.clientY);`,
+    'pointer-driven cursor updates'
+  ],
+  [
+    /if \(cursor\) \{\n      cursorX\+=\(cursorTX-cursorX\)\*\.22;\n      cursorY\+=\(cursorTY-cursorY\)\*\.22;\n      cursor\.style\.transform=`translate3d\(\$\{cursorX\}px,\$\{cursorY\}px,0\)`;\n      if \(cursorDot\) cursorDot\.style\.transform=`scale\(\$\{1\+clamp\(state\.pointerSpeed\*\.012,0,\.7\)\}\)`;\n    \}/,
+    `if (cursor && cursorDot) {
+      cursorDot.style.transform=\`scale(\${1+clamp(state.pointerSpeed*.012,0,.7)})\`;
+    }`,
+    'remove WebGL-frame cursor easing'
+  ],
+  [
     /document\.addEventListener\('visibilitychange',\(\)=>\{state\.visible=!document\.hidden;\}\);/,
     `document.addEventListener('visibilitychange',()=>{
     state.visible=!document.hidden;
@@ -58,35 +87,6 @@ setLoader(8, 'Preparing spatial interface');`,
     markActivity();
     if (resizeQueued) return;`,
     'resize wake-up'
-  ],
-  [
-    /const markActivity=\(\)=>\{state\.idle=0;\};\n  if \(!coarsePointer\) \{/,
-    `let cursorFrame=0;
-  const queueCursorFrame=(x,y)=>{
-    cursorTX=x; cursorTY=y;
-    if (!cursor || cursorFrame) return;
-    cursorFrame=requestAnimationFrame(()=>{
-      cursorFrame=0;
-      cursorX=cursorTX; cursorY=cursorTY;
-      cursor.style.transform=\`translate3d(\${cursorX}px,\${cursorY}px,0)\`;
-    });
-  };
-
-  const markActivity=()=>{state.idle=0;};
-  if (!coarsePointer) {`,
-    'display-rate cursor compositor'
-  ],
-  [
-    /cursorTX=event\.clientX; cursorTY=event\.clientY;/g,
-    `queueCursorFrame(event.clientX,event.clientY);`,
-    'pointer-driven cursor updates'
-  ],
-  [
-    /if \(cursor\) \{\n      cursorX\+=\(cursorTX-cursorX\)\*\.22;\n      cursorY\+=\(cursorTY-cursorY\)\*\.22;\n      cursor\.style\.transform=`translate3d\(\$\{cursorX\}px,\$\{cursorY\}px,0\)`;\n      if \(cursorDot\) cursorDot\.style\.transform=`scale\(\$\{1\+clamp\(state\.pointerSpeed\*\.012,0,\.7\)\}\)`;\n    \}/,
-    `if (cursor && cursorDot) {
-      cursorDot.style.transform=\`scale(\${1+clamp(state.pointerSpeed*.012,0,.7)})\`;
-    }`,
-    'remove WebGL-frame cursor easing'
   ],
   [
     /const desiredFps=state\.idle>5\?profile\.idle:profile\.target;/,
