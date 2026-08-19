@@ -53,6 +53,24 @@ test('responsive performance governor and word interactions initialize', async (
   expect(state.form).toBeTruthy();
 });
 
+test('hover-only object engine assigns varied effects and wakes only under pointer', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name.includes('mobile'), 'Desktop fine-pointer hover check');
+  await page.goto('/');
+  await page.waitForFunction(() => window.AmantusiHoverObjects?.enabled === true && window.AmantusiHoverObjects.count > 0);
+  await expect(page.locator('script[src="/hover-objects.js"]')).toHaveCount(1);
+  await expect(page.locator('link[href="/hover-objects.css"]')).toHaveCount(1);
+  const cards = page.locator('.cap-card.hover-fx');
+  await expect(cards.first()).toBeVisible();
+  expect(await cards.count()).toBeGreaterThan(1);
+  const before = await cards.first().evaluate(el => ({ fx: el.dataset.hoverFx, active: el.classList.contains('hover-fx-active') }));
+  expect(before.fx).toBeTruthy();
+  expect(before.active).toBeFalsy();
+  await cards.first().hover();
+  await expect(cards.first()).toHaveClass(/hover-fx-active/);
+  await page.mouse.move(1, 1);
+  await expect(cards.first()).not.toHaveClass(/hover-fx-active/);
+});
+
 test('desktop mouse wheel is accelerated without a smooth-scroll engine', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name.includes('mobile'), 'Desktop fine-pointer wheel check');
   await page.goto('/');
@@ -103,7 +121,10 @@ test('admin exposes passkey and operations surfaces without indexing', async ({ 
   await expect(page.locator('script[src="/animation-3d-overlay.js"]')).toHaveCount(0);
   await expect(page.locator('script[src="/performance-v3.js"]')).toHaveCount(0);
   await expect(page.locator('script[src="/wheel-fast.js"]')).toHaveCount(0);
+  await expect(page.locator('script[src="/hover-objects.js"]')).toHaveCount(0);
+  await expect(page.locator('link[href="/hover-objects.css"]')).toHaveCount(0);
   expect(await page.evaluate(() => Boolean(window.AmantusiAnimations))).toBeFalsy();
+  expect(await page.evaluate(() => Boolean(window.AmantusiHoverObjects))).toBeFalsy();
 });
 
 test('technical SEO endpoints are healthy', async ({ request }) => {

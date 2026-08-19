@@ -144,5 +144,15 @@ patchFile('src/worker.js', [
     /<script src="\/performance-v3\.js" defer><\/script>(?!<script src="\/wheel-fast\.js")/,
     '<script src="/performance-v3.js" defer></script><script src="/wheel-fast.js" defer></script>',
     'fast desktop mouse-wheel runtime'
+  ],
+  [
+    /<link rel="stylesheet" href="\/performance-v3\.css">(?!<link rel="stylesheet" href="\/hover-objects\.css">)/,
+    '<link rel="stylesheet" href="/performance-v3.css"><link rel="stylesheet" href="/hover-objects.css">',
+    'hover-only object animation styles'
+  ],
+  [
+    /<script src="\/wheel-fast\.js" defer><\/script>(?!<script src="\/hover-objects\.js")/,
+    '<script src="/wheel-fast.js" defer></script><script src="/hover-objects.js" defer></script>',
+    'hover-only object animation runtime'
   ]
 ]);
