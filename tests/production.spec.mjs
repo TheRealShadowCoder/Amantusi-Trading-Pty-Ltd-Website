@@ -53,6 +53,44 @@ test('responsive performance governor and word interactions initialize', async (
   expect(state.form).toBeTruthy();
 });
 
+test('luxury quotation UI enhances the existing secure form', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForFunction(() => window.AmantusiLuxuryUI?.ready === true);
+  await expect(page.locator('script[src="/luxury-ui.js"]')).toHaveCount(1);
+  await expect(page.locator('link[href="/luxury-ui.css"]')).toHaveCount(1);
+  await expect(page.locator('.lux-steps .lux-step')).toHaveCount(4);
+  await expect(page.locator('.lux-upload-zone')).toBeVisible();
+  await expect(page.locator('#quote-form input[name="rfqFiles"]')).toHaveCount(1);
+
+  const snapshot = await page.evaluate(() => ({
+    floatingFields: window.AmantusiLuxuryUI.floatingFields,
+    customUpload: window.AmantusiLuxuryUI.customUpload,
+    step: window.AmantusiLuxuryUI.step,
+    originalForm: Boolean(document.querySelector('#quote-form'))
+  }));
+  expect(snapshot.floatingFields).toBeGreaterThanOrEqual(9);
+  expect(snapshot.customUpload).toBeTruthy();
+  expect(snapshot.originalForm).toBeTruthy();
+
+  const organisation = page.locator('#quote-form input[name="organisation"]');
+  await organisation.focus();
+  await expect(organisation.locator('xpath=..')).toHaveClass(/is-active/);
+  await organisation.fill('Amantusi UI Test');
+  await organisation.blur();
+  await expect(organisation.locator('xpath=..')).toHaveClass(/is-filled/);
+
+  await page.evaluate(() => {
+    const status = document.querySelector('#form-status');
+    status.className = 'form-status success';
+    status.innerHTML = 'Request received successfully.<span class="quote-reference">Reference: AMT-TEST-0001</span>';
+  });
+  await expect(page.locator('#quote-form')).toHaveClass(/lux-success/);
+  await expect(page.locator('.lux-success-overlay')).toBeVisible();
+  await expect(page.locator('.lux-success-reference')).toContainText(/AMT-TEST-0001/);
+  await page.locator('.lux-success-dismiss').click();
+  await expect(page.locator('#quote-form')).not.toHaveClass(/lux-success/);
+});
+
 test('hover-only object engine assigns varied effects and wakes only under pointer', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name.includes('mobile'), 'Desktop fine-pointer hover check');
   await page.goto('/');
@@ -123,8 +161,11 @@ test('admin exposes passkey and operations surfaces without indexing', async ({ 
   await expect(page.locator('script[src="/wheel-fast.js"]')).toHaveCount(0);
   await expect(page.locator('script[src="/hover-objects.js"]')).toHaveCount(0);
   await expect(page.locator('link[href="/hover-objects.css"]')).toHaveCount(0);
+  await expect(page.locator('script[src="/luxury-ui.js"]')).toHaveCount(0);
+  await expect(page.locator('link[href="/luxury-ui.css"]')).toHaveCount(0);
   expect(await page.evaluate(() => Boolean(window.AmantusiAnimations))).toBeFalsy();
   expect(await page.evaluate(() => Boolean(window.AmantusiHoverObjects))).toBeFalsy();
+  expect(await page.evaluate(() => Boolean(window.AmantusiLuxuryUI))).toBeFalsy();
 });
 
 test('technical SEO endpoints are healthy', async ({ request }) => {
