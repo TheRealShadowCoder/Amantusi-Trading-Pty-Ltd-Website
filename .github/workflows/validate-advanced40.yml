@@ -1,0 +1,46 @@
+name: Validate Advanced 40 Click Animations
+
+on:
+  push:
+    branches: [advanced40-click-map]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Validate advanced 40 animation runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run check
+          grep -q "AmantusiAdvanced40" public/click-advanced40.js
+          grep -q "comet-crown" public/click-advanced40.js
+          grep -q "aurora-fan" public/click-advanced40.js
+          grep -q "a40-voxel" public/click-advanced40.css
+          grep -q "a40-gyro" public/click-advanced40.css
+          grep -q "click-advanced40.css" src/worker.js
+          grep -q "click-advanced40.js" src/worker.js
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=fs.readFileSync('public/click-advanced40.js','utf8');
+          const effects=[...src.matchAll(/\['[^']+','([^']+)'\]/g)].map(m=>m[1]);
+          if(effects.length!==40) throw new Error(`expected 40 mapped effects, got ${effects.length}`);
+          if(new Set(effects).size!==40) throw new Error('effects are not unique');
+          const shapes=[...src.matchAll(/shape:'([^']+)'/g)].map(m=>m[1]);
+          if(shapes.length!==40||new Set(shapes).size!==40) throw new Error('expected 40 unique animated object types');
+          NODE
+          npx wrangler deploy --dry-run --outdir .wrangler-dry-run
