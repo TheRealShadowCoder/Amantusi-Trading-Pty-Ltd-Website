@@ -1,9 +1,12 @@
 :root{--perf-ease:cubic-bezier(.16,1,.3,1)}
 
-/* Performance layer: preserve the visual system, but make expensive motion event-driven. */
+/* Preserve the experience while letting the browser skip work that cannot affect the viewport. */
 main section{content-visibility:auto;contain-intrinsic-size:760px 1100px}
+.cap-grid,.process-grid,.menu-grid,.brochure-grid,.menu-trust-grid{contain:layout style}
+.cap-card,.menu-card,.brochure-card,.process-step,.trust-item{contain:layout style}
+a,button,.button,.nav-cta,.menu-button{touch-action:manipulation}
 
-/* Remove paint-heavy blur from entrance effects. Motion still uses opacity + compositor transforms. */
+/* Remove paint-heavy blur from animation paths. */
 .ar-reveal,.cinematic-word,.motion-reveal-item,.motion-plus-intro{filter:none!important}
 .cinematic-word,[data-cinematic-depth],.ar-light-sweep,.ar3d-world>*{will-change:auto!important}
 .perf-awake .ar3d-world,.perf-interacting .cinematic-word,.perf-interacting .perf-word{will-change:transform!important}
@@ -23,60 +26,72 @@ main section{content-visibility:auto;contain-intrinsic-size:760px 1100px}
 .perf-hidden .site-footer::after,
 .perf-hidden .hero-aurora,
 .perf-hidden .logo-plaque{animation-play-state:paused!important}
-.perf-idle .cinematic-lens{opacity:0!important}
+.perf-idle .cinematic-lens,.perf-idle .ar-particles{opacity:0!important}
 
-/* Footer animation only runs while the footer is near the viewport. */
+/* Footer animation exists only when the visitor is actually near it. */
 footer::after,.site-footer::after{animation-play-state:paused!important}
-.perf-footer-visible footer::after,.perf-footer-visible .site-footer::after{animation-play-state:running!important}
+.perf-footer-visible:not(.perf-idle) footer::after,.perf-footer-visible:not(.perf-idle) .site-footer::after{animation-play-state:running!important}
 
-/* Touch devices already have the persistent Three.js scene; suppress redundant fixed CSS-3D work. */
+/* Touch devices already have the persistent Three.js scene: never double-render fixed pseudo-3D. */
 body[data-runtime-profile="mobile"] .ar3d-stage{display:none!important}
 body[data-runtime-profile="mobile"] .cinematic-lens,
 body[data-runtime-profile="mobile"] .ar-depth-fog,
 body[data-runtime-profile="mobile"] .ar-light-sweep{display:none!important}
-body[data-runtime-profile="mobile"] .ar-particles i:nth-child(n+5){display:none!important}
-body[data-runtime-profile="standard"] .ar-particles i:nth-child(n+9){display:none!important}
+body[data-runtime-profile="mobile"] .ar-particles i:nth-child(n+4){display:none!important}
 
-/* During active scrolling, freeze decorative timelines and avoid deep composites until the browser settles. */
+/* Standard desktops keep depth, but only the cheapest components remain continuously eligible. */
+body[data-runtime-profile="standard"] .ar3d-cube,
+body[data-runtime-profile="standard"] .ar3d-prism,
+body[data-runtime-profile="standard"] .ar3d-ribbon{display:none!important}
+body[data-runtime-profile="standard"] .ar-particles i:nth-child(n+7){display:none!important}
+body[data-runtime-profile="standard"]:not(.perf-interacting) .cinematic-lens{opacity:0!important}
+
+/* During active scrolling, freeze decorative timelines and remove deep composites. */
 .perf-scrolling .ar-depth-fog,
 .perf-scrolling .ar-particles i,
 .perf-scrolling .ar3d-world *,
 .perf-scrolling .hero-aurora,
-.perf-scrolling .logo-plaque{animation-play-state:paused!important}
+.perf-scrolling .logo-plaque,
+.perf-scrolling footer::after,
+.perf-scrolling .site-footer::after{animation-play-state:paused!important}
 .perf-scrolling .ar-light-sweep{display:none!important}
-.perf-scrolling .ar3d-world{opacity:.18!important;transition:opacity .18s linear!important}
-.perf-scrolling .cinematic-lens{opacity:.18!important}
-.perf-scrolling .cap-card,.perf-scrolling .menu-card,.perf-scrolling .brochure-card{transform:none!important}
+.perf-scrolling .ar3d-world{opacity:.12!important;transition:none!important}
+.perf-scrolling .cinematic-lens{opacity:0!important}
+.perf-scrolling .cap-card,.perf-scrolling .menu-card,.perf-scrolling .brochure-card{transform:none!important;transition:none!important;filter:none!important}
+.perf-scrolling main section::after{opacity:0!important}
 
-/* Word interaction engine. Existing copy is untouched; words receive inline spans only at idle time. */
-.perf-word-host{--perf-word-lift:.11em}
-.perf-word{display:inline-block;backface-visibility:hidden;transform-origin:50% 78%;transition:transform .28s var(--perf-ease),opacity .24s ease,color .28s ease,text-shadow .28s ease}
-.perf-word.is-word-hot{transform:translate3d(0,calc(var(--perf-word-lift)*-1),0) rotateX(-9deg) scale(1.045);text-shadow:0 .14em .7em rgba(200,170,93,.16)}
-.perf-word.is-word-near{transform:translate3d(0,-.035em,0) scale(1.012)}
-.perf-word.is-word-tap{animation:perf-word-tap .42s var(--perf-ease) both}
-.perf-word-host.is-keyboard-active .perf-word{animation:perf-word-focus .52s var(--perf-ease) both;animation-delay:calc(var(--perf-word-index,0)*18ms)}
-@keyframes perf-word-tap{0%{transform:scale(1)}42%{transform:translate3d(0,-.13em,0) scale(1.07)}100%{transform:none}}
-@keyframes perf-word-focus{0%{transform:none}45%{transform:translate3d(0,-.08em,0)}100%{transform:none}}
-
-/* Existing cinematic words get interaction without disturbing their entrance choreography. */
+/* Word interaction uses compositor-only transforms and is intentionally restrained. */
+.perf-word-host{--perf-word-lift:.1em}
+.perf-word{display:inline-block;backface-visibility:hidden;transform-origin:50% 78%;transition:transform .24s var(--perf-ease),opacity .2s ease,color .22s ease,text-shadow .22s ease}
+.perf-word.is-word-hot{transform:translate3d(0,calc(var(--perf-word-lift)*-1),0) rotateX(-7deg) scale(1.035);text-shadow:0 .12em .55em rgba(200,170,93,.13)}
+.perf-word.is-word-near{transform:translate3d(0,-.025em,0) scale(1.008)}
+.perf-word.is-word-tap{animation:perf-word-tap .3s var(--perf-ease) both}
+.perf-word-host.is-keyboard-active .perf-word{animation:perf-word-focus .42s var(--perf-ease) both;animation-delay:calc(var(--perf-word-index,0)*14ms)}
+@keyframes perf-word-tap{0%{transform:scale(1)}42%{transform:translate3d(0,-.1em,0) scale(1.055)}100%{transform:none}}
+@keyframes perf-word-focus{0%{transform:none}45%{transform:translate3d(0,-.06em,0)}100%{transform:none}}
 .cinematic-split:not(.cinematic-visible):not(.hero-title) .perf-word{pointer-events:none}
 .experience-loaded .hero-title .perf-word,.cinematic-visible .perf-word{pointer-events:auto}
 
-/* Keep pointer/touch interaction responsive under pressure. */
+/* Pressure mode removes only decorative layers, never content or functionality. */
 body[data-runtime-pressure="high"] .ar3d-stage,
 body[data-runtime-pressure="high"] .ar-depth-fog,
-body[data-runtime-pressure="high"] .ar-light-sweep{display:none!important}
-body[data-runtime-pressure="high"] .ar-particles i:nth-child(n+5){display:none!important}
-body[data-runtime-pressure="high"] .motion-tactile{transform:none!important}
+body[data-runtime-pressure="high"] .ar-light-sweep,
+body[data-runtime-pressure="high"] .cinematic-lens{display:none!important}
+body[data-runtime-pressure="high"] .ar-particles i:nth-child(n+3){display:none!important}
+body[data-runtime-pressure="high"] .motion-tactile{transform:none!important;transition:none!important}
+body[data-runtime-pressure="high"] .cap-card,
+body[data-runtime-pressure="high"] .menu-card,
+body[data-runtime-pressure="high"] .brochure-card{box-shadow:none!important}
 
 @media (max-width:900px){
   main section{contain-intrinsic-size:640px 980px}
-  .perf-word{transition-duration:.22s,.2s,.22s,.22s}
+  .perf-word{transition-duration:.18s,.16s,.18s,.18s;text-shadow:none!important}
+  .motion-tactile,.cinematic-card-active{transform:none!important}
 }
 @media (max-width:600px){
   main section{contain-intrinsic-size:560px 900px}
   .perf-word.is-word-hot,.perf-word.is-word-near{transform:none}
-  .perf-word.is-word-tap{animation-duration:.34s}
+  .perf-word.is-word-tap{animation-duration:.26s}
 }
 @media (prefers-reduced-motion:reduce){
   .perf-word,.perf-word.is-word-hot,.perf-word.is-word-near,.perf-word.is-word-tap{transform:none!important;animation:none!important;transition:none!important;text-shadow:none!important}
