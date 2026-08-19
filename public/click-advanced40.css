@@ -1,0 +1,94 @@
+/* 40 additional click/tap interaction objects. Dormant until triggered. */
+.a40-stage{position:fixed;inset:0;z-index:74;pointer-events:none;overflow:hidden;perspective:1100px;contain:strict;isolation:isolate}
+.a40-burst{position:absolute;left:var(--x);top:var(--y);width:1px;height:1px;transform-style:preserve-3d;animation:a40-life 1.55s ease-out both}
+.a40-burst>*{position:absolute;left:0;top:0;transform-style:preserve-3d;backface-visibility:hidden}
+.a40-core{width:18px;height:18px;margin:-9px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0 12%,#efdca4 24%,#c8a95a 48%,rgba(98,166,181,.3) 68%,transparent 72%);box-shadow:0 0 28px rgba(210,181,104,.48);animation:a40-core .8s cubic-bezier(.16,1,.3,1) both}
+.a40-core-halo{width:46px;height:46px;margin:-23px;border-radius:50%;border:1px solid rgba(223,194,119,.5);box-shadow:0 0 24px rgba(126,192,207,.12);animation:a40-halo 1.1s cubic-bezier(.16,1,.3,1) both}
+.a40-object{will-change:transform,opacity;animation-duration:1.15s;animation-fill-mode:both;animation-delay:var(--delay);animation-timing-function:cubic-bezier(.16,1,.3,1)}
+
+/* 40 object types */
+.a40-comet{width:34px;height:3px;border-radius:99px;background:linear-gradient(90deg,transparent,#d7b866,#fff4c8);box-shadow:8px 0 14px rgba(239,220,164,.45)}
+.a40-gyro{width:28px;height:28px;margin:-14px;border:1px solid #d2b568;border-radius:50%;box-shadow:inset 0 0 0 5px rgba(120,183,197,.08),0 0 12px rgba(210,181,104,.2)}
+.a40-gyro::after{content:'';position:absolute;inset:5px;border:1px solid rgba(126,192,207,.75);border-radius:50%;transform:rotateX(70deg)}
+.a40-coin{width:20px;height:20px;margin:-10px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff0b5,#d2b568 45%,#8f7435 78%);box-shadow:inset 0 0 0 2px rgba(255,255,255,.28),0 0 14px rgba(210,181,104,.24)}
+.a40-bubble{width:22px;height:22px;margin:-11px;border-radius:50%;border:1px solid rgba(255,255,255,.72);background:radial-gradient(circle at 30% 26%,rgba(255,255,255,.8),rgba(115,193,209,.16) 42%,rgba(210,181,104,.08) 70%,transparent 75%)}
+.a40-prism{width:24px;height:28px;margin:-14px -12px;clip-path:polygon(50% 0,100% 78%,50% 100%,0 78%);background:linear-gradient(135deg,rgba(255,255,255,.78),rgba(210,181,104,.34),rgba(106,188,205,.25));border:1px solid rgba(255,255,255,.4)}
+.a40-helix{width:7px;height:7px;margin:-3.5px;border-radius:50%;background:#9bd5df;box-shadow:0 0 12px rgba(126,207,220,.7)}
+.a40-cube{width:20px;height:20px;margin:-10px;border:1px solid rgba(237,212,149,.7);background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(120,183,197,.05));box-shadow:inset 6px 6px 0 rgba(210,181,104,.05)}
+.a40-diamond{width:18px;height:18px;margin:-9px;transform:rotate(45deg);background:linear-gradient(135deg,#fff6d5,rgba(210,181,104,.55),rgba(111,193,207,.28));border:1px solid rgba(255,255,255,.46)}
+.a40-torus{width:26px;height:26px;margin:-13px;border:4px double rgba(210,181,104,.72);border-radius:50%;box-shadow:0 0 15px rgba(126,192,207,.16)}
+.a40-star{width:22px;height:22px;margin:-11px;clip-path:polygon(50% 0,61% 35%,98% 35%,68% 56%,79% 95%,50% 72%,21% 95%,32% 56%,2% 35%,39% 35%);background:linear-gradient(135deg,#fff,#e0bd6a)}
+.a40-arch{width:30px;height:18px;margin:-9px -15px;border:2px solid #72bccb;border-bottom:0;border-radius:30px 30px 0 0;box-shadow:0 0 12px rgba(114,188,203,.35)}
+.a40-ribbon{width:46px;height:6px;margin:-3px -23px;border-radius:99px;background:linear-gradient(90deg,rgba(210,181,104,.05),#d2b568,#91d2dd,rgba(255,255,255,.06));box-shadow:0 0 12px rgba(210,181,104,.18)}
+.a40-door{width:16px;height:32px;margin:-16px -8px;border:1px solid rgba(210,181,104,.62);background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(8,35,50,.24));box-shadow:0 0 12px rgba(210,181,104,.16)}
+.a40-tile{width:18px;height:18px;margin:-9px;border:1px solid rgba(255,255,255,.44);background:linear-gradient(135deg,rgba(210,181,104,.35),rgba(116,192,207,.18))}
+.a40-gear{width:24px;height:24px;margin:-12px;border-radius:50%;background:repeating-conic-gradient(#d2b568 0 12deg,transparent 12deg 24deg);box-shadow:inset 0 0 0 7px rgba(7,31,44,.8),0 0 10px rgba(210,181,104,.25)}
+.a40-capsule{width:30px;height:10px;margin:-5px -15px;border-radius:99px;background:linear-gradient(90deg,#8ccad6,#f1d998);border:1px solid rgba(255,255,255,.45)}
+.a40-pyramid{width:26px;height:28px;margin:-14px -13px;clip-path:polygon(50% 0,100% 100%,0 100%);background:linear-gradient(120deg,rgba(255,255,255,.7),rgba(210,181,104,.28),rgba(94,173,191,.22))}
+.a40-sphere{width:24px;height:24px;margin:-12px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff,#c5a656 30%,#255568 66%,#061b25 90%);box-shadow:0 0 14px rgba(210,181,104,.2)}
+.a40-meteor{width:44px;height:3px;margin:-1.5px -22px;border-radius:99px;background:linear-gradient(90deg,transparent,rgba(122,197,211,.45),#fff0b5);box-shadow:12px 0 15px rgba(239,220,164,.5)}
+.a40-beacon{width:7px;height:34px;margin:-17px -3.5px;border-radius:8px;background:linear-gradient(180deg,#fff,rgba(210,181,104,.65),rgba(103,194,211,.08));box-shadow:0 0 18px rgba(210,181,104,.28)}
+.a40-tess{width:22px;height:20px;margin:-10px -11px;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);border:1px solid rgba(133,205,217,.7);background:rgba(210,181,104,.1)}
+.a40-polygon{width:24px;height:24px;margin:-12px;clip-path:polygon(50% 0,95% 35%,78% 92%,22% 92%,5% 35%);background:linear-gradient(145deg,rgba(255,255,255,.7),rgba(210,181,104,.28),rgba(106,188,205,.2))}
+.a40-lattice{width:24px;height:24px;margin:-12px;border:1px solid rgba(210,181,104,.6);background:linear-gradient(90deg,transparent 47%,rgba(126,192,207,.5) 48% 52%,transparent 53%),linear-gradient(transparent 47%,rgba(126,192,207,.5) 48% 52%,transparent 53%)}
+.a40-pearl{width:14px;height:14px;margin:-7px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#e8d9ad 50%,#8fbec8);box-shadow:0 0 10px rgba(255,255,255,.4)}
+.a40-disc{width:34px;height:10px;margin:-5px -17px;border:1px solid rgba(210,181,104,.62);border-radius:50%;background:radial-gradient(ellipse,rgba(255,255,255,.2),rgba(109,187,202,.08))}
+.a40-flower{width:24px;height:24px;margin:-12px;border-radius:50% 0 50% 0;background:linear-gradient(135deg,#fff4c9,rgba(124,200,214,.36));box-shadow:0 0 12px rgba(210,181,104,.2)}
+.a40-bridge{width:36px;height:18px;margin:-9px -18px;border:2px solid rgba(128,199,213,.72);border-bottom:0;border-radius:36px 36px 0 0;box-shadow:0 -4px 12px rgba(128,199,213,.18)}
+.a40-clockring{width:26px;height:26px;margin:-13px;border-radius:50%;background:conic-gradient(#d2b568 0 12deg,transparent 12deg 28deg,#82c8d5 28deg 34deg,transparent 34deg 60deg);box-shadow:inset 0 0 0 8px rgba(6,28,40,.82)}
+.a40-datacard{width:34px;height:22px;margin:-11px -17px;border:1px solid rgba(210,181,104,.46);border-radius:4px;background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(105,185,202,.06));box-shadow:inset 5px 5px 0 rgba(210,181,104,.08)}
+.a40-qdot{width:6px;height:6px;margin:-3px;border-radius:50%;background:#a4efff;box-shadow:0 0 13px #72d4e6,0 0 24px rgba(210,181,104,.28)}
+.a40-plane{width:34px;height:18px;margin:-9px -17px;clip-path:polygon(12% 0,100% 0,88% 100%,0 100%);background:linear-gradient(135deg,rgba(255,255,255,.55),rgba(210,181,104,.22),rgba(91,172,190,.18));border:1px solid rgba(255,255,255,.26)}
+.a40-halo{width:34px;height:14px;margin:-7px -17px;border:2px solid rgba(239,218,161,.7);border-radius:50%;box-shadow:0 0 12px rgba(210,181,104,.18)}
+.a40-stair{width:28px;height:5px;margin:-2.5px -14px;border-radius:3px;background:linear-gradient(90deg,#8ccad6,#e3c36e)}
+.a40-orbitbar{width:38px;height:5px;margin:-2.5px -19px;border-radius:99px;background:linear-gradient(90deg,transparent,#d7b865,#82c6d3,transparent)}
+.a40-tunnelprism{width:28px;height:28px;margin:-14px;transform:rotate(45deg);border:1px solid rgba(210,181,104,.65);box-shadow:inset 0 0 10px rgba(115,191,205,.08),0 0 12px rgba(210,181,104,.15)}
+.a40-spline{width:48px;height:18px;margin:-9px -24px;border-top:2px solid rgba(128,205,219,.8);border-radius:50%;box-shadow:0 -4px 12px rgba(128,205,219,.18)}
+.a40-satellite{width:24px;height:24px;margin:-12px;background:linear-gradient(90deg,transparent 42%,#d2b568 43% 57%,transparent 58%),linear-gradient(transparent 42%,#8acbd7 43% 57%,transparent 58%);border-radius:50%}
+.a40-fountain{width:5px;height:5px;margin:-2.5px;border-radius:50%;background:#f6dda0;box-shadow:0 0 10px rgba(246,221,160,.65)}
+.a40-voxel{width:14px;height:14px;margin:-7px;border:1px solid rgba(255,255,255,.4);background:linear-gradient(135deg,#d0b25f,rgba(104,188,204,.35));box-shadow:inset 3px 3px 0 rgba(255,255,255,.1)}
+.a40-aurora{width:50px;height:16px;margin:-8px -25px;clip-path:polygon(0 50%,100% 0,82% 100%);background:linear-gradient(90deg,rgba(90,183,203,.08),rgba(121,218,225,.6),rgba(230,199,116,.5),transparent);filter:blur(.2px)}
+
+/* Motion recipes */
+.a40-m-radial{animation-name:a40-radial}.a40-m-orbit{animation-name:a40-orbit}.a40-m-spiral{animation-name:a40-spiral}.a40-m-rise{animation-name:a40-rise}.a40-m-fan{animation-name:a40-fan}.a40-m-helix{animation-name:a40-helix}.a40-m-swarm{animation-name:a40-swarm}.a40-m-fall{animation-name:a40-fall}.a40-m-split{animation-name:a40-split}.a40-m-mosaic{animation-name:a40-mosaic}.a40-m-cluster{animation-name:a40-cluster}.a40-m-diagonal{animation-name:a40-diagonal}.a40-m-wave{animation-name:a40-wave}.a40-m-bloom{animation-name:a40-bloom}.a40-m-grid{animation-name:a40-grid}.a40-m-stack{animation-name:a40-stack}.a40-m-quantum{animation-name:a40-quantum}.a40-m-fold{animation-name:a40-fold}.a40-m-tunnel{animation-name:a40-tunnel}.a40-m-fountain{animation-name:a40-fountain}
+
+@keyframes a40-life{0%{opacity:0}5%{opacity:1}82%{opacity:1}100%{opacity:0}}
+@keyframes a40-core{0%{transform:scale(.15) translateZ(-20px);opacity:0}35%{transform:scale(1.15) translateZ(36px);opacity:1}100%{transform:scale(.25) translateZ(4px);opacity:0}}
+@keyframes a40-halo{0%{transform:rotateX(72deg) scale(.2);opacity:0}30%{opacity:.8}100%{transform:rotateX(72deg) scale(3.4);opacity:0}}
+@keyframes a40-radial{0%{transform:translate3d(0,0,0) scale(.2) rotateZ(0);opacity:0}18%{opacity:1}100%{transform:translate3d(var(--dx),var(--dy),var(--dz)) scale(.45) rotateZ(var(--rz));opacity:0}}
+@keyframes a40-orbit{0%{transform:rotate(var(--deg)) translateX(10px) rotateX(0) scale(.25);opacity:0}16%{opacity:1}100%{transform:rotate(calc(var(--deg) + 310deg)) translateX(var(--r)) rotateX(var(--rx)) scale(.45);opacity:0}}
+@keyframes a40-spiral{0%{transform:rotate(var(--deg)) translateX(10px) translateZ(-30px) scale(.2);opacity:0}20%{opacity:1}100%{transform:rotate(calc(var(--deg) + 540deg)) translateX(var(--r)) translateZ(var(--dz)) scale(.5);opacity:0}}
+@keyframes a40-rise{0%{transform:translate3d(0,20px,-20px) scale(.2);opacity:0}20%{opacity:1}100%{transform:translate3d(var(--dx),calc(var(--rise) * -1),var(--dz)) scale(.55) rotateZ(var(--rz));opacity:0}}
+@keyframes a40-fan{0%{transform:rotate(0deg) translateX(0) scale(.15);opacity:0}20%{opacity:1}100%{transform:rotate(var(--rz)) translateX(var(--r)) translateZ(var(--dz)) scale(.55);opacity:0}}
+@keyframes a40-helix{0%{transform:rotate(var(--deg)) translateX(8px) translateY(0) scale(.25);opacity:0}18%{opacity:1}100%{transform:rotate(calc(var(--deg) + 720deg)) translateX(calc(var(--r) * .7)) translateY(var(--dy)) scale(.25);opacity:0}}
+@keyframes a40-swarm{0%{transform:translate3d(0,0,-40px) rotateX(0) rotateY(0) scale(.15);opacity:0}20%{opacity:1}100%{transform:translate3d(var(--dx),var(--dy),var(--dz)) rotateX(var(--rx)) rotateY(var(--ry)) scale(.7);opacity:0}}
+@keyframes a40-fall{0%{transform:translate3d(var(--dx),calc(var(--fall) * -1),var(--dz)) rotateX(var(--rx)) scale(.3);opacity:0}18%{opacity:1}100%{transform:translate3d(calc(var(--dx) * .35),var(--fall),0) rotateY(var(--ry)) scale(.5);opacity:0}}
+@keyframes a40-split{0%{transform:translateX(0) rotateY(0) scale(.2);opacity:0}24%{opacity:1}100%{transform:translate3d(var(--dx),0,var(--dz)) rotateY(var(--ry)) scale(.65);opacity:0}}
+@keyframes a40-mosaic{0%{transform:translate3d(var(--sx),var(--sy),-50px) scale(.15);opacity:0}30%{transform:translate3d(calc(var(--sx) * .3),calc(var(--sy) * .3),20px) scale(1);opacity:1}100%{transform:translate3d(var(--dx),var(--dy),var(--dz)) scale(.25);opacity:0}}
+@keyframes a40-cluster{0%{transform:translate3d(var(--sx),var(--sy),var(--dz)) scale(.2);opacity:0}38%{transform:translate3d(calc(var(--sx) * .15),calc(var(--sy) * .15),40px) scale(1);opacity:1}100%{transform:translate3d(var(--dx),var(--dy),0) scale(.2);opacity:0}}
+@keyframes a40-diagonal{0%{transform:translate3d(calc(var(--sx) * -1),calc(var(--sy) * -1),-20px) rotateZ(-35deg);opacity:0}15%{opacity:1}100%{transform:translate3d(var(--dx),var(--dy),var(--dz)) rotateZ(-35deg);opacity:0}}
+@keyframes a40-wave{0%{transform:translate3d(calc(var(--sx) * -.6),0,-20px) scale(.2);opacity:0}25%{opacity:1}55%{transform:translate3d(0,var(--dy),35px) scale(1)}100%{transform:translate3d(calc(var(--dx) * .8),0,0) scale(.25);opacity:0}}
+@keyframes a40-bloom{0%{transform:rotate(var(--deg)) translateX(2px) scale(.1);opacity:0}25%{opacity:1}100%{transform:rotate(calc(var(--deg) + 150deg)) translateX(calc(var(--r) * .85)) translateZ(var(--dz)) scale(.8);opacity:0}}
+@keyframes a40-grid{0%{transform:translate3d(0,0,-60px) scale(.1);opacity:0}25%{transform:translate3d(calc(var(--dx) * .25),calc(var(--dy) * .25),20px) scale(1);opacity:1}100%{transform:translate3d(var(--dx),var(--dy),var(--dz)) scale(.3);opacity:0}}
+@keyframes a40-stack{0%{transform:translate3d(0,0,-50px) rotateX(72deg) scale(.2);opacity:0}25%{opacity:1}100%{transform:translate3d(calc(var(--dx) * .5),calc(var(--dy) * .4),var(--dz)) rotateX(12deg) rotateY(var(--ry)) scale(.65);opacity:0}}
+@keyframes a40-quantum{0%{transform:translate3d(var(--sx),var(--sy),-20px) scale(.1);opacity:0}22%{opacity:1}48%{transform:translate3d(0,0,55px) scale(1.4)}100%{transform:translate3d(var(--dx),var(--dy),var(--dz)) scale(.1);opacity:0}}
+@keyframes a40-fold{0%{transform:translate3d(0,0,-30px) rotateY(80deg) scale(.2);opacity:0}30%{opacity:1}100%{transform:translate3d(var(--dx),var(--dy),var(--dz)) rotateY(var(--ry)) rotateX(var(--rx)) scale(.65);opacity:0}}
+@keyframes a40-tunnel{0%{transform:translate3d(0,0,-180px) rotateZ(45deg) scale(.15);opacity:0}28%{opacity:1}100%{transform:translate3d(calc(var(--dx) * .45),calc(var(--dy) * .45),160px) rotateZ(calc(45deg + var(--rz))) scale(1.25);opacity:0}}
+@keyframes a40-fountain{0%{transform:translate3d(0,0,0) scale(.3);opacity:0}14%{opacity:1}48%{transform:translate3d(calc(var(--dx) * .35),calc(var(--rise) * -1),var(--dz)) scale(1)}100%{transform:translate3d(var(--dx),calc(var(--rise) * -.15),0) scale(.2);opacity:0}}
+
+.a40-target{cursor:pointer}
+.a40-pulse{animation:a40-target-pulse .65s cubic-bezier(.16,1,.3,1)!important}
+.a40-depth{animation:a40-target-depth .7s cubic-bezier(.16,1,.3,1)!important}
+.a40-glow{animation:a40-target-glow .7s cubic-bezier(.16,1,.3,1)!important}
+.a40-prism{animation:a40-target-prism .72s cubic-bezier(.16,1,.3,1)!important}
+.a40-gold{animation:a40-target-gold .68s cubic-bezier(.16,1,.3,1)!important}
+@keyframes a40-target-pulse{0%,100%{transform:translateZ(0) scale(1)}45%{transform:translateZ(18px) scale(.985)}}
+@keyframes a40-target-depth{0%,100%{transform:perspective(900px) translateZ(0) rotateX(0)}45%{transform:perspective(900px) translateZ(28px) rotateX(1.8deg)}}
+@keyframes a40-target-glow{0%,100%{filter:brightness(1) drop-shadow(0 0 0 transparent)}45%{filter:brightness(1.08) drop-shadow(0 0 18px rgba(112,203,220,.38))}}
+@keyframes a40-target-prism{0%,100%{filter:none;transform:translateZ(0)}40%{filter:drop-shadow(-3px 0 0 rgba(115,207,224,.26)) drop-shadow(3px 0 0 rgba(230,190,98,.24));transform:translateZ(16px)}}
+@keyframes a40-target-gold{0%,100%{filter:brightness(1);transform:scale(1)}45%{filter:brightness(1.1) drop-shadow(0 0 14px rgba(210,181,104,.3));transform:scale(.99)}}
+
+.perf-scrolling .a40-stage,.perf-wheel-active .a40-stage{opacity:.01!important}
+body[data-runtime-pressure="high"] .a40-object:nth-child(n+12){display:none!important}
+@media(max-width:700px){.a40-stage{perspective:820px}.a40-object:nth-child(n+10){display:none!important}.a40-target{cursor:auto}}
+@media(prefers-reduced-motion:reduce){.a40-stage{display:none!important}.a40-target{animation:none!important}}
