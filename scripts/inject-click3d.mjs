@@ -23,6 +23,13 @@ if(!source.includes('/click-advanced20.css')){
   console.log('advanced 20 injector: public styles wired');
 }
 
+if(!source.includes('/click-advanced40.css')){
+  const anchor='<link rel="stylesheet" href="/click-advanced20.css">';
+  if(!source.includes(anchor))throw new Error('advanced 40 injector: advanced 20 style anchor not found');
+  source=source.replace(anchor,`${anchor}<link rel="stylesheet" href="/click-advanced40.css">`);
+  console.log('advanced 40 injector: public styles wired');
+}
+
 if(!source.includes('/click-3d-fx.js')){
   const anchors=[
     '<script src="/luxury-ui.js" defer></script>',
@@ -41,6 +48,13 @@ if(!source.includes('/click-advanced20.js')){
   if(!source.includes(anchor))throw new Error('advanced 20 injector: click 3D runtime anchor not found');
   source=source.replace(anchor,`${anchor}<script src="/click-advanced20.js" defer></script>`);
   console.log('advanced 20 injector: public runtime wired');
+}
+
+if(!source.includes('/click-advanced40.js')){
+  const anchor='<script src="/click-advanced20.js" defer></script>';
+  if(!source.includes(anchor))throw new Error('advanced 40 injector: advanced 20 runtime anchor not found');
+  source=source.replace(anchor,`${anchor}<script src="/click-advanced40.js" defer></script>`);
+  console.log('advanced 40 injector: public runtime wired');
 }
 
 if(source!==original)fs.writeFileSync(path,source);
