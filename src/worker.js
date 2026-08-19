@@ -70,8 +70,8 @@ function securityHeaders(response, request, { admin = false } = {}) {
 
 function enhanceLayout(response, { admin = false } = {}) {
   if (!response.ok) return response;
-  const publicStyles = admin ? '' : '<link rel="stylesheet" href="/cinematic.css">';
-  const publicScripts = admin ? '' : '<script src="/cinematic.js" defer></script>';
+  const publicStyles = admin ? '' : '<link rel="stylesheet" href="/cinematic.css"><link rel="stylesheet" href="/motion-plus.css">';
+  const publicScripts = admin ? '' : '<script src="/cinematic.js" defer></script><script src="/motion-plus.js" defer></script>';
   return new HTMLRewriter()
     .on('head', {
       element(element) {
