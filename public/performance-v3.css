@@ -37,7 +37,13 @@ body[data-runtime-profile="mobile"] .ar-light-sweep{display:none!important}
 body[data-runtime-profile="mobile"] .ar-particles i:nth-child(n+5){display:none!important}
 body[data-runtime-profile="standard"] .ar-particles i:nth-child(n+9){display:none!important}
 
-/* During active scrolling, avoid filters and deep 3D composites until the browser settles. */
+/* During active scrolling, freeze decorative timelines and avoid deep composites until the browser settles. */
+.perf-scrolling .ar-depth-fog,
+.perf-scrolling .ar-particles i,
+.perf-scrolling .ar3d-world *,
+.perf-scrolling .hero-aurora,
+.perf-scrolling .logo-plaque{animation-play-state:paused!important}
+.perf-scrolling .ar-light-sweep{display:none!important}
 .perf-scrolling .ar3d-world{opacity:.18!important;transition:opacity .18s linear!important}
 .perf-scrolling .cinematic-lens{opacity:.18!important}
 .perf-scrolling .cap-card,.perf-scrolling .menu-card,.perf-scrolling .brochure-card{transform:none!important}
