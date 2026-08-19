@@ -1,0 +1,37 @@
+name: Validate Performance V4
+
+on:
+  push:
+    branches:
+      - performance-v4
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Validate optimized runtime
+        run: |
+          set -euo pipefail
+          npm run check
+          grep -q "mobile-lite', dpr:.64" public/experience.js
+          grep -q "full WebGL idle sleep" scripts/optimize-runtime.mjs
+          grep -q "loopRunning=false" public/experience.js
+          grep -q "lowFocus=state.activeSection" public/experience.js
+          grep -q "sectionRect=section.getBoundingClientRect" public/cinematic.js
+          grep -q "h1,h2,.button,.nav-cta,.text-link" public/performance-v3.js
+          npx wrangler deploy --dry-run --outdir .wrangler-dry-run
