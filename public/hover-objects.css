@@ -1,0 +1,66 @@
+:root{--hfx-ease:cubic-bezier(.16,1,.3,1)}
+.hover-fx{--hfx-x:0px;--hfx-y:0px;--hfx-rx:0deg;--hfx-ry:0deg;--hfx-scale:1;transform-style:preserve-3d;backface-visibility:hidden}
+.hover-fx-active{will-change:transform,filter,box-shadow}
+
+/* All motion is dormant until the element owns .hover-fx-active. */
+.hover-fx[data-hover-fx="tilt-left"].hover-fx-active{transform:perspective(900px) translate3d(var(--hfx-x),calc(var(--hfx-y) - 5px),0) rotateX(4deg) rotateY(-7deg) scale(1.014)}
+.hover-fx[data-hover-fx="tilt-right"].hover-fx-active{transform:perspective(900px) translate3d(var(--hfx-x),calc(var(--hfx-y) - 5px),0) rotateX(-3deg) rotateY(7deg) scale(1.014)}
+.hover-fx[data-hover-fx="lift"].hover-fx-active{transform:translate3d(var(--hfx-x),calc(var(--hfx-y) - 6px),0) scale(1.012);box-shadow:0 22px 52px rgba(5,23,35,.12)}
+.hover-fx[data-hover-fx="glow"].hover-fx-active{transform:translate3d(var(--hfx-x),var(--hfx-y),0) scale(1.01);filter:brightness(1.035);box-shadow:0 14px 42px rgba(197,162,83,.18)}
+.hover-fx[data-hover-fx="pulse"].hover-fx-active{animation:hfx-pulse .9s ease-in-out infinite}
+.hover-fx[data-hover-fx="bob"].hover-fx-active{animation:hfx-bob 1.05s ease-in-out infinite}
+.hover-fx[data-hover-fx="swing"].hover-fx-active{animation:hfx-swing .9s ease-in-out infinite alternate}
+.hover-fx[data-hover-fx="float"].hover-fx-active{animation:hfx-float 1.6s ease-in-out infinite}
+.hover-fx[data-hover-fx="magnetic"].hover-fx-active{transform:translate3d(var(--hfx-x),var(--hfx-y),0) scale(1.02);filter:brightness(1.035)}
+.hover-fx[data-hover-fx="shimmer"]{position:relative;overflow:hidden}
+.hover-fx[data-hover-fx="shimmer"]::after{content:"";position:absolute;inset:-30% auto -30% -55%;width:38%;pointer-events:none;opacity:0;background:linear-gradient(108deg,transparent 0%,rgba(255,255,255,.06) 43%,rgba(226,199,123,.22) 50%,rgba(255,255,255,.06) 57%,transparent 100%);transform:skewX(-16deg)}
+.hover-fx[data-hover-fx="shimmer"].hover-fx-active::after{opacity:1;animation:hfx-shimmer .8s ease-out both}
+.hover-fx[data-hover-fx="zoom"] img,.hover-fx[data-hover-fx="zoom"] .menu-card-media,.hover-fx[data-hover-fx="zoom"] .brochure-card-media{transition:transform .34s var(--hfx-ease)}
+.hover-fx[data-hover-fx="zoom"].hover-fx-active img,.hover-fx[data-hover-fx="zoom"].hover-fx-active .menu-card-media,.hover-fx[data-hover-fx="zoom"].hover-fx-active .brochure-card-media{transform:scale(1.055)}
+.hover-fx[data-hover-fx="spin-child"] .icon,.hover-fx[data-hover-fx="spin-child"] .brand-mark,.hover-fx[data-hover-fx="spin-child"] .logo-plaque img{transform-origin:50% 50%}
+.hover-fx[data-hover-fx="spin-child"].hover-fx-active .icon,.hover-fx[data-hover-fx="spin-child"].hover-fx-active .brand-mark,.hover-fx[data-hover-fx="spin-child"].hover-fx-active .logo-plaque img{animation:hfx-spin 1.05s linear infinite}
+.hover-fx[data-hover-fx="orbit-child"].hover-fx-active .icon,.hover-fx[data-hover-fx="orbit-child"].hover-fx-active .number{animation:hfx-orbit 1.3s ease-in-out infinite}
+
+/* Existing word spans receive a tiny interaction response; no new text DOM is created. */
+.hover-fx-active .perf-word,.hover-fx-active .cinematic-word{transition:transform .2s var(--hfx-ease),color .2s ease,text-shadow .2s ease}
+.hover-fx-active .perf-word:nth-child(2n),.hover-fx-active .cinematic-word:nth-child(2n){transform:translateY(-1px)}
+.hover-fx-active .perf-word:nth-child(3n),.hover-fx-active .cinematic-word:nth-child(3n){color:#c5a253;text-shadow:0 8px 20px rgba(197,162,83,.12)}
+
+/* Light component-specific polish. */
+.cap-card.hover-fx-active,.menu-card.hover-fx-active,.brochure-card.hover-fx-active{border-color:rgba(197,162,83,.42)!important}
+.panel-line.hover-fx-active{background:rgba(255,255,255,.035)}
+.process-step.hover-fx-active{background:rgba(197,162,83,.035)}
+.capability-chip.hover-fx-active{border-color:rgba(226,199,123,.58)!important}
+.contact-links a.hover-fx-active{padding-left:7px;padding-right:7px}
+
+@keyframes hfx-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+@keyframes hfx-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes hfx-swing{from{transform:rotate(-2.6deg)}to{transform:rotate(2.6deg)}}
+@keyframes hfx-float{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-7px,8px)}}
+@keyframes hfx-shimmer{from{transform:translateX(0) skewX(-16deg)}to{transform:translateX(420%) skewX(-16deg)}}
+@keyframes hfx-spin{to{transform:rotate(360deg)}}
+@keyframes hfx-orbit{0%,100%{transform:translate3d(0,0,0) rotate(0)}50%{transform:translate3d(4px,-5px,0) rotate(12deg)}}
+
+/* Existing fixed CSS-3D sculpture: pause every object unless pointer proximity activates that exact object. */
+.ar3d-orb,.ar3d-cube,.ar3d-prism,.ar3d-rings,.ar3d-ribbon,.ar3d-route i{animation-play-state:paused!important}
+.ar3d-hover-active,.ar3d-hover-active i{animation-play-state:running!important;will-change:transform,filter,opacity}
+.ar3d-orb.ar3d-hover-active{filter:drop-shadow(0 0 18px rgba(200,170,93,.2))}
+.ar3d-cube.ar3d-hover-active{filter:drop-shadow(0 0 12px rgba(200,170,93,.16));animation-duration:4.8s!important}
+.ar3d-prism.ar3d-hover-active{filter:drop-shadow(0 0 12px rgba(99,160,171,.16));animation-duration:3.5s!important}
+.ar3d-rings.ar3d-hover-active{filter:drop-shadow(0 0 13px rgba(200,170,93,.18));animation-duration:6.2s!important}
+.ar3d-ribbon.ar3d-hover-active{filter:drop-shadow(0 0 10px rgba(99,160,171,.16));animation-duration:2.8s!important}
+.ar3d-route.ar3d-hover-active i{animation-duration:1.45s!important}
+.ar3d-lines.ar3d-hover-active{animation:hfx-line-breathe 1.15s ease-in-out infinite}
+@keyframes hfx-line-breathe{0%,100%{opacity:.24;transform:translateZ(-105px) scale(.98)}50%{opacity:.5;transform:translateZ(-82px) scale(1.025)}}
+
+/* Scrolling always wins over decorative hover work. */
+.perf-scrolling .hover-fx-active,.perf-wheel-active .hover-fx-active{animation-play-state:paused!important;transform:none!important;filter:none!important;box-shadow:none!important}
+.perf-scrolling .ar3d-hover-active,.perf-wheel-active .ar3d-hover-active,.perf-scrolling .ar3d-hover-active i,.perf-wheel-active .ar3d-hover-active i{animation-play-state:paused!important}
+
+@media (hover:none),(pointer:coarse){
+  .hover-fx-active{will-change:auto}
+  .hover-fx[data-hover-fx="pulse"].hover-fx-active,.hover-fx[data-hover-fx="bob"].hover-fx-active,.hover-fx[data-hover-fx="swing"].hover-fx-active,.hover-fx[data-hover-fx="float"].hover-fx-active{animation-iteration-count:1;animation-duration:.42s}
+}
+@media (prefers-reduced-motion:reduce){
+  .hover-fx,.hover-fx *,.ar3d-orb,.ar3d-cube,.ar3d-prism,.ar3d-rings,.ar3d-ribbon,.ar3d-route i,.ar3d-lines{animation:none!important;transition:none!important;transform:none!important;filter:none!important;box-shadow:none!important}
+}
