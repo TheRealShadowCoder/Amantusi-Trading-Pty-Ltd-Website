@@ -66,6 +66,21 @@ test('desktop mouse wheel is accelerated without a smooth-scroll engine', async 
   expect(result.y).toBeGreaterThan(130);
 });
 
+test('desktop precision trackpad deltas are accelerated', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name.includes('mobile'), 'Desktop precision trackpad check');
+  await page.goto('/');
+  await page.waitForFunction(() => window.AmantusiWheel?.precisionEnabled === true);
+  await page.evaluate(() => scrollTo(0, 0));
+  await page.mouse.wheel(0, 16);
+  await page.waitForTimeout(60);
+  const result = await page.evaluate(() => ({
+    y: scrollY,
+    precision: window.AmantusiWheel?.precisionBoostedEvents || 0
+  }));
+  expect(result.precision).toBeGreaterThan(0);
+  expect(result.y).toBeGreaterThan(22);
+});
+
 test('mobile navigation remains usable', async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.includes('mobile'), 'Mobile-only usability check');
   await page.goto('/');

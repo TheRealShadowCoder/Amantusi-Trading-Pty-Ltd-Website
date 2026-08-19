@@ -13,6 +13,8 @@
   let lastWheelAt = 0;
   let wheelIdleTimer = 0;
   let boostedEvents = 0;
+  let precisionBoostedEvents = 0;
+  let wheelBoostedEvents = 0;
 
   function canScrollElement(el, deltaY) {
     if (!(el instanceof HTMLElement)) return false;
@@ -49,7 +51,7 @@
     return 'precision';
   }
 
-  function multiplierFor(delta) {
+  function wheelMultiplier(delta) {
     const magnitude = Math.abs(delta);
     if (magnitude >= 180) return 1.45;
     if (magnitude >= 100) return 1.75;
@@ -57,15 +59,25 @@
     return 2.3;
   }
 
+  function precisionMultiplier(delta) {
+    const magnitude = Math.abs(delta);
+    if (magnitude <= 4) return 2.05;
+    if (magnitude <= 10) return 1.9;
+    if (magnitude <= 20) return 1.75;
+    if (magnitude <= 36) return 1.6;
+    return 1.45;
+  }
+
   function markWheelActive() {
     body.classList.add('perf-wheel-active');
     clearTimeout(wheelIdleTimer);
-    wheelIdleTimer = setTimeout(() => body.classList.remove('perf-wheel-active'), 95);
+    wheelIdleTimer = setTimeout(() => body.classList.remove('perf-wheel-active'), 80);
   }
 
   addEventListener('wheel', event => {
     if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     if (!event.deltaY) return;
+    if (Math.abs(event.deltaX) > Math.abs(event.deltaY) * 1.15) return;
 
     const now = performance.now();
     const elapsed = lastWheelAt ? now - lastWheelAt : 999;
@@ -73,24 +85,30 @@
 
     const delta = normalizedPixels(event);
     if (hasLocalScrollTarget(event.target, delta)) return;
-    if (classify(delta, event, elapsed) !== 'wheel') return;
+
+    const kind = classify(delta, event, elapsed);
+    const multiplier = kind === 'precision' ? precisionMultiplier(delta) : wheelMultiplier(delta);
 
     event.preventDefault();
     markWheelActive();
 
     const viewport = Math.max(1, innerHeight);
-    const maxStep = Math.max(420, viewport * .82);
-    const accelerated = clamp(delta * multiplierFor(delta), -maxStep, maxStep);
+    const maxStep = kind === 'precision' ? Math.max(260, viewport * .58) : Math.max(420, viewport * .82);
+    const accelerated = clamp(delta * multiplier, -maxStep, maxStep);
     const maxY = Math.max(0, root.scrollHeight - viewport);
     const nextY = clamp(scrollY + accelerated, 0, maxY);
 
-    // Numeric scrollTo is immediate and avoids adding a second smoothing engine.
-    scrollTo(0, nextY);
+    scrollTo({ left: 0, top: nextY, behavior: 'instant' });
     boostedEvents += 1;
+    if (kind === 'precision') precisionBoostedEvents += 1;
+    else wheelBoostedEvents += 1;
   }, { passive: false });
 
   window.AmantusiWheel = Object.freeze({
     get boostedEvents() { return boostedEvents; },
-    get enabled() { return true; }
+    get precisionBoostedEvents() { return precisionBoostedEvents; },
+    get wheelBoostedEvents() { return wheelBoostedEvents; },
+    get enabled() { return true; },
+    get precisionEnabled() { return true; }
   });
 })();
