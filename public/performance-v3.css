@@ -60,6 +60,23 @@ body[data-runtime-profile="standard"]:not(.perf-interacting) .cinematic-lens{opa
 .perf-scrolling .cap-card,.perf-scrolling .menu-card,.perf-scrolling .brochure-card{transform:none!important;transition:none!important;filter:none!important}
 .perf-scrolling main section::after{opacity:0!important}
 
+/* Mouse-wheel bursts get an even stricter 95ms frame-time window. */
+.perf-wheel-active .ar-depth-fog,
+.perf-wheel-active .ar-particles i,
+.perf-wheel-active .ar3d-world *,
+.perf-wheel-active .hero-aurora,
+.perf-wheel-active .logo-plaque,
+.perf-wheel-active footer::after,
+.perf-wheel-active .site-footer::after{animation-play-state:paused!important}
+.perf-wheel-active .ar-light-sweep,
+.perf-wheel-active .cinematic-lens{display:none!important}
+.perf-wheel-active .ar3d-world{opacity:.06!important;transition:none!important}
+.perf-wheel-active .cap-card,
+.perf-wheel-active .menu-card,
+.perf-wheel-active .brochure-card,
+.perf-wheel-active .motion-tactile{transform:none!important;transition:none!important;filter:none!important}
+.perf-wheel-active main section::after{opacity:0!important}
+
 /* Word interaction uses compositor-only transforms and is intentionally restrained. */
 .perf-word-host{--perf-word-lift:.1em}
 .perf-word{display:inline-block;backface-visibility:hidden;transform-origin:50% 78%;transition:transform .24s var(--perf-ease),opacity .2s ease,color .22s ease,text-shadow .22s ease}

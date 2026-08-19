@@ -109,3 +109,11 @@ patchFile('public/cinematic.js', [
     'cached section pointer geometry'
   ]
 ]);
+
+patchFile('src/worker.js', [
+  [
+    /<script src="\/performance-v3\.js" defer><\/script>(?!<script src="\/wheel-fast\.js")/,
+    '<script src="/performance-v3.js" defer></script><script src="/wheel-fast.js" defer></script>',
+    'fast desktop mouse-wheel runtime'
+  ]
+]);

@@ -53,6 +53,19 @@ test('responsive performance governor and word interactions initialize', async (
   expect(state.form).toBeTruthy();
 });
 
+test('desktop mouse wheel is accelerated without a smooth-scroll engine', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name.includes('mobile'), 'Desktop fine-pointer wheel check');
+  await page.goto('/');
+  await page.waitForFunction(() => window.AmantusiWheel?.enabled === true);
+  await expect(page.locator('script[src="/wheel-fast.js"]')).toHaveCount(1);
+  await page.evaluate(() => scrollTo(0, 0));
+  await page.mouse.wheel(0, 100);
+  await page.waitForTimeout(80);
+  const result = await page.evaluate(() => ({ y: scrollY, boosted: window.AmantusiWheel?.boostedEvents || 0 }));
+  expect(result.boosted).toBeGreaterThan(0);
+  expect(result.y).toBeGreaterThan(130);
+});
+
 test('mobile navigation remains usable', async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.includes('mobile'), 'Mobile-only usability check');
   await page.goto('/');
@@ -74,6 +87,7 @@ test('admin exposes passkey and operations surfaces without indexing', async ({ 
   await expect(page.locator('script[src="/animation-registry.js"]')).toHaveCount(0);
   await expect(page.locator('script[src="/animation-3d-overlay.js"]')).toHaveCount(0);
   await expect(page.locator('script[src="/performance-v3.js"]')).toHaveCount(0);
+  await expect(page.locator('script[src="/wheel-fast.js"]')).toHaveCount(0);
   expect(await page.evaluate(() => Boolean(window.AmantusiAnimations))).toBeFalsy();
 });
 
