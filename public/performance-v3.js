@@ -165,10 +165,18 @@
     if(event.pointerType!=='touch'&&event.pointerType!=='pen')return;
     const word=event.target instanceof Element?event.target.closest('.perf-word'):null;
     if(!word)return;
-    word.classList.remove('is-word-tap');
-    void word.offsetWidth;
-    word.classList.add('is-word-tap');
-    setTimeout(()=>word.classList.remove('is-word-tap'),440);
+    if(typeof word.animate==='function'){
+      word.getAnimations?.().forEach(animation=>{if(animation.id==='perf-word-tap')animation.cancel()});
+      const animation=word.animate([
+        {transform:'translate3d(0,0,0) scale(1)'},
+        {transform:'translate3d(0,-.13em,0) scale(1.07)',offset:.42},
+        {transform:'translate3d(0,0,0) scale(1)'}
+      ],{duration:360,easing:'cubic-bezier(.16,1,.3,1)',composite:'replace'});
+      animation.id='perf-word-tap';
+    }else{
+      word.classList.add('is-word-tap');
+      setTimeout(()=>word.classList.remove('is-word-tap'),440);
+    }
   },{passive:true});
 
   document.addEventListener('focusin',event=>{
