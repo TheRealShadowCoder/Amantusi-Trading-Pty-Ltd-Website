@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - animation-registry-500
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
