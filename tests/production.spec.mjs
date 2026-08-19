@@ -12,6 +12,29 @@ test('homepage is indexable, branded and has server-side RFQ capture', async ({ 
   await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(2);
 });
 
+test('500-effect animation registry initializes without replacing page content', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForFunction(() => window.AmantusiAnimations?.count === 500);
+  const snapshot = await page.evaluate(() => ({
+    count: window.AmantusiAnimations.count,
+    activeCount: window.AmantusiAnimations.activeCount,
+    tier: window.AmantusiAnimations.tier,
+    hero: document.querySelector('h1')?.textContent || '',
+    form: Boolean(document.querySelector('#quote-form')),
+    registryLayer: Boolean(document.querySelector('.ar-overlay')),
+    stage3d: Boolean(document.querySelector('.ar3d-stage'))
+  }));
+  expect(snapshot.count).toBe(500);
+  expect(snapshot.activeCount).toBeGreaterThan(0);
+  expect(['safe','lite','balanced','high','ultra']).toContain(snapshot.tier);
+  expect(snapshot.hero).toMatch(/Complex requirements/i);
+  expect(snapshot.form).toBeTruthy();
+  expect(snapshot.registryLayer).toBeTruthy();
+  expect(snapshot.stage3d).toBeTruthy();
+  await expect(page.locator('script[src="/animation-registry.js"]')).toHaveCount(1);
+  await expect(page.locator('script[src="/animation-3d-overlay.js"]')).toHaveCount(1);
+});
+
 test('mobile navigation remains usable', async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.includes('mobile'), 'Mobile-only usability check');
   await page.goto('/');
@@ -30,6 +53,9 @@ test('admin exposes passkey and operations surfaces without indexing', async ({ 
   await expect(page.locator('.admin-nav [data-panel-target="suppliers-panel"]')).toHaveCount(1);
   await expect(page.locator('.admin-nav [data-panel-target="products-panel"]')).toHaveCount(1);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/i);
+  await expect(page.locator('script[src="/animation-registry.js"]')).toHaveCount(0);
+  await expect(page.locator('script[src="/animation-3d-overlay.js"]')).toHaveCount(0);
+  expect(await page.evaluate(() => Boolean(window.AmantusiAnimations))).toBeFalsy();
 });
 
 test('technical SEO endpoints are healthy', async ({ request }) => {
