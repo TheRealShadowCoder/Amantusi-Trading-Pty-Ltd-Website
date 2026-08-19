@@ -88,7 +88,9 @@
     particle.style.setProperty('--delay',`${rand(0,75)}ms`);
     particle.style.setProperty('--particle-color',index%3===0?'#91c9d5':index%2===0?'#f0dca0':'#d2b568');
     const size=rand(2.2,5.5);
-    particle.style.width=`${size}px`;particle.style.height=`${size}px`;particle.style.margin=`${-size/2}px`;
+    particle.style.width=`${size}px`;
+    particle.style.height=`${size}px`;
+    particle.style.margin=`${-size/2}px`;
     burst.appendChild(particle);
   }
   function addNode(burst,index,total){
@@ -104,8 +106,10 @@
   }
   function addOrbit(burst,index,total){
     const orb=document.createElement('i');
+    const start=(360/Math.max(1,total))*index+rand(-14,14);
     orb.className='c3d-orbit';
-    orb.style.setProperty('--a',`${(360/Math.max(1,total))*index+rand(-14,14)}deg`);
+    orb.style.setProperty('--a-start',`${start}deg`);
+    orb.style.setProperty('--a-end',`${start+250}deg`);
     orb.style.setProperty('--radius',`${rand(54,116)}px`);
     orb.style.setProperty('--delay',`${index*18}ms`);
     burst.appendChild(orb);
@@ -137,13 +141,13 @@
   function burstAt(x,y,target,effect=effectFor(target)){
     if(body.classList.contains('perf-scrolling')||body.classList.contains('perf-wheel-active'))return;
     const now=performance.now();
-    if(now-lastBurst<coarse?110:70)return;
+    if(now-lastBurst<(coarse?110:70))return;
     lastBurst=now;
 
     const tier=getTier();
     const base=profiles[tier]||profiles.balanced;
     const pressured=body.dataset.runtimePressure==='high';
-    const factor=pressured?.58:1;
+    const factor=pressured ? .58 : 1;
     const config={
       particles:Math.max(4,Math.round(base.particles*factor)),
       shards:Math.max(1,Math.round(base.shards*factor)),
@@ -174,12 +178,14 @@
     for(let i=0;i<config.orbits;i++)addOrbit(burst,i,config.orbits);
     for(let i=0;i<config.lines;i++)addLine(burst,i,config.lines);
 
-    stage.appendChild(burst);active.push(burst);
+    stage.appendChild(burst);
+    active.push(burst);
     target.classList.remove('c3d-target-pulse');
     requestAnimationFrame(()=>target.classList.add('c3d-target-pulse'));
     setTimeout(()=>target.classList.remove('c3d-target-pulse'),500);
     setTimeout(()=>{
-      const index=active.indexOf(burst);if(index>=0)active.splice(index,1);
+      const index=active.indexOf(burst);
+      if(index>=0)active.splice(index,1);
       burst.remove();
     },1350);
 
@@ -193,8 +199,13 @@
     const target=event.target.closest(targetSelector);
     if(!target||target.closest('.admin-shell,.admin-app,[data-admin-root]'))return;
     if(target.matches('input,textarea,select,option'))return;
-    const x=Number.isFinite(event.clientX)&&event.clientX>0?event.clientX:(target.getBoundingClientRect().left+target.getBoundingClientRect().width/2);
-    const y=Number.isFinite(event.clientY)&&event.clientY>0?event.clientY:(target.getBoundingClientRect().top+target.getBoundingClientRect().height/2);
+    let x=event.clientX;
+    let y=event.clientY;
+    if(!Number.isFinite(x)||!Number.isFinite(y)||x<=0||y<=0){
+      const rect=target.getBoundingClientRect();
+      x=rect.left+rect.width/2;
+      y=rect.top+rect.height/2;
+    }
     burstAt(x,y,target);
   },{passive:true});
 
