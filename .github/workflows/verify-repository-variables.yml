@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/verify-repository-variables.yml'
+      - '.github/workflows/deploy-gcp-overflow.yml'
   workflow_dispatch:
 
 permissions:

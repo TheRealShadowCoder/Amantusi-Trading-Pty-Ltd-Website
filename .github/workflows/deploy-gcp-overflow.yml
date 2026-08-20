@@ -5,6 +5,7 @@ on:
     paths:
       - 'gcp/cloud-run-overflow/**'
       - '.github/workflows/deploy-gcp-overflow.yml'
+      - '.github/workflows/verify-repository-variables.yml'
   push:
     branches:
       - main
@@ -21,23 +22,50 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  GCP_PROJECT_ID: amantusi-trading-pty-ltd
-  GCP_PROJECT_NUMBER: '1076590922680'
-  GCP_REGION: us-central1
-  GCP_ARTIFACT_REPOSITORY: amantusi-containers
-  GCP_CLOUD_RUN_SERVICE: amantusi-overflow
-  GCP_RUNTIME_SERVICE_ACCOUNT: amantusi-overflow-runtime@amantusi-trading-pty-ltd.iam.gserviceaccount.com
-  GCP_SERVICE_ACCOUNT: amantusi-github-deployer@amantusi-trading-pty-ltd.iam.gserviceaccount.com
-  GCP_WORKLOAD_IDENTITY_PROVIDER: projects/1076590922680/locations/global/workloadIdentityPools/amantusi-github-pool/providers/amantusi-github
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GCP_PROJECT_NUMBER: ${{ vars.GCP_PROJECT_NUMBER }}
+  GCP_REGION: ${{ vars.GCP_REGION }}
+  GCP_ARTIFACT_REPOSITORY: ${{ vars.GCP_ARTIFACT_REPOSITORY }}
+  GCP_CLOUD_RUN_SERVICE: ${{ vars.GCP_CLOUD_RUN_SERVICE }}
+  GCP_RUNTIME_SERVICE_ACCOUNT: ${{ vars.GCP_RUNTIME_SERVICE_ACCOUNT }}
+  GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+  GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+  GCP_CLOUD_RUN_URL: ${{ vars.GCP_CLOUD_RUN_URL }}
 
 jobs:
   validate:
-    name: Validate overflow container
+    name: Validate overflow container and repository variables
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Verify required repository variables are present
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            GCP_PROJECT_ID GCP_PROJECT_NUMBER GCP_REGION GCP_ARTIFACT_REPOSITORY
+            GCP_CLOUD_RUN_SERVICE GCP_RUNTIME_SERVICE_ACCOUNT GCP_SERVICE_ACCOUNT
+            GCP_WORKLOAD_IDENTITY_PROVIDER GCP_CLOUD_RUN_URL
+          )
+          for name in "${required[@]}"; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is missing from GitHub repository Variables."
+              exit 1
+            fi
+          done
+          test "$GCP_PROJECT_ID" = "amantusi-trading-pty-ltd"
+          test "$GCP_PROJECT_NUMBER" = "1076590922680"
+          test "$GCP_REGION" = "us-central1"
+          test "$GCP_ARTIFACT_REPOSITORY" = "amantusi-containers"
+          test "$GCP_CLOUD_RUN_SERVICE" = "amantusi-overflow"
+          test "$GCP_RUNTIME_SERVICE_ACCOUNT" = "amantusi-overflow-runtime@amantusi-trading-pty-ltd.iam.gserviceaccount.com"
+          test "$GCP_SERVICE_ACCOUNT" = "amantusi-github-deployer@amantusi-trading-pty-ltd.iam.gserviceaccount.com"
+          test "$GCP_WORKLOAD_IDENTITY_PROVIDER" = "projects/1076590922680/locations/global/workloadIdentityPools/amantusi-github-pool/providers/amantusi-github"
+          test "$GCP_CLOUD_RUN_URL" = "https://amantusi-overflow-w5cotgahzq-uc.a.run.app"
+          echo "Repository variables match the provisioned Amantusi GCP infrastructure."
 
       - name: Validate Node runtime
         run: node --check gcp/cloud-run-overflow/server.mjs
@@ -130,6 +158,7 @@ jobs:
           test "$MEMORY" = "256Mi"
           test "$CPU" = "1000m" -o "$CPU" = "1"
           URL="$(echo "$JSON" | jq -r '.status.url')"
+          test "$URL" = "$GCP_CLOUD_RUN_URL"
           echo "Cloud Run service: $URL"
           echo "Verified: private IAM policy, min=0, max=1, 1 vCPU, 256MiB, gen1 deployment policy."
 
