@@ -7,33 +7,52 @@
 
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const INTERVAL=9000;
-  const TRANSITION=reduced?360:(matchMedia('(max-width:760px)').matches?1220:1820);
-  const services=[
-    {id:1,label:'General Procurement & Materials Supply'},
-    {id:2,label:'Warehouse Stockholding & Distribution'},
-    {id:3,label:'Order Fulfilment & Supply Operations'},
-    {id:4,label:'Bulk Inventory & Institutional Supply'},
-    {id:5,label:'Logistics Coordination & Procurement Administration'},
-    {id:6,label:'Dispatch, Documentation & Delivery Support'},
-    {id:7,label:'Cleaning & Hygiene Supplies'},
-    {id:8,label:'Cleaning Consumables & Facility Supply'},
-    {id:9,label:'Fresh Catering & Food Service'},
-    {id:10,label:'Corporate & Event Catering'}
+  const TRANSITION=reduced?320:(matchMedia('(max-width:760px)').matches?1050:1480);
+  const LOGO='/assets/amantusi-logo.svg';
+  const ANIMATIONS_PER_SCENE=5;
+  const scenes=[
+    {id:1,label:'Amantusi Signature — Gold Horizon'},
+    {id:2,label:'Amantusi Signature — Executive Left'},
+    {id:3,label:'Amantusi Signature — Central Crest'},
+    {id:4,label:'Amantusi Signature — Golden Diagonal'},
+    {id:5,label:'Amantusi Signature — Procurement Grid'},
+    {id:6,label:'Amantusi Signature — Institutional Halo'},
+    {id:7,label:'Amantusi Signature — Distribution Orbit'},
+    {id:8,label:'Amantusi Signature — Corporate Prism'},
+    {id:9,label:'Amantusi Signature — Monumental Mark'},
+    {id:10,label:'Amantusi Signature — Closing Gold Arc'}
   ];
-  const transitions=['zoom','lateral','iris','diagonal','focus'];
   const hostSelectors=['.hero','#about','#capabilities','.government','#process','#quote','.contact-strip','footer'];
   const darkSelectors='.hero,.government,.contact-strip,footer';
   const hosts=[];
   let current=0,timer=0,transitioning=false,totalTransitions=0;
 
-  function url(index){return `/service-bg/${services[index].id}`;}
-
-  function preload(index){
+  function preloadLogo(){
     const img=new Image();
     img.decoding='async';
-    img.fetchPriority='low';
-    img.src=url(index);
-    return img;
+    img.fetchPriority='high';
+    img.src=LOGO;
+  }
+
+  function makeFrame(kind){
+    const frame=document.createElement('div');
+    frame.className=`svc-cinema-frame ${kind}`;
+    frame.setAttribute('aria-hidden','true');
+    frame.innerHTML=[
+      '<i class="svc-logo-main"></i>',
+      '<i class="svc-logo-echo-a"></i>',
+      '<i class="svc-logo-echo-b"></i>',
+      '<i class="svc-logo-rings"></i>',
+      '<i class="svc-logo-light"></i>'
+    ].join('');
+    return frame;
+  }
+
+  function applyScene(frame,index){
+    for(let i=1;i<=scenes.length;i++)frame.classList.remove(`scene-${i}`);
+    frame.classList.add(`scene-${scenes[index].id}`);
+    frame.dataset.scene=String(scenes[index].id);
+    frame.dataset.animations=String(ANIMATIONS_PER_SCENE);
   }
 
   function buildHost(host,index){
@@ -44,66 +63,70 @@
     host.dataset.svcHost=String(index+1);
 
     const stage=document.createElement('div');
-    stage.className='svc-cinema-bg';
+    stage.className='svc-cinema-bg svc-logo-only';
     stage.setAttribute('aria-hidden','true');
 
-    const currentFrame=document.createElement('div');
-    currentFrame.className='svc-cinema-frame is-current';
-    currentFrame.style.backgroundImage=`url("${url(current)}")`;
-
-    const nextFrame=document.createElement('div');
-    nextFrame.className='svc-cinema-frame is-next';
+    const currentFrame=makeFrame('is-current');
+    const nextFrame=makeFrame('is-next');
+    applyScene(currentFrame,current);
 
     const mask=document.createElement('div');mask.className='svc-cinema-mask';
     const grain=document.createElement('div');grain.className='svc-cinema-grain';
-    const sweep=document.createElement('div');sweep.className='svc-cinema-sweep';
-    stage.append(currentFrame,nextFrame,mask,grain,sweep);
+    stage.append(currentFrame,nextFrame,mask,grain);
     host.prepend(stage);
     hosts.push({host,stage,currentFrame,nextFrame});
   }
 
   function setMeta(index){
+    body.dataset.serviceCinemaReady='1';
     body.dataset.serviceBackgroundIndex=String(index+1);
-    body.dataset.serviceBackgroundLabel=services[index].label;
+    body.dataset.serviceBackgroundLabel=scenes[index].label;
+    body.dataset.serviceBackgroundSource='amantusi-logo-only';
+    body.dataset.serviceBackgroundAnimations=String(ANIMATIONS_PER_SCENE);
     document.documentElement.style.setProperty('--service-background-index',String(index+1));
   }
 
   function schedule(){
     clearTimeout(timer);
-    if(document.hidden)return;
+    if(document.hidden||reduced)return;
     timer=setTimeout(()=>advance(),INTERVAL);
   }
 
   function advance(forceIndex){
     if(transitioning||!hosts.length)return false;
-    const next=Number.isInteger(forceIndex)?((forceIndex%services.length)+services.length)%services.length:(current+1)%services.length;
+    const next=Number.isInteger(forceIndex)?((forceIndex%scenes.length)+scenes.length)%scenes.length:(current+1)%scenes.length;
     if(next===current){schedule();return false;}
     transitioning=true;
-    const transition=transitions[totalTransitions%transitions.length];
-    const nextUrl=url(next);
-    preload((next+1)%services.length);
 
     hosts.forEach(({host,nextFrame})=>{
-      nextFrame.style.backgroundImage=`url("${nextUrl}")`;
-      host.dataset.svcTransition=transition;
+      applyScene(nextFrame,next);
+      host.dataset.svcTransition=`scene-${scenes[next].id}`;
       void host.offsetWidth;
       host.classList.add('is-transitioning');
     });
 
     window.setTimeout(()=>{
       hosts.forEach(entry=>{
-        entry.currentFrame.style.backgroundImage=`url("${nextUrl}")`;
+        applyScene(entry.currentFrame,next);
         entry.currentFrame.classList.remove('is-current');
         void entry.currentFrame.offsetWidth;
         entry.currentFrame.classList.add('is-current');
-        entry.nextFrame.style.backgroundImage='none';
+        entry.nextFrame.className='svc-cinema-frame is-next';
+        entry.nextFrame.removeAttribute('data-scene');
+        entry.nextFrame.removeAttribute('data-animations');
         entry.host.classList.remove('is-transitioning');
       });
       current=next;
       totalTransitions++;
       setMeta(current);
       transitioning=false;
-      document.dispatchEvent(new CustomEvent('amantusi:service-background',{detail:{index:current,label:services[current].label,transition}}));
+      document.dispatchEvent(new CustomEvent('amantusi:service-background',{detail:{
+        index:current,
+        label:scenes[current].label,
+        source:'amantusi-logo-only',
+        animations:ANIMATIONS_PER_SCENE,
+        cycle:totalTransitions
+      }}));
       schedule();
     },TRANSITION);
     return true;
@@ -115,10 +138,8 @@
   });
   if(!hosts.length)return;
 
-  body.dataset.serviceCinemaReady='1';
+  preloadLogo();
   setMeta(current);
-  preload(0);
-  preload(1);
   schedule();
 
   document.addEventListener('visibilitychange',()=>{
@@ -131,10 +152,13 @@
     ready:true,
     interval:INTERVAL,
     transitionMs:TRANSITION,
-    count:services.length,
-    services:Object.freeze(services.map(({id,label})=>Object.freeze({id,label}))),
+    count:scenes.length,
+    animationsPerScene:ANIMATIONS_PER_SCENE,
+    source:'amantusi-logo-only',
+    logo:LOGO,
+    scenes:Object.freeze(scenes.map(({id,label})=>Object.freeze({id,label}))),
     get currentIndex(){return current},
-    get currentLabel(){return services[current].label},
+    get currentLabel(){return scenes[current].label},
     get transitioning(){return transitioning},
     get hosts(){return hosts.length},
     advance(){return advance()},
