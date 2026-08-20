@@ -99,15 +99,25 @@ jobs:
             RATIO=null
           fi
 
+          # Preserve the administrator's manual override inside the same KV record.
+          # This adds one KV read per hourly governor run instead of one extra KV read per Worker isolate.
+          EXISTING_STATE="$(npx wrangler kv key get --binding=CMS_KV 'quota:state' --remote 2>/dev/null || true)"
+          MANUAL_OVERRIDE="$(printf '%s' "$EXISTING_STATE" | jq -c 'if type == "object" then (.manualOverride // null) else null end' 2>/dev/null || printf 'null')"
+          if ! printf '%s' "$MANUAL_OVERRIDE" | jq -e '(. == null) or (type == "object" and (.mode | type == "string"))' >/dev/null 2>&1; then
+            MANUAL_OVERRIDE=null
+          fi
+
           STATE="$(jq -cn \
             --arg mode "$MODE" \
             --arg source "$SOURCE" \
             --arg updatedAt "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
             --argjson workerRequests "$REQUESTS" \
             --arg ratio "$RATIO" \
-            '{mode:$mode,source:$source,updatedAt:$updatedAt,workerRequests:$workerRequests,workerRequestRatio:(if $ratio=="null" then null else ($ratio|tonumber) end)}')"
+            --argjson manualOverride "$MANUAL_OVERRIDE" \
+            '{mode:$mode,source:$source,updatedAt:$updatedAt,workerRequests:$workerRequests,workerRequestRatio:(if $ratio=="null" then null else ($ratio|tonumber) end),manualOverride:$manualOverride}')"
 
           echo "Mode: $MODE; Worker requests today: $REQUESTS"
+          if [ "$MANUAL_OVERRIDE" != "null" ]; then echo "Manual override preserved."; fi
           echo "state=$STATE" >> "$GITHUB_OUTPUT"
 
       - name: Store governor state in remote KV
