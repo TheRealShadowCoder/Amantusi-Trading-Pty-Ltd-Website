@@ -1,0 +1,145 @@
+name: Deploy Amantusi GCP Overflow
+
+on:
+  pull_request:
+    paths:
+      - 'gcp/cloud-run-overflow/**'
+      - '.github/workflows/deploy-gcp-overflow.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'gcp/cloud-run-overflow/**'
+      - '.github/workflows/deploy-gcp-overflow.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: amantusi-gcp-overflow-production
+  cancel-in-progress: true
+
+env:
+  GCP_PROJECT_ID: amantusi-trading-pty-ltd
+  GCP_PROJECT_NUMBER: '1076590922680'
+  GCP_REGION: us-central1
+  GCP_ARTIFACT_REPOSITORY: amantusi-containers
+  GCP_CLOUD_RUN_SERVICE: amantusi-overflow
+  GCP_RUNTIME_SERVICE_ACCOUNT: amantusi-overflow-runtime@amantusi-trading-pty-ltd.iam.gserviceaccount.com
+  GCP_SERVICE_ACCOUNT: amantusi-github-deployer@amantusi-trading-pty-ltd.iam.gserviceaccount.com
+  GCP_WORKLOAD_IDENTITY_PROVIDER: projects/1076590922680/locations/global/workloadIdentityPools/amantusi-github-pool/providers/amantusi-github
+
+jobs:
+  validate:
+    name: Validate overflow container
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Node runtime
+        run: node --check gcp/cloud-run-overflow/server.mjs
+
+      - name: Build container without publishing
+        run: docker build --pull --tag amantusi-overflow:ci gcp/cloud-run-overflow
+
+  deploy:
+    name: Deploy private cost-capped service
+    needs: validate
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud using OIDC
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          version: '>= 416.0.0'
+
+      - name: Verify keyless identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          ACTIVE="$(gcloud auth list --filter=status:ACTIVE --format='value(account)' | head -n1)"
+          test "$ACTIVE" = "$GCP_SERVICE_ACCOUNT"
+          echo "Authenticated as $ACTIVE"
+
+      - name: Configure Artifact Registry authentication
+        run: gcloud auth configure-docker "${GCP_REGION}-docker.pkg.dev" --quiet
+
+      - name: Build and push immutable image
+        id: image
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${GCP_ARTIFACT_REPOSITORY}/${GCP_CLOUD_RUN_SERVICE}:${GITHUB_SHA}"
+          docker build --pull --tag "$IMAGE" gcp/cloud-run-overflow
+          docker push "$IMAGE"
+          echo "uri=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy with hard cost guardrails
+        shell: bash
+        run: |
+          set -euo pipefail
+          gcloud run deploy "$GCP_CLOUD_RUN_SERVICE" \
+            --project="$GCP_PROJECT_ID" \
+            --region="$GCP_REGION" \
+            --image="${{ steps.image.outputs.uri }}" \
+            --service-account="$GCP_RUNTIME_SERVICE_ACCOUNT" \
+            --no-allow-unauthenticated \
+            --ingress=all \
+            --min=0 \
+            --max=1 \
+            --concurrency=80 \
+            --cpu=1 \
+            --memory=256Mi \
+            --timeout=30s \
+            --execution-environment=gen1 \
+            --labels="app=amantusi-overflow,cost-profile=free-tier-guarded,managed-by=github-actions" \
+            --quiet
+
+      - name: Verify deployed guardrails
+        shell: bash
+        run: |
+          set -euo pipefail
+          JSON="$(gcloud run services describe "$GCP_CLOUD_RUN_SERVICE" --project="$GCP_PROJECT_ID" --region="$GCP_REGION" --format=json)"
+          echo "$JSON" | jq -e '.metadata.annotations["run.googleapis.com/ingress"] == "all" or .metadata.annotations["run.googleapis.com/ingress"] == null' >/dev/null
+          echo "$JSON" | jq -e '.spec.template.metadata.annotations["autoscaling.knative.dev/maxScale"] == "1"' >/dev/null
+          MIN="$(echo "$JSON" | jq -r '.spec.template.metadata.annotations["autoscaling.knative.dev/minScale"] // "0"')"
+          test "$MIN" = "0"
+          MEMORY="$(echo "$JSON" | jq -r '.spec.template.spec.containers[0].resources.limits.memory')"
+          CPU="$(echo "$JSON" | jq -r '.spec.template.spec.containers[0].resources.limits.cpu')"
+          test "$MEMORY" = "256Mi"
+          test "$CPU" = "1000m" -o "$CPU" = "1"
+          URL="$(echo "$JSON" | jq -r '.status.url')"
+          echo "Cloud Run service: $URL"
+          echo "Verified: private IAM policy, min=0, max=1, 1 vCPU, 256MiB, gen1 deployment policy."
+
+      - name: Confirm service is not publicly invokable
+        shell: bash
+        run: |
+          set -euo pipefail
+          POLICY="$(gcloud run services get-iam-policy "$GCP_CLOUD_RUN_SERVICE" --project="$GCP_PROJECT_ID" --region="$GCP_REGION" --format=json)"
+          if echo "$POLICY" | jq -e '.bindings[]? | select(.role == "roles/run.invoker") | .members[]? | select(. == "allUsers" or . == "allAuthenticatedUsers")' >/dev/null; then
+            echo "ERROR: Cloud Run service is publicly invokable."
+            exit 1
+          fi
+          echo "Verified: no public Cloud Run invoker binding."
