@@ -1,0 +1,57 @@
+name: Validate Logo Cinema Backgrounds
+
+on:
+  push:
+    branches: [logo-cinema-five-animations]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Validate logo-only cinematic backgrounds
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run check
+          grep -q "ANIMATIONS_PER_SCENE=5" public/service-background.js
+          grep -q "INTERVAL=9000" public/service-background.js
+          grep -q "amantusi-logo-only" public/service-background.js
+          grep -q "assets/amantusi-logo.svg" public/service-background.css
+          grep -q "svc10Light" public/service-background.css
+          if grep -R "images.pexels.com\|SERVICE_BACKGROUND_IMAGES\|serviceBackgroundImage" scripts/inject-service-background.mjs src/worker.js public/service-background.js public/service-background.css; then
+            echo "Legacy external photo background code is still present" >&2
+            exit 1
+          fi
+          if grep -q "path.startsWith('/service-bg/')" src/worker.js; then
+            echo "Legacy service photo route is still present" >&2
+            exit 1
+          fi
+          node - <<'NODE'
+          const fs=require('fs');
+          const js=fs.readFileSync('public/service-background.js','utf8');
+          const css=fs.readFileSync('public/service-background.css','utf8');
+          const scenes=[...js.matchAll(/\{id:(\d+),label:'Amantusi Signature/g)].map(m=>Number(m[1]));
+          if(scenes.length!==10||scenes.some((id,i)=>id!==i+1)) throw new Error(`expected scenes 1..10, got ${scenes}`);
+          for(let scene=1;scene<=10;scene++){
+            for(const suffix of ['Main','EchoA','EchoB','Rings','Light']){
+              if(!css.includes(`svc${scene}${suffix}`)) throw new Error(`missing animation svc${scene}${suffix}`);
+            }
+          }
+          const layerNames=['svc-logo-main','svc-logo-echo-a','svc-logo-echo-b','svc-logo-rings','svc-logo-light'];
+          for(const layer of layerNames) if(!js.includes(layer)) throw new Error(`missing visual layer ${layer}`);
+          NODE
+          npx wrangler deploy --dry-run --outdir .wrangler-dry-run
