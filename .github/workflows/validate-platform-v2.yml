@@ -27,5 +27,5 @@ jobs:
         run: |
           set -euo pipefail
           npm run check
-          node --check gcp/cloud-run-overflow/server.mjs
+          bash -n scripts/setup-gcp-cloudflare-wif.sh
           npx wrangler deploy --dry-run --outdir .wrangler-dry-run

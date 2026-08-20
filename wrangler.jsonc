@@ -4,12 +4,24 @@
   "account_id": "3b4dba2eec2c69b95eae20d70941e9b2",
   "compatibility_date": "2026-08-16",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "./src/worker.js",
+  "main": "./src/worker-v4.js",
   "workers_dev": true,
   "preview_urls": false,
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1
+  },
+  "vars": {
+    "QUOTA_MODE_OVERRIDE": "AUTO",
+    "GCP_OVERFLOW_ENABLED": "true",
+    "GCP_PROJECT_NUMBER": "1076590922680",
+    "GCP_WIF_POOL": "amantusi-cloudflare-pool",
+    "GCP_WIF_PROVIDER": "amantusi-cloudflare",
+    "GCP_WIF_ISSUER": "https://amantusi-trading-pty-ltd-website.dolomite-computer.workers.dev/oidc/cloudflare",
+    "GCP_WIF_TOKEN_AUDIENCE": "amantusi-cloudflare-worker",
+    "GCP_WIF_KEY_ID": "amantusi-cloudflare-1",
+    "GCP_INVOKER_SERVICE_ACCOUNT": "amantusi-cloudflare-invoker@amantusi-trading-pty-ltd.iam.gserviceaccount.com",
+    "GCP_CLOUD_RUN_URL": "https://amantusi-overflow-w5cotgahzq-uc.a.run.app"
   },
   "assets": {
     "directory": "./public",

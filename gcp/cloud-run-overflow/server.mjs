@@ -23,9 +23,11 @@ async function readBody(req){
 }
 
 const server=http.createServer(async(req,res)=>{
-  if(req.method==='GET'&&req.url==='/health')return json(res,200,{ok:true,provider:'google-cloud-run',mode:'overflow',version:1});
+  if(req.method==='GET'&&req.url==='/health')return json(res,200,{ok:true,provider:'google-cloud-run',mode:'overflow',version:2,iamProtected:true});
   if(req.method!=='POST'||req.url!=='/task')return json(res,404,{error:'not-found'});
-  if(!secret||!safeEqual(req.headers['x-amantusi-overflow-secret'],secret))return json(res,401,{error:'unauthorized'});
+  // Cloud Run IAM is the primary authentication boundary. If an application-level
+  // shared secret is configured, require it as an additional defense-in-depth layer.
+  if(secret&&!safeEqual(req.headers['x-amantusi-overflow-secret'],secret))return json(res,401,{error:'unauthorized'});
   try{
     const body=await readBody(req);
     const type=String(body.type||'');

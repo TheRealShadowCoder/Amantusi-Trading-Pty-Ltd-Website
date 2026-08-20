@@ -1,0 +1,121 @@
+name: Update Amantusi Free-Tier Governor
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: amantusi-quota-governor
+  cancel-in-progress: true
+
+env:
+  CLOUDFLARE_ACCOUNT_ID: '3b4dba2eec2c69b95eae20d70941e9b2'
+  CLOUDFLARE_WORKER_NAME: 'amantusi-trading-pty-ltd-website'
+  WORKERS_FREE_REQUEST_LIMIT: '100000'
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Read today's Worker usage and choose cost mode
+        id: usage
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          START="$(date -u +'%Y-%m-%dT00:00:00Z')"
+          END="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
+          read -r -d '' QUERY <<'GRAPHQL' || true
+          query WorkerUsage($accountTag: string!, $scriptName: string!, $start: Time!, $end: Time!) {
+            viewer {
+              accounts(filter: { accountTag: $accountTag }) {
+                invocations: workersInvocationsAdaptive(
+                  limit: 10000
+                  filter: {
+                    scriptName: $scriptName
+                    datetime_geq: $start
+                    datetime_leq: $end
+                  }
+                ) {
+                  sum { requests errors subrequests }
+                }
+              }
+            }
+          }
+          GRAPHQL
+
+          BODY="$(jq -n \
+            --arg query "$QUERY" \
+            --arg accountTag "$CLOUDFLARE_ACCOUNT_ID" \
+            --arg scriptName "$CLOUDFLARE_WORKER_NAME" \
+            --arg start "$START" \
+            --arg end "$END" \
+            '{query:$query,variables:{accountTag:$accountTag,scriptName:$scriptName,start:$start,end:$end}}')"
+
+          RESPONSE="$(curl --silent --show-error --fail-with-body \
+            https://api.cloudflare.com/client/v4/graphql \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H 'Content-Type: application/json' \
+            --data "$BODY" || true)"
+
+          if [ -z "$RESPONSE" ] || [ "$(printf '%s' "$RESPONSE" | jq -r '(.errors // []) | length')" != "0" ]; then
+            echo "Cloudflare Analytics query failed; entering fail-safe CONSERVE mode."
+            printf '%s\n' "$RESPONSE"
+            REQUESTS=-1
+            MODE=CONSERVE
+            SOURCE=cloudflare-graphql-error
+          else
+            REQUESTS="$(printf '%s' "$RESPONSE" | jq '[.data.viewer.accounts[]?.invocations[]?.sum.requests // 0] | add // 0')"
+            LIMIT="$WORKERS_FREE_REQUEST_LIMIT"
+            if [ "$REQUESTS" -ge 93000 ]; then MODE=EMERGENCY
+            elif [ "$REQUESTS" -ge 80000 ]; then MODE=CRITICAL
+            elif [ "$REQUESTS" -ge 60000 ]; then MODE=CONSERVE
+            else MODE=NORMAL
+            fi
+            SOURCE=cloudflare-graphql
+          fi
+
+          if [ "$REQUESTS" -ge 0 ]; then
+            RATIO="$(awk -v n="$REQUESTS" -v d="$WORKERS_FREE_REQUEST_LIMIT" 'BEGIN { printf "%.6f", n/d }')"
+          else
+            RATIO=null
+          fi
+
+          STATE="$(jq -cn \
+            --arg mode "$MODE" \
+            --arg source "$SOURCE" \
+            --arg updatedAt "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+            --argjson workerRequests "$REQUESTS" \
+            --arg ratio "$RATIO" \
+            '{mode:$mode,source:$source,updatedAt:$updatedAt,workerRequests:$workerRequests,workerRequestRatio:(if $ratio=="null" then null else ($ratio|tonumber) end)}')"
+
+          echo "Mode: $MODE; Worker requests today: $REQUESTS"
+          echo "state=$STATE" >> "$GITHUB_OUTPUT"
+
+      - name: Store governor state in remote KV
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          STATE: ${{ steps.usage.outputs.state }}
+        run: |
+          set -euo pipefail
+          npx wrangler kv key put --binding=CMS_KV 'quota:state' "$STATE" --remote
+          echo "Quota governor state updated without per-request KV writes."
