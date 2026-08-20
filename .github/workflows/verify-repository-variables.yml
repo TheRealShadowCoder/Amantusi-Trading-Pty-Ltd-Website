@@ -1,0 +1,51 @@
+name: Verify Amantusi Repository Variables
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/verify-repository-variables.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify required GCP repository variables
+        env:
+          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          GCP_PROJECT_NUMBER: ${{ vars.GCP_PROJECT_NUMBER }}
+          GCP_REGION: ${{ vars.GCP_REGION }}
+          GCP_ARTIFACT_REPOSITORY: ${{ vars.GCP_ARTIFACT_REPOSITORY }}
+          GCP_CLOUD_RUN_SERVICE: ${{ vars.GCP_CLOUD_RUN_SERVICE }}
+          GCP_RUNTIME_SERVICE_ACCOUNT: ${{ vars.GCP_RUNTIME_SERVICE_ACCOUNT }}
+          GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          GCP_CLOUD_RUN_URL: ${{ vars.GCP_CLOUD_RUN_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            GCP_PROJECT_ID GCP_PROJECT_NUMBER GCP_REGION GCP_ARTIFACT_REPOSITORY
+            GCP_CLOUD_RUN_SERVICE GCP_RUNTIME_SERVICE_ACCOUNT GCP_SERVICE_ACCOUNT
+            GCP_WORKLOAD_IDENTITY_PROVIDER GCP_CLOUD_RUN_URL
+          )
+          for name in "${required[@]}"; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is not configured as a GitHub repository variable."
+              exit 1
+            fi
+          done
+
+          test "$GCP_PROJECT_ID" = "amantusi-trading-pty-ltd"
+          test "$GCP_PROJECT_NUMBER" = "1076590922680"
+          test "$GCP_REGION" = "us-central1"
+          test "$GCP_ARTIFACT_REPOSITORY" = "amantusi-containers"
+          test "$GCP_CLOUD_RUN_SERVICE" = "amantusi-overflow"
+          test "$GCP_RUNTIME_SERVICE_ACCOUNT" = "amantusi-overflow-runtime@amantusi-trading-pty-ltd.iam.gserviceaccount.com"
+          test "$GCP_SERVICE_ACCOUNT" = "amantusi-github-deployer@amantusi-trading-pty-ltd.iam.gserviceaccount.com"
+          test "$GCP_WORKLOAD_IDENTITY_PROVIDER" = "projects/1076590922680/locations/global/workloadIdentityPools/amantusi-github-pool/providers/amantusi-github"
+          test "$GCP_CLOUD_RUN_URL" = "https://amantusi-overflow-w5cotgahzq-uc.a.run.app"
+          echo "All required Amantusi GCP repository variables are configured and match the provisioned infrastructure."
