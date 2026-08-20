@@ -32,8 +32,12 @@ jobs:
           grep -q "amantusi-logo-only" public/service-background.js
           grep -q "assets/amantusi-logo.svg" public/service-background.css
           grep -q "svc10Light" public/service-background.css
-          if grep -R "images.pexels.com\|SERVICE_BACKGROUND_IMAGES\|serviceBackgroundImage" scripts/inject-service-background.mjs src/worker.js public/service-background.js public/service-background.css; then
-            echo "Legacy external photo background code is still present" >&2
+          if grep -R "images.pexels.com" scripts/inject-service-background.mjs src/worker.js public/service-background.js public/service-background.css; then
+            echo "External service-photo URLs are still present" >&2
+            exit 1
+          fi
+          if grep -R "SERVICE_BACKGROUND_IMAGES\|serviceBackgroundImage" src/worker.js public/service-background.js public/service-background.css; then
+            echo "Legacy service-photo runtime code is still present" >&2
             exit 1
           fi
           if grep -q "path.startsWith('/service-bg/')" src/worker.js; then
