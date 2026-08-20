@@ -18,10 +18,27 @@ function wrapperHeaders(response, requestId, started) {
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
+function injectAdminCostControl(response) {
+  if (!response.ok) return response;
+  return new HTMLRewriter()
+    .on('head', {
+      element(element) {
+        element.append('<link rel="stylesheet" href="/admin-cost.css">', { html: true });
+      }
+    })
+    .on('body', {
+      element(element) {
+        element.append('<script src="/admin-cost.js" defer></script>', { html: true });
+      }
+    })
+    .transform(response);
+}
+
 export default {
   async fetch(request, env, ctx) {
     const started = Date.now();
     const requestId = crypto.randomUUID();
+    const path = new URL(request.url).pathname;
     const decision = await evaluateQuotaPolicy(request, env);
 
     if (!decision.allowed) {
@@ -34,12 +51,13 @@ export default {
     const overflow = await overflowRoute(request, env);
     if (overflow) return addQuotaHeaders(wrapperHeaders(overflow, requestId, started), decision.state);
 
-    const response = await core.fetch(request, env, {
+    let response = await core.fetch(request, env, {
       ...ctx,
       waitUntil(promise) {
         if (allowOptionalTelemetry(decision.state)) ctx?.waitUntil?.(promise);
       }
     });
+    if (path === '/admin.html') response = injectAdminCostControl(response);
     return addQuotaHeaders(response, decision.state);
   }
 };
