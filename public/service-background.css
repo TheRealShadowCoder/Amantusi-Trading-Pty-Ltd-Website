@@ -1,106 +1,91 @@
-body[data-service-cinema-ready='1']{--svc-transition-ms:1480ms}
-.service-cinema-host{position:relative;isolation:isolate;overflow:hidden}
-.service-cinema-host>.svc-cinema-bg{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:inherit;contain:paint}
-.service-cinema-host>:not(.svc-cinema-bg){position:relative;z-index:2}
-.svc-cinema-frame{position:absolute;inset:-4%;opacity:0;overflow:hidden;transform:translate3d(0,0,0) scale(1.02);will-change:opacity,transform;backface-visibility:hidden}
-.svc-cinema-frame>i{position:absolute;display:block;pointer-events:none;will-change:transform,opacity,filter;background-repeat:no-repeat}
-.svc-photo{inset:0;background-size:cover;background-position:var(--photo-position,center);filter:saturate(.86) contrast(1.05) brightness(.82)}
-.svc-logo-main{width:var(--logo-size,18%);aspect-ratio:1;left:var(--logo-left,68%);top:var(--logo-top,10%);background-image:url('/assets/amantusi-logo.svg');background-position:center;background-size:contain;opacity:var(--logo-opacity,.20);filter:drop-shadow(0 18px 55px rgba(200,170,93,.24))}
-.svc-photo-orbit{width:var(--orbit-size,22%);aspect-ratio:1;left:var(--orbit-left,9%);top:var(--orbit-top,56%);border:1px solid rgba(200,170,93,.26);border-radius:50%;box-shadow:0 0 0 18px rgba(200,170,93,.035),0 0 0 42px rgba(255,255,255,.022),inset 0 0 42px rgba(200,170,93,.08);opacity:.62}
-.svc-photo-orbit::before,.svc-photo-orbit::after{content:'';position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.12)}
-.svc-photo-orbit::before{inset:18%}.svc-photo-orbit::after{inset:37%;border-color:rgba(200,170,93,.24)}
-.svc-photo-light{inset:-18%;background:linear-gradient(var(--light-angle,112deg),transparent 0%,transparent 43%,rgba(255,255,255,.05) 47%,rgba(232,204,131,.22) 50%,rgba(255,255,255,.08) 53%,transparent 58%,transparent 100%);opacity:.34;mix-blend-mode:screen;filter:blur(2px)}
-.svc-photo-depth{inset:0;background:radial-gradient(circle at var(--depth-x,50%) var(--depth-y,46%),transparent 0%,rgba(4,17,27,.08) 42%,rgba(4,17,27,.48) 100%),linear-gradient(115deg,rgba(7,25,35,.32),transparent 46%,rgba(7,25,35,.40));opacity:.78}
-.svc-cinema-frame.is-current{opacity:1}
-.svc-cinema-frame.is-next{opacity:0}
-.service-cinema-host.is-transitioning .svc-cinema-frame.is-current{animation:svcFrameOut var(--svc-transition-ms) ease both}
-.service-cinema-host.is-transitioning .svc-cinema-frame.is-next{animation:svcFrameIn var(--svc-transition-ms) cubic-bezier(.16,1,.3,1) both}
-.svc-cinema-mask{position:absolute;inset:0;z-index:8;pointer-events:none;background:linear-gradient(112deg,rgba(7,25,35,.80),rgba(7,25,35,.40) 48%,rgba(7,25,35,.73))}
-.svc-tone-light .svc-cinema-mask{background:linear-gradient(110deg,rgba(247,244,235,.88),rgba(247,244,235,.67) 50%,rgba(247,244,235,.86))}
-.svc-tone-dark .svc-cinema-mask{background:linear-gradient(110deg,rgba(5,22,34,.86),rgba(6,26,40,.50) 48%,rgba(5,22,34,.82))}
-.svc-cinema-grain{position:absolute;inset:0;z-index:9;opacity:.07;pointer-events:none;background-image:radial-gradient(circle at 20% 20%,rgba(255,255,255,.30) 0 1px,transparent 1px),radial-gradient(circle at 80% 70%,rgba(184,158,86,.28) 0 1px,transparent 1px);background-size:29px 29px,37px 37px;mix-blend-mode:soft-light}
+body[data-service-cinema-ready='1']{--svc-transition-ms:1280ms}
+body.has-global-service-cinema{background:#071923}
+.svc-cinema-global{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;contain:layout paint style;transform:translateZ(0);background:#071923}
+body.has-global-service-cinema>*:not(.svc-cinema-global){position:relative;z-index:1}
+body.has-global-service-cinema .hero{background:linear-gradient(135deg,rgba(7,25,35,.86),rgba(11,31,46,.80) 48%,rgba(15,43,63,.82))}
+body.has-global-service-cinema .section-dark{background:rgba(11,31,46,.83)}
+body.has-global-service-cinema .section-light{background:rgba(255,255,255,.91)}
+body.has-global-service-cinema .section-ivory{background:rgba(248,244,236,.91)}
 
-/* Each photograph receives five simultaneous, scene-specific animation channels. */
-.scene-1{--photo-position:54% 50%;--logo-size:18%;--logo-left:71%;--logo-top:10%;--orbit-left:10%;--orbit-top:58%;--light-angle:108deg;--depth-x:70%;--depth-y:38%;--photo-a:svc1Photo;--logo-a:svc1Logo;--orbit-a:svc1Orbit;--light-a:svc1Light;--depth-a:svc1Depth}
-.scene-2{--photo-position:46% 50%;--logo-size:17%;--logo-left:9%;--logo-top:12%;--orbit-left:68%;--orbit-top:58%;--light-angle:74deg;--depth-x:25%;--depth-y:52%;--photo-a:svc2Photo;--logo-a:svc2Logo;--orbit-a:svc2Orbit;--light-a:svc2Light;--depth-a:svc2Depth}
-.scene-3{--photo-position:50% 46%;--logo-size:16%;--logo-left:69%;--logo-top:64%;--orbit-left:9%;--orbit-top:10%;--light-angle:126deg;--depth-x:54%;--depth-y:46%;--photo-a:svc3Photo;--logo-a:svc3Logo;--orbit-a:svc3Orbit;--light-a:svc3Light;--depth-a:svc3Depth}
-.scene-4{--photo-position:50% 50%;--logo-size:17%;--logo-left:10%;--logo-top:65%;--orbit-left:71%;--orbit-top:9%;--light-angle:96deg;--depth-x:44%;--depth-y:38%;--photo-a:svc4Photo;--logo-a:svc4Logo;--orbit-a:svc4Orbit;--light-a:svc4Light;--depth-a:svc4Depth}
-.scene-5{--photo-position:52% 48%;--logo-size:18%;--logo-left:70%;--logo-top:11%;--orbit-left:11%;--orbit-top:57%;--light-angle:116deg;--depth-x:25%;--depth-y:28%;--photo-a:svc5Photo;--logo-a:svc5Logo;--orbit-a:svc5Orbit;--light-a:svc5Light;--depth-a:svc5Depth}
-.scene-6{--photo-position:50% 58%;--logo-size:16%;--logo-left:11%;--logo-top:12%;--orbit-left:70%;--orbit-top:59%;--light-angle:62deg;--depth-x:72%;--depth-y:30%;--photo-a:svc6Photo;--logo-a:svc6Logo;--orbit-a:svc6Orbit;--light-a:svc6Light;--depth-a:svc6Depth}
-.scene-7{--photo-position:50% 48%;--logo-size:17%;--logo-left:70%;--logo-top:66%;--orbit-left:9%;--orbit-top:12%;--light-angle:135deg;--depth-x:53%;--depth-y:60%;--photo-a:svc7Photo;--logo-a:svc7Logo;--orbit-a:svc7Orbit;--light-a:svc7Light;--depth-a:svc7Depth}
-.scene-8{--photo-position:52% 48%;--logo-size:16%;--logo-left:11%;--logo-top:66%;--orbit-left:70%;--orbit-top:10%;--light-angle:48deg;--depth-x:74%;--depth-y:48%;--photo-a:svc8Photo;--logo-a:svc8Logo;--orbit-a:svc8Orbit;--light-a:svc8Light;--depth-a:svc8Depth}
-.scene-9{--photo-position:50% 46%;--logo-size:18%;--logo-left:70%;--logo-top:10%;--orbit-left:11%;--orbit-top:58%;--light-angle:102deg;--depth-x:40%;--depth-y:46%;--photo-a:svc9Photo;--logo-a:svc9Logo;--orbit-a:svc9Orbit;--light-a:svc9Light;--depth-a:svc9Depth}
-.scene-10{--photo-position:50% 50%;--logo-size:17%;--logo-left:10%;--logo-top:11%;--orbit-left:69%;--orbit-top:58%;--light-angle:122deg;--depth-x:65%;--depth-y:34%;--photo-a:svc10Photo;--logo-a:svc10Logo;--orbit-a:svc10Orbit;--light-a:svc10Light;--depth-a:svc10Depth}
+.svc-cinema-frame{position:absolute;inset:-2.5%;opacity:0;overflow:hidden;transform:translate3d(0,0,0) scale(1.02);will-change:opacity,transform,clip-path;backface-visibility:hidden}
+.svc-cinema-frame>i{position:absolute;display:block;pointer-events:none;will-change:transform,opacity}
+.svc-photo{inset:0;background-repeat:no-repeat;background-position:var(--photo-position,center);background-size:cover;filter:brightness(.78) saturate(.96) contrast(1.03)}
+.svc-logo-main{width:var(--logo-size,28%);aspect-ratio:1;left:var(--logo-left,60%);top:var(--logo-top,10%);background:url('/assets/amantusi-logo.svg') center/contain no-repeat;opacity:var(--logo-opacity,.16);filter:drop-shadow(0 18px 55px rgba(200,170,93,.18))}
+.svc-photo-orbit{width:var(--orbit-size,20%);aspect-ratio:1;left:var(--orbit-left,12%);top:var(--orbit-top,58%);border:1px solid rgba(200,170,93,.20);border-radius:50%;box-shadow:0 0 0 14px rgba(200,170,93,.025),0 0 0 30px rgba(255,255,255,.015);opacity:.42}
+.svc-photo-orbit::before,.svc-photo-orbit::after{content:'';position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.10)}
+.svc-photo-orbit::before{inset:20%}.svc-photo-orbit::after{inset:38%;border-color:rgba(200,170,93,.20)}
+.svc-photo-light{inset:-16%;background:linear-gradient(var(--light-angle,112deg),transparent 0%,transparent 42%,rgba(255,255,255,.04) 47%,rgba(232,204,131,.18) 50%,rgba(255,255,255,.06) 53%,transparent 59%,transparent 100%);opacity:.30;mix-blend-mode:screen}
+.svc-photo-depth{inset:0;background:radial-gradient(circle at var(--depth-x,50%) var(--depth-y,46%),transparent 0%,rgba(4,17,27,.06) 42%,rgba(4,17,27,.48) 100%),linear-gradient(115deg,rgba(7,25,35,.28),transparent 46%,rgba(7,25,35,.38));opacity:.78}
+.svc-cinema-frame.is-current{opacity:1}.svc-cinema-frame.is-next{opacity:0}
+.svc-cinema-global.is-transitioning .svc-cinema-frame.is-current{animation:var(--cin-out,cinOutFade) var(--svc-transition-ms) ease both}
+.svc-cinema-global.is-transitioning .svc-cinema-frame.is-next{animation:var(--cin-in,cinWipeLeft) var(--svc-transition-ms) cubic-bezier(.16,1,.3,1) both}
+.svc-cinema-veil{position:absolute;inset:0;z-index:8;pointer-events:none;background:linear-gradient(115deg,rgba(5,22,34,.62),rgba(7,25,35,.18) 44%,rgba(5,22,34,.60))}
+.svc-cinema-grain{position:absolute;inset:0;z-index:9;opacity:.045;pointer-events:none;background-image:radial-gradient(circle at 20% 20%,rgba(255,255,255,.24) 0 1px,transparent 1px),radial-gradient(circle at 80% 70%,rgba(184,158,86,.22) 0 1px,transparent 1px);background-size:34px 34px,45px 45px}
 
-.svc-cinema-frame.is-current .svc-photo,.service-cinema-host.is-transitioning .svc-cinema-frame.is-next .svc-photo{animation:var(--photo-a) 9s ease-in-out both}
-.svc-cinema-frame.is-current .svc-logo-main,.service-cinema-host.is-transitioning .svc-cinema-frame.is-next .svc-logo-main{animation:var(--logo-a) 9s ease-in-out both}
-.svc-cinema-frame.is-current .svc-photo-orbit,.service-cinema-host.is-transitioning .svc-cinema-frame.is-next .svc-photo-orbit{animation:var(--orbit-a) 9s linear both}
-.svc-cinema-frame.is-current .svc-photo-light,.service-cinema-host.is-transitioning .svc-cinema-frame.is-next .svc-photo-light{animation:var(--light-a) 9s ease-in-out both}
-.svc-cinema-frame.is-current .svc-photo-depth,.service-cinema-host.is-transitioning .svc-cinema-frame.is-next .svc-photo-depth{animation:var(--depth-a) 9s ease-in-out both}
+.scene-1{--photo-position:50% 50%;--logo-left:62%;--logo-top:8%;--orbit-left:12%;--orbit-top:60%;--light-angle:108deg;--depth-x:68%;--depth-y:36%;--photo-a:photoDriftRight;--logo-a:logoFloatUp;--orbit-a:orbitCW;--light-a:lightSweepRight;--depth-a:depthBreatheA}
+.scene-2{--photo-position:48% 50%;--logo-left:10%;--logo-top:12%;--orbit-left:68%;--orbit-top:57%;--light-angle:70deg;--depth-x:28%;--depth-y:54%;--photo-a:photoDriftLeft;--logo-a:logoFloatDown;--orbit-a:orbitCCW;--light-a:lightSweepLeft;--depth-a:depthBreatheB}
+.scene-3{--photo-position:50% 48%;--logo-left:66%;--logo-top:62%;--orbit-left:10%;--orbit-top:12%;--light-angle:126deg;--depth-x:54%;--depth-y:44%;--photo-a:photoZoomIn;--logo-a:logoPulse;--orbit-a:orbitCWSoft;--light-a:lightSweepDiag;--depth-a:depthBreatheC}
+.scene-4{--photo-position:50% 50%;--logo-left:9%;--logo-top:64%;--orbit-left:70%;--orbit-top:10%;--light-angle:94deg;--depth-x:42%;--depth-y:38%;--photo-a:photoZoomOut;--logo-a:logoFloatUp;--orbit-a:orbitCCWSoft;--light-a:lightSweepDown;--depth-a:depthBreatheA}
+.scene-5{--photo-position:52% 48%;--logo-left:66%;--logo-top:10%;--orbit-left:11%;--orbit-top:58%;--light-angle:116deg;--depth-x:24%;--depth-y:30%;--photo-a:photoDriftRight;--logo-a:logoPulse;--orbit-a:orbitCW;--light-a:lightSweepRight;--depth-a:depthBreatheB}
+.scene-6{--photo-position:50% 56%;--logo-left:10%;--logo-top:11%;--orbit-left:68%;--orbit-top:59%;--light-angle:62deg;--depth-x:72%;--depth-y:30%;--photo-a:photoDriftLeft;--logo-a:logoFloatDown;--orbit-a:orbitCCW;--light-a:lightSweepLeft;--depth-a:depthBreatheC}
+.scene-7{--photo-position:50% 48%;--logo-left:66%;--logo-top:64%;--orbit-left:10%;--orbit-top:12%;--light-angle:134deg;--depth-x:52%;--depth-y:60%;--photo-a:photoZoomIn;--logo-a:logoFloatUp;--orbit-a:orbitCWSoft;--light-a:lightSweepDiag;--depth-a:depthBreatheA}
+.scene-8{--photo-position:52% 48%;--logo-left:10%;--logo-top:64%;--orbit-left:69%;--orbit-top:10%;--light-angle:48deg;--depth-x:74%;--depth-y:48%;--photo-a:photoZoomOut;--logo-a:logoPulse;--orbit-a:orbitCCWSoft;--light-a:lightSweepDown;--depth-a:depthBreatheB}
+.scene-9{--photo-position:50% 46%;--logo-left:66%;--logo-top:10%;--orbit-left:11%;--orbit-top:58%;--light-angle:102deg;--depth-x:40%;--depth-y:46%;--photo-a:photoDriftRight;--logo-a:logoFloatDown;--orbit-a:orbitCW;--light-a:lightSweepRight;--depth-a:depthBreatheC}
+.scene-10{--photo-position:50% 50%;--logo-left:10%;--logo-top:11%;--orbit-left:68%;--orbit-top:58%;--light-angle:122deg;--depth-x:65%;--depth-y:34%;--photo-a:photoDriftLeft;--logo-a:logoFloatUp;--orbit-a:orbitCCW;--light-a:lightSweepDiag;--depth-a:depthBreatheA}
 
-@keyframes svcFrameIn{0%{opacity:0;clip-path:inset(8% round 28px);transform:scale(1.08)}100%{opacity:1;clip-path:inset(0 round 0);transform:scale(1.02)}}
-@keyframes svcFrameOut{0%{opacity:1;transform:scale(1.02)}100%{opacity:0;transform:scale(1.09);filter:blur(2px)}}
+.svc-cinema-frame.is-current .svc-photo,.svc-cinema-global.is-transitioning .svc-cinema-frame.is-next .svc-photo{animation:var(--photo-a) 9s ease-in-out both}
+.svc-cinema-frame.is-current .svc-logo-main,.svc-cinema-global.is-transitioning .svc-cinema-frame.is-next .svc-logo-main{animation:var(--logo-a) 9s ease-in-out both}
+.svc-cinema-frame.is-current .svc-photo-orbit,.svc-cinema-global.is-transitioning .svc-cinema-frame.is-next .svc-photo-orbit{animation:var(--orbit-a) 9s linear both}
+.svc-cinema-frame.is-current .svc-photo-light,.svc-cinema-global.is-transitioning .svc-cinema-frame.is-next .svc-photo-light{animation:var(--light-a) 9s ease-in-out both}
+.svc-cinema-frame.is-current .svc-photo-depth,.svc-cinema-global.is-transitioning .svc-cinema-frame.is-next .svc-photo-depth{animation:var(--depth-a) 9s ease-in-out both}
 
-@keyframes svc1Photo{0%{transform:scale(1.06) translate3d(-1.4%,0,0)}100%{transform:scale(1.14) translate3d(1.2%,-.8%,0)}}
-@keyframes svc1Logo{0%{opacity:.08;transform:translate3d(18px,18px,0) scale(.88) rotate(-5deg)}38%{opacity:.23}100%{opacity:.15;transform:translate3d(-8px,-12px,0) scale(1.05) rotate(5deg)}}
-@keyframes svc1Orbit{0%{transform:rotate(0) scale(.9);opacity:.25}50%{opacity:.62}100%{transform:rotate(360deg) scale(1.06);opacity:.38}}
-@keyframes svc1Light{0%{transform:translateX(-28%) skewX(-10deg);opacity:0}38%{opacity:.48}100%{transform:translateX(24%) skewX(-10deg);opacity:.18}}
-@keyframes svc1Depth{0%,100%{opacity:.76;filter:brightness(.98)}50%{opacity:.58;filter:brightness(1.08)}}
+.svc-cinema-global[data-transition='scene-1'],.svc-cinema-global[data-transition='scene-6']{--cin-in:cinWipeLeft;--cin-out:cinOutRight}
+.svc-cinema-global[data-transition='scene-2'],.svc-cinema-global[data-transition='scene-7']{--cin-in:cinWipeRight;--cin-out:cinOutLeft}
+.svc-cinema-global[data-transition='scene-3'],.svc-cinema-global[data-transition='scene-8']{--cin-in:cinIris;--cin-out:cinOutZoom}
+.svc-cinema-global[data-transition='scene-4'],.svc-cinema-global[data-transition='scene-9']{--cin-in:cinDiagonal;--cin-out:cinOutFade}
+.svc-cinema-global[data-transition='scene-5'],.svc-cinema-global[data-transition='scene-10']{--cin-in:cinFocus;--cin-out:cinOutZoom}
 
-@keyframes svc2Photo{0%{transform:scale(1.13) translate3d(1.5%,.4%,0)}100%{transform:scale(1.06) translate3d(-1.1%,-.5%,0)}}
-@keyframes svc2Logo{0%{opacity:.05;transform:translateX(-20px) scale(.92) rotate(6deg)}45%{opacity:.22}100%{opacity:.13;transform:translateX(10px) scale(1.05) rotate(-4deg)}}
-@keyframes svc2Orbit{0%{transform:rotate(360deg) scale(1.05);opacity:.28}100%{transform:rotate(0) scale(.9);opacity:.55}}
-@keyframes svc2Light{0%{transform:translateY(-24%) rotate(8deg);opacity:0}42%{opacity:.45}100%{transform:translateY(18%) rotate(0);opacity:.20}}
-@keyframes svc2Depth{0%{opacity:.82;transform:scale(1)}50%{opacity:.54;transform:scale(1.03)}100%{opacity:.72;transform:scale(1)}}
+@keyframes photoDriftRight{from{transform:scale(1.06) translate3d(-1.2%,0,0)}to{transform:scale(1.13) translate3d(1.1%,-.6%,0)}}
+@keyframes photoDriftLeft{from{transform:scale(1.12) translate3d(1.2%,0,0)}to{transform:scale(1.06) translate3d(-1.1%,-.5%,0)}}
+@keyframes photoZoomIn{from{transform:scale(1.04)}to{transform:scale(1.14) translate3d(0,-.7%,0)}}
+@keyframes photoZoomOut{from{transform:scale(1.14)}to{transform:scale(1.06) translate3d(0,.6%,0)}}
+@keyframes logoFloatUp{0%{opacity:.06;transform:translate3d(0,14px,0) scale(.92)}45%{opacity:.18}100%{opacity:.12;transform:translate3d(0,-10px,0) scale(1.03)}}
+@keyframes logoFloatDown{0%{opacity:.05;transform:translate3d(0,-12px,0) scale(.94)}45%{opacity:.17}100%{opacity:.11;transform:translate3d(0,10px,0) scale(1.02)}}
+@keyframes logoPulse{0%{opacity:.05;transform:scale(.88) rotate(-4deg)}48%{opacity:.19;transform:scale(1.04) rotate(2deg)}100%{opacity:.11;transform:scale(.96) rotate(5deg)}}
+@keyframes orbitCW{from{transform:rotate(0) scale(.92);opacity:.24}to{transform:rotate(360deg) scale(1.05);opacity:.40}}
+@keyframes orbitCCW{from{transform:rotate(360deg) scale(1.04);opacity:.22}to{transform:rotate(0) scale(.94);opacity:.40}}
+@keyframes orbitCWSoft{from{transform:rotate(-25deg) scale(.82);opacity:.18}to{transform:rotate(300deg) scale(1.06);opacity:.34}}
+@keyframes orbitCCWSoft{from{transform:rotate(25deg) scale(1.04);opacity:.20}to{transform:rotate(-300deg) scale(.86);opacity:.34}}
+@keyframes lightSweepRight{from{transform:translateX(-24%);opacity:.04}45%{opacity:.32}to{transform:translateX(18%);opacity:.12}}
+@keyframes lightSweepLeft{from{transform:translateX(22%);opacity:.04}45%{opacity:.30}to{transform:translateX(-18%);opacity:.12}}
+@keyframes lightSweepDiag{from{transform:translate3d(-16%,12%,0) rotate(-5deg);opacity:.04}48%{opacity:.31}to{transform:translate3d(14%,-10%,0) rotate(3deg);opacity:.12}}
+@keyframes lightSweepDown{from{transform:translateY(-16%);opacity:.03}45%{opacity:.28}to{transform:translateY(13%);opacity:.11}}
+@keyframes depthBreatheA{0%,100%{opacity:.78}50%{opacity:.62}}
+@keyframes depthBreatheB{0%,100%{opacity:.82}50%{opacity:.66}}
+@keyframes depthBreatheC{0%,100%{opacity:.75}50%{opacity:.58}}
 
-@keyframes svc3Photo{0%{transform:scale(1.04) translate3d(0,1%,0)}100%{transform:scale(1.15) translate3d(0,-1%,0)}}
-@keyframes svc3Logo{0%{opacity:0;transform:scale(.75) rotate(-10deg)}35%{opacity:.22;transform:scale(1.04) rotate(3deg)}100%{opacity:.12;transform:scale(.96) rotate(8deg)}}
-@keyframes svc3Orbit{0%{transform:rotate(-20deg) scale(.75);opacity:.18}55%{opacity:.58}100%{transform:rotate(310deg) scale(1.12);opacity:.26}}
-@keyframes svc3Light{0%{transform:scale(.8) rotate(-6deg);opacity:.04}46%{opacity:.42}100%{transform:scale(1.12) rotate(4deg);opacity:.16}}
-@keyframes svc3Depth{0%{opacity:.74;filter:contrast(1)}50%{opacity:.48;filter:contrast(1.08)}100%{opacity:.70;filter:contrast(1)}}
+@keyframes cinWipeLeft{0%{opacity:0;clip-path:inset(0 100% 0 0);transform:scale(1.08)}100%{opacity:1;clip-path:inset(0);transform:scale(1.02)}}
+@keyframes cinWipeRight{0%{opacity:0;clip-path:inset(0 0 0 100%);transform:scale(1.08)}100%{opacity:1;clip-path:inset(0);transform:scale(1.02)}}
+@keyframes cinIris{0%{opacity:0;clip-path:circle(0 at 50% 50%);transform:scale(1.10)}100%{opacity:1;clip-path:circle(78% at 50% 50%);transform:scale(1.02)}}
+@keyframes cinDiagonal{0%{opacity:0;clip-path:polygon(0 0,0 0,0 100%,0 100%);transform:scale(1.08)}100%{opacity:1;clip-path:polygon(0 0,100% 0,100% 100%,0 100%);transform:scale(1.02)}}
+@keyframes cinFocus{0%{opacity:0;transform:scale(1.13)}40%{opacity:.68}100%{opacity:1;transform:scale(1.02)}}
+@keyframes cinOutRight{from{opacity:1;clip-path:inset(0);transform:scale(1.02)}to{opacity:0;clip-path:inset(0 0 0 100%);transform:scale(1.07)}}
+@keyframes cinOutLeft{from{opacity:1;clip-path:inset(0);transform:scale(1.02)}to{opacity:0;clip-path:inset(0 100% 0 0);transform:scale(1.07)}}
+@keyframes cinOutZoom{from{opacity:1;transform:scale(1.02)}to{opacity:0;transform:scale(1.10)}}
+@keyframes cinOutFade{from{opacity:1}to{opacity:0}}
 
-@keyframes svc4Photo{0%{transform:scale(1.12) translate3d(-1%,1%,0)}100%{transform:scale(1.07) translate3d(1%,-1%,0)}}
-@keyframes svc4Logo{0%{opacity:.06;transform:translateY(20px) scale(.9)}50%{opacity:.24;transform:translateY(-4px) scale(1.03)}100%{opacity:.13;transform:translateY(-12px) scale(.98)}}
-@keyframes svc4Orbit{0%{transform:rotate(45deg) scale(1.08);opacity:.22}100%{transform:rotate(405deg) scale(.88);opacity:.52}}
-@keyframes svc4Light{0%{transform:translateX(26%) rotate(4deg);opacity:0}36%{opacity:.46}100%{transform:translateX(-22%) rotate(-3deg);opacity:.17}}
-@keyframes svc4Depth{0%{opacity:.80;background-position:20% 50%}100%{opacity:.57;background-position:80% 50%}}
-
-@keyframes svc5Photo{0%{transform:scale(1.07) translate3d(.8%,0,0);filter:saturate(.82) contrast(1.03) brightness(.80)}100%{transform:scale(1.14) translate3d(-.8%,-.6%,0);filter:saturate(.94) contrast(1.08) brightness(.86)}}
-@keyframes svc5Logo{0%{opacity:.05;transform:translate3d(15px,-10px,0) scale(.86) rotate(8deg)}40%{opacity:.21}100%{opacity:.14;transform:translate3d(-8px,10px,0) scale(1.04) rotate(-5deg)}}
-@keyframes svc5Orbit{0%{transform:rotate(0) scale(.86);opacity:.20}50%{transform:rotate(180deg) scale(1.1);opacity:.60}100%{transform:rotate(360deg) scale(.94);opacity:.30}}
-@keyframes svc5Light{0%{transform:translate3d(-22%,12%,0) rotate(-8deg);opacity:0}48%{opacity:.50}100%{transform:translate3d(18%,-10%,0) rotate(3deg);opacity:.18}}
-@keyframes svc5Depth{0%,100%{opacity:.78;filter:blur(0)}50%{opacity:.52;filter:blur(.5px)}}
-
-@keyframes svc6Photo{0%{transform:scale(1.15) translate3d(0,-1.1%,0)}100%{transform:scale(1.07) translate3d(0,1%,0)}}
-@keyframes svc6Logo{0%{opacity:0;transform:translateX(-18px) scale(.9) rotate(-6deg)}30%{opacity:.20}100%{opacity:.13;transform:translateX(12px) scale(1.02) rotate(6deg)}}
-@keyframes svc6Orbit{0%{transform:rotate(360deg) scale(.92);opacity:.26}100%{transform:rotate(0) scale(1.08);opacity:.52}}
-@keyframes svc6Light{0%{transform:translateY(22%) skewY(-6deg);opacity:.02}42%{opacity:.44}100%{transform:translateY(-20%) skewY(4deg);opacity:.16}}
-@keyframes svc6Depth{0%{opacity:.68;transform:scale(1.04)}50%{opacity:.50;transform:scale(1)}100%{opacity:.76;transform:scale(1.03)}}
-
-@keyframes svc7Photo{0%{transform:scale(1.06) translate3d(-.7%,.8%,0)}100%{transform:scale(1.16) translate3d(.8%,-.9%,0)}}
-@keyframes svc7Logo{0%{opacity:.04;transform:scale(.82) rotate(12deg)}45%{opacity:.22;transform:scale(1.05) rotate(-2deg)}100%{opacity:.12;transform:scale(.97) rotate(-8deg)}}
-@keyframes svc7Orbit{0%{transform:rotate(-60deg) scale(.78);opacity:.18}100%{transform:rotate(300deg) scale(1.1);opacity:.50}}
-@keyframes svc7Light{0%{transform:translateX(-24%) rotate(12deg);opacity:0}50%{opacity:.46}100%{transform:translateX(20%) rotate(-3deg);opacity:.15}}
-@keyframes svc7Depth{0%{opacity:.84;filter:brightness(.96)}60%{opacity:.50;filter:brightness(1.08)}100%{opacity:.70;filter:brightness(1)}}
-
-@keyframes svc8Photo{0%{transform:scale(1.11) translate3d(1%,0,0)}100%{transform:scale(1.06) translate3d(-1%,.5%,0)}}
-@keyframes svc8Logo{0%{opacity:0;transform:translateY(18px) scale(.84) rotate(-9deg)}38%{opacity:.20}100%{opacity:.12;transform:translateY(-8px) scale(1.03) rotate(5deg)}}
-@keyframes svc8Orbit{0%{transform:rotate(20deg) scale(1.08);opacity:.18}52%{opacity:.58}100%{transform:rotate(380deg) scale(.88);opacity:.28}}
-@keyframes svc8Light{0%{transform:translate3d(18%,-18%,0) rotate(-8deg);opacity:0}44%{opacity:.48}100%{transform:translate3d(-18%,14%,0) rotate(4deg);opacity:.18}}
-@keyframes svc8Depth{0%{opacity:.74;filter:saturate(.96)}50%{opacity:.46;filter:saturate(1.1)}100%{opacity:.72;filter:saturate(1)}}
-
-@keyframes svc9Photo{0%{transform:scale(1.05) translate3d(0,1.2%,0)}100%{transform:scale(1.14) translate3d(0,-.9%,0)}}
-@keyframes svc9Logo{0%{opacity:.05;transform:translate3d(12px,12px,0) scale(.88)}40%{opacity:.22;transform:translate3d(-4px,-3px,0) scale(1.04)}100%{opacity:.13;transform:translate3d(-10px,-8px,0) scale(.98)}}
-@keyframes svc9Orbit{0%{transform:rotate(0) scale(.9);opacity:.24}100%{transform:rotate(-360deg) scale(1.08);opacity:.50}}
-@keyframes svc9Light{0%{transform:scale(.88) rotate(6deg);opacity:.02}50%{opacity:.45}100%{transform:scale(1.12) rotate(-4deg);opacity:.16}}
-@keyframes svc9Depth{0%,100%{opacity:.78;filter:contrast(1)}50%{opacity:.48;filter:contrast(1.1)}}
-
-@keyframes svc10Photo{0%{transform:scale(1.14) translate3d(-1%,0,0)}100%{transform:scale(1.07) translate3d(1%,0,0)}}
-@keyframes svc10Logo{0%{opacity:0;transform:translateX(-18px) scale(.86) rotate(8deg)}36%{opacity:.22}100%{opacity:.13;transform:translateX(10px) scale(1.02) rotate(-5deg)}}
-@keyframes svc10Orbit{0%{transform:rotate(90deg) scale(1.08);opacity:.20}100%{transform:rotate(450deg) scale(.9);opacity:.52}}
-@keyframes svc10Light{0%{transform:translateX(28%) skewX(8deg);opacity:0}42%{opacity:.50}100%{transform:translateX(-20%) skewX(-4deg);opacity:.18}}
-@keyframes svc10Depth{0%{opacity:.82;transform:scale(1)}50%{opacity:.50;transform:scale(1.03)}100%{opacity:.70;transform:scale(1)}}
-
-@media(max-width:760px){body[data-service-cinema-ready='1']{--svc-transition-ms:1050ms}.svc-cinema-frame{inset:-2%}.svc-photo{filter:saturate(.84) contrast(1.03) brightness(.78)}.svc-logo-main{width:24%;opacity:.14}.svc-photo-orbit{width:29%;opacity:.34}.svc-photo-light{filter:none;opacity:.22}.svc-cinema-grain{display:none}.svc-cinema-mask{background:linear-gradient(110deg,rgba(7,24,36,.88),rgba(7,24,36,.58),rgba(7,24,36,.86))}.svc-tone-light .svc-cinema-mask{background:linear-gradient(110deg,rgba(247,244,235,.93),rgba(247,244,235,.78),rgba(247,244,235,.92))}}
-@media(prefers-reduced-motion:reduce){.svc-cinema-frame,.svc-cinema-frame>i{animation:none!important;transition:none!important;transform:none!important}.svc-cinema-frame.is-current{opacity:1}.svc-logo-main{opacity:.12}.svc-photo-orbit,.svc-photo-light{display:none}.svc-photo-depth{opacity:.72}}
 body.perf-scrolling .svc-cinema-frame>i,body.perf-wheel-active .svc-cinema-frame>i{animation-play-state:paused!important}
+body.runtime-pressure-high .svc-photo-orbit{display:none}
+
+@media(max-width:760px){
+  body[data-service-cinema-ready='1']{--svc-transition-ms:820ms}
+  .svc-cinema-frame{inset:-1%}
+  .svc-photo{filter:brightness(.76) saturate(.92)}
+  .svc-logo-main{width:38%;opacity:.10;filter:none}
+  .svc-photo-orbit{opacity:.22;box-shadow:none}
+  .svc-photo-light{opacity:.20;mix-blend-mode:normal}
+  .svc-cinema-grain{display:none}
+  body.has-global-service-cinema .section-light{background:rgba(255,255,255,.94)}
+  body.has-global-service-cinema .section-ivory{background:rgba(248,244,236,.94)}
+}
+@media(prefers-reduced-motion:reduce){.svc-cinema-frame>i,.svc-cinema-global.is-transitioning .svc-cinema-frame{animation:none!important}.svc-cinema-frame{transition:opacity .26s ease}.svc-photo-orbit,.svc-photo-light{display:none}}
