@@ -1,9 +1,14 @@
-name: Validate Amantusi Platform v2
+name: Validate Amantusi Platform
 
 on:
   push:
     branches:
       - platform-v2-upgrade
+      - 'perf/**'
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -22,4 +27,5 @@ jobs:
         run: |
           set -euo pipefail
           npm run check
+          node --check gcp/cloud-run-overflow/server.mjs
           npx wrangler deploy --dry-run --outdir .wrangler-dry-run
