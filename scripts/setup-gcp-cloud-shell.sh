@@ -39,7 +39,6 @@ gcloud services enable \
   sts.googleapis.com \
   cloudresourcemanager.googleapis.com \
   serviceusage.googleapis.com \
-  cloudbuild.googleapis.com \
   --project="${PROJECT_ID}" >/dev/null
 
 say "Creating Artifact Registry repository if needed"
@@ -139,11 +138,11 @@ if [[ "${DEPLOY_NOW}" == "1" ]]; then
     exit 3
   fi
 
-  say "Building the tiny overflow image with Cloud Build"
+  say "Building the tiny container directly inside free Google Cloud Shell"
   IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/${SERVICE}:bootstrap"
-  gcloud builds submit gcp/cloud-run-overflow \
-    --tag="${IMAGE}" \
-    --project="${PROJECT_ID}"
+  gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+  docker build --pull -t "${IMAGE}" gcp/cloud-run-overflow
+  docker push "${IMAGE}"
 
   say "Deploying a private, scale-to-zero, max-one-instance Cloud Run service"
   gcloud run deploy "${SERVICE}" \
@@ -159,7 +158,7 @@ if [[ "${DEPLOY_NOW}" == "1" ]]; then
     --cpu=1 \
     --memory=256Mi \
     --timeout=30s \
-    --execution-environment=gen2 \
+    --execution-environment=gen1 \
     --labels="app=amantusi-overflow,cost-profile=free-tier-guarded"
 fi
 
@@ -182,10 +181,12 @@ cat <<'EOF'
 
 Cost guardrails applied:
 - public Amantusi website remains on Cloudflare static assets
+- container build runs inside the free Cloud Shell session, not Cloud Build
 - Cloud Run is private
 - Cloud Run min instances = 0
 - Cloud Run max instances = 1
 - 1 vCPU / 256 MiB / 30 s timeout / concurrency 80
+- gen1 execution environment permits the 256 MiB memory target and suits infrequent scale-from-zero traffic
 - Artifact Registry automatically removes old versions and keeps only 2 recent versions
 - vulnerability scanning is not enabled by this bootstrap
 - no VPC connector, NAT gateway, load balancer, Cloud SQL, Memorystore, GKE, or always-on VM is created
