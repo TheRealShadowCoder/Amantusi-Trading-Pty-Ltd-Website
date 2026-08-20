@@ -139,6 +139,38 @@ export function overflowConfigured(env) {
     && Boolean(env.GCP_CLOUD_RUN_URL);
 }
 
+export async function probeOverflowHealth(env, { timeoutMs = 8000 } = {}) {
+  if (!overflowConfigured(env)) return { ok: false, disabled: true, error: 'overflow-not-configured' };
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort('timeout'), timeoutMs);
+  const started = Date.now();
+  try {
+    const token = await cloudRunIdToken(env);
+    const response = await fetch(`${String(env.GCP_CLOUD_RUN_URL).replace(/\/$/, '')}/health`, {
+      method: 'GET',
+      headers: {
+        authorization: `Bearer ${token}`,
+        'user-agent': 'amantusi-cloudflare-overflow/1.0'
+      },
+      signal: controller.signal
+    });
+    const payload = await response.json().catch(() => ({}));
+    return {
+      ok: response.ok && payload.ok === true,
+      status: response.status,
+      latencyMs: Date.now() - started,
+      provider: payload.provider || 'google-cloud-run',
+      mode: payload.mode || null,
+      version: payload.version || null,
+      error: response.ok ? null : (payload.error || 'cloud-run-health-rejected')
+    };
+  } catch (error) {
+    return { ok: false, latencyMs: Date.now() - started, error: String(error?.message || error).slice(0, 500) };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function invokeOverflowTask(env, task, { timeoutMs = 12_000 } = {}) {
   if (!overflowConfigured(env)) return { ok: false, disabled: true, error: 'overflow-not-configured' };
   const allowed = new Set(['document-preview', 'integration-batch', 'report-prep']);
@@ -176,14 +208,18 @@ export async function overflowRoute(request, env) {
   if (!admin) return json({ error: 'Administrator login required.' }, 401);
 
   if (url.pathname.endsWith('/status') && request.method === 'GET') {
+    const shouldProbe = url.searchParams.get('probe') === '1';
     return json({
       ok: true,
       configured: overflowConfigured(env),
+      enabled: String(env.GCP_OVERFLOW_ENABLED || 'false').toLowerCase() === 'true',
       provider: 'google-cloud-run',
       privateIam: true,
       serviceUrl: env.GCP_CLOUD_RUN_URL || null,
       pool: env.GCP_WIF_POOL || null,
-      providerId: env.GCP_WIF_PROVIDER || null
+      providerId: env.GCP_WIF_PROVIDER || null,
+      invoker: env.GCP_INVOKER_SERVICE_ACCOUNT || null,
+      probe: shouldProbe ? await probeOverflowHealth(env) : null
     });
   }
 
