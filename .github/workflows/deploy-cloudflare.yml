@@ -54,6 +54,20 @@ jobs:
             exit 1
           fi
 
+      - name: Sync Google Sign-In client ID to Cloudflare
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          GOOGLE_SIGNIN_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_CLIENT_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "$GOOGLE_SIGNIN_CLIENT_ID" ]; then
+            echo "::warning::GOOGLE_SIGNIN_CLIENT_ID is not configured yet. The admin page will expose the temporary emergency login fallback until Google Sign-In is configured."
+            exit 0
+          fi
+          printf '%s' "$GOOGLE_SIGNIN_CLIENT_ID" | npx wrangler secret put GOOGLE_SIGNIN_CLIENT_ID
+          echo "Google Sign-In client ID synchronized to the Amantusi Worker."
+
       - name: Deploy permanent Amantusi Worker
         shell: bash
         env:
