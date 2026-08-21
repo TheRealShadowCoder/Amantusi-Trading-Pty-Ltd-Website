@@ -9,6 +9,7 @@
   <link rel="icon" href="/assets/amantusi-logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/catering.css">
+  <link rel="stylesheet" href="/catering-motion.css">
 </head>
 <body class="catering-body">
   <header class="subsite-header">
@@ -76,6 +77,21 @@
       </div>
     </section>
 
+    <section class="menu-section cm-gallery-shell" data-catering-gallery-shell hidden>
+      <div class="container">
+        <div class="cm-gallery-heading">
+          <div>
+            <p class="menu-kicker">Catering moments</p>
+            <h2>Presentation that<br>moves with the occasion.</h2>
+          </div>
+          <span class="cm-gallery-hint">Drag or swipe to explore • up to 20 published images</span>
+        </div>
+        <div data-catering-gallery>
+          <div data-catering-gallery-track></div>
+        </div>
+      </div>
+    </section>
+
     <section class="menu-section brochure-band">
       <div class="container brochure-grid">
         <article class="brochure-card">
@@ -100,6 +116,7 @@
       <div class="footer-legal"><span>Registration 2016/443097/07</span><span>CSD No. MAAA0100552</span><span>073 247 6716</span></div>
     </div>
   </footer>
+  <script src="/catering-motion.js" defer></script>
   <script src="/catering.js" defer></script>
 </body>
 </html>
