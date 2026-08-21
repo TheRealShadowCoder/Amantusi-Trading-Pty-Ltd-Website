@@ -56,6 +56,7 @@ function esc(value = '') {
 
 function motionRefresh(scope = document) {
   window.CateringMotion?.refresh?.(scope);
+  window.AmantusiCateringUX500?.refresh?.(scope);
 }
 
 function portfolioMap(portfolio) {
@@ -88,16 +89,26 @@ function initPortfolioHero(portfolio) {
     let current = 0;
     img.src = sources[0];
     menuHero.classList.add('has-catering-photo');
+    menuHero.dataset.heroIndex = '0';
+
+    const changeHero = direction => {
+      if (sources.length < 2) return;
+      visual.classList.add('is-changing');
+      window.setTimeout(() => {
+        current = (current + direction + sources.length) % sources.length;
+        img.src = sources[current];
+        menuHero.dataset.heroIndex = String(current);
+        visual.classList.remove('is-changing');
+        document.dispatchEvent(new CustomEvent('amantusi:catering:hero-change', { detail: { index: current, total: sources.length } }));
+      }, reducedMotion ? 0 : 260);
+    };
+    menuHero.addEventListener('amantusi:hero-next', () => changeHero(1));
+    menuHero.addEventListener('amantusi:hero-prev', () => changeHero(-1));
 
     if (!reducedMotion && !saveData && sources.length > 1) {
       window.setInterval(() => {
-        if (document.hidden) return;
-        visual.classList.add('is-changing');
-        window.setTimeout(() => {
-          current = (current + 1) % sources.length;
-          img.src = sources[current];
-          visual.classList.remove('is-changing');
-        }, 420);
+        if (document.hidden || menuHero.matches(':hover')) return;
+        changeHero(1);
       }, 6500);
     }
   }
@@ -123,7 +134,7 @@ function renderGallery(portfolio) {
     }
     shell.hidden = false;
     track.innerHTML = images.map((item, index) => `
-      <figure class="cm-gallery-card" data-gallery-index="${index}">
+      <figure class="cm-gallery-card" data-gallery-index="${index}" data-gallery-key="${esc(item.key || String(index))}">
         <img src="${esc(item.src)}" alt="${esc(item.name)}" loading="lazy" decoding="async" fetchpriority="low" width="400" height="300">
         <figcaption><strong>${esc(item.name)}</strong><span>${esc(item.category || 'Amantusi Catering')}</span></figcaption>
       </figure>`).join('');
@@ -148,7 +159,7 @@ async function initMenu() {
   const renderTabs = () => {
     const buttons = [{id:'all',name:'All'}].concat(categories);
     tabs.innerHTML = buttons.map(cat =>
-      `<button class="category-tab ${selected === cat.id ? 'active' : ''}" data-category="${esc(cat.id)}">${esc(cat.name)}</button>`
+      `<button class="category-tab ${selected === cat.id ? 'active' : ''}" type="button" data-category="${esc(cat.id)}" aria-pressed="${selected === cat.id ? 'true' : 'false'}">${esc(cat.name)}</button>`
     ).join('');
     tabs.querySelectorAll('[data-category]').forEach(button => {
       button.addEventListener('click', () => {
@@ -156,6 +167,7 @@ async function initMenu() {
         selected = button.dataset.category;
         renderTabs();
         renderCards();
+        document.dispatchEvent(new CustomEvent('amantusi:catering:category', { detail: { category: selected } }));
       });
     });
     motionRefresh(tabs);
@@ -174,8 +186,10 @@ async function initMenu() {
       const image = src
         ? `<img src="${esc(src)}" alt="${esc(item.name)}" loading="lazy" decoding="async" ${index > 3 ? 'fetchpriority="low"' : ''} width="400" height="300">`
         : '';
+      const tags = Array.isArray(item.tags) ? item.tags : [];
+      const dietary = Array.isArray(item.dietary) ? item.dietary : [];
       return `
-        <article class="menu-card">
+        <article class="menu-card" data-item-id="${esc(item.id || `item-${index}`)}" data-category="${esc(item.category || '')}" data-tags="${esc(tags.join('|'))}" data-dietary="${esc(dietary.join('|'))}" data-search="${esc([item.name,item.description,category?.name,...tags,...dietary].filter(Boolean).join(' '))}">
           <div class="menu-image">${image}${image ? `<span class="cm-caption">${esc(category?.name || 'Catering')}</span>` : ''}</div>
           <div class="menu-card-body">
             <div class="menu-card-top">
@@ -184,6 +198,7 @@ async function initMenu() {
             </div>
             <p>${esc(item.description || '')}</p>
             <span class="menu-category-label">${esc(category?.name || 'Catering')}</span>
+            ${(tags.length || dietary.length) ? `<div class="ux-card-meta">${[...tags,...dietary].map(tag=>`<span class="ux-meta-tag">${esc(tag)}</span>`).join('')}</div>` : ''}
           </div>
         </article>`;
     }).join('');
@@ -199,6 +214,9 @@ async function initMenu() {
   if (note) note.textContent = content.meta?.priceNote || '';
   renderTabs();
   renderCards();
+
+  window.AmantusiCateringData = { content, portfolio, categories, activeItems, get selectedCategory(){ return selected; } };
+  document.dispatchEvent(new CustomEvent('amantusi:catering:data-ready', { detail: { categories: categories.length, items: activeItems.length, portfolio: portfolio.items?.length || 0 } }));
 }
 
 async function initDynamicProfile() {
