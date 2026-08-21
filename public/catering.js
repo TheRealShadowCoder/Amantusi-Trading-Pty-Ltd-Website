@@ -1,4 +1,6 @@
 const AMANTUSI_PREVIEW_KEY = "amantusi-catering-preview";
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const saveData = Boolean(navigator.connection?.saveData);
 
 const luxuryStyles = document.createElement('link');
 luxuryStyles.rel = 'stylesheet';
@@ -6,21 +8,36 @@ luxuryStyles.href = '/catering-experience.css';
 document.head.appendChild(luxuryStyles);
 document.documentElement.classList.add('catering-luxury');
 
+let contentPromise = null;
+let portfolioPromise = null;
+
 async function getCateringContent() {
-  let data = null;
-  try {
-    const response = await fetch('/api/catering-content', { cache: 'no-store' });
-    if (response.ok) data = await response.json();
-  } catch (_) {}
-  if (!data) {
-    const response = await fetch('/data/catering.json', { cache: 'no-store' });
-    data = await response.json();
-  }
-  try {
-    const preview = localStorage.getItem(AMANTUSI_PREVIEW_KEY);
-    if (preview) data = JSON.parse(preview);
-  } catch (_) {}
-  return data;
+  if (contentPromise) return contentPromise;
+  contentPromise = (async () => {
+    let data = null;
+    try {
+      const response = await fetch('/api/catering-content', { cache: 'no-store' });
+      if (response.ok) data = await response.json();
+    } catch (_) {}
+    if (!data) {
+      const response = await fetch('/data/catering.json', { cache: 'no-store' });
+      data = await response.json();
+    }
+    try {
+      const preview = localStorage.getItem(AMANTUSI_PREVIEW_KEY);
+      if (preview) data = JSON.parse(preview);
+    } catch (_) {}
+    return data;
+  })();
+  return contentPromise;
+}
+
+async function getCateringPortfolio() {
+  if (portfolioPromise) return portfolioPromise;
+  portfolioPromise = fetch('/data/catering-portfolio.json', { cache: 'force-cache' })
+    .then(response => response.ok ? response.json() : Promise.reject(new Error('Portfolio unavailable')))
+    .catch(() => ({ hero: [], menuFallbacks: {}, items: [] }));
+  return portfolioPromise;
 }
 
 function money(value, label) {
@@ -41,34 +58,78 @@ function motionRefresh(scope = document) {
   window.CateringMotion?.refresh?.(scope);
 }
 
-function renderGallery(content) {
-  const shell = document.querySelector('[data-catering-gallery-shell]');
-  const track = document.querySelector('[data-catering-gallery-track]');
-  if (!shell || !track) return;
+function portfolioMap(portfolio) {
+  return new Map((portfolio.items || []).map(item => [item.key, item]));
+}
 
-  const images = [];
-  const seen = new Set();
-  for (const item of content.items || []) {
-    if (item.active === false || !item.image) continue;
-    const src = String(item.image);
-    if (seen.has(src)) continue;
-    seen.add(src);
-    images.push({ src, name: item.name || 'Amantusi Catering' });
-    if (images.length >= 20) break;
+function itemImage(item, portfolio, index = 0) {
+  if (item?.image) return String(item.image);
+  const map = portfolioMap(portfolio);
+  const fallbackKey = portfolio.menuFallbacks?.[item?.category];
+  if (fallbackKey && map.has(fallbackKey)) return map.get(fallbackKey).src;
+  const list = portfolio.items || [];
+  return list.length ? list[index % list.length].src : '';
+}
+
+function initPortfolioHero(portfolio) {
+  const map = portfolioMap(portfolio);
+  const keys = (portfolio.hero || []).filter(key => map.has(key));
+  if (!keys.length) return;
+
+  const menuHero = document.querySelector('.menu-hero');
+  if (menuHero && !menuHero.querySelector('[data-catering-hero-photo]')) {
+    const visual = document.createElement('div');
+    visual.className = 'catering-photo-hero';
+    visual.setAttribute('aria-hidden', 'true');
+    visual.innerHTML = '<img data-catering-hero-photo alt="" decoding="async"><span></span>';
+    menuHero.prepend(visual);
+    const img = visual.querySelector('img');
+    const sources = keys.map(key => map.get(key).src);
+    let current = 0;
+    img.src = sources[0];
+    menuHero.classList.add('has-catering-photo');
+
+    if (!reducedMotion && !saveData && sources.length > 1) {
+      window.setInterval(() => {
+        if (document.hidden) return;
+        visual.classList.add('is-changing');
+        window.setTimeout(() => {
+          current = (current + 1) % sources.length;
+          img.src = sources[current];
+          visual.classList.remove('is-changing');
+        }, 420);
+      }, 6500);
+    }
   }
 
-  if (!images.length) {
-    shell.hidden = true;
-    return;
+  const brochureCover = document.querySelector('.brochure-cover');
+  if (brochureCover) {
+    const image = map.get('gala-buffet') || map.get(keys[0]);
+    if (image) {
+      brochureCover.style.setProperty('--catering-cover-image', `url("${image.src}")`);
+      brochureCover.classList.add('has-catering-photo');
+    }
   }
+}
 
-  shell.hidden = false;
-  track.innerHTML = images.map((item, index) => `
-    <figure class="cm-gallery-card" data-gallery-index="${index}">
-      <img src="${esc(item.src)}" alt="${esc(item.name)}" loading="lazy" decoding="async" fetchpriority="low">
-      <figcaption>${esc(item.name)}</figcaption>
-    </figure>`).join('');
-  motionRefresh(shell);
+function renderGallery(portfolio) {
+  const images = (portfolio.items || []).slice(0, 20);
+  document.querySelectorAll('[data-catering-gallery-shell]').forEach(shell => {
+    const track = shell.querySelector('[data-catering-gallery-track]');
+    if (!track) return;
+    if (!images.length) {
+      shell.hidden = true;
+      return;
+    }
+    shell.hidden = false;
+    track.innerHTML = images.map((item, index) => `
+      <figure class="cm-gallery-card" data-gallery-index="${index}">
+        <img src="${esc(item.src)}" alt="${esc(item.name)}" loading="lazy" decoding="async" fetchpriority="low" width="400" height="300">
+        <figcaption><strong>${esc(item.name)}</strong><span>${esc(item.category || 'Amantusi Catering')}</span></figcaption>
+      </figure>`).join('');
+    shell.querySelectorAll('[data-catering-portfolio-count]').forEach(node => { node.textContent = String(images.length); });
+    motionRefresh(shell);
+  });
 }
 
 async function initMenu() {
@@ -76,10 +137,13 @@ async function initMenu() {
   if (!grid) return;
   const tabs = document.querySelector('[data-category-tabs]');
   const note = document.querySelector('[data-price-note]');
-  const content = await getCateringContent();
+  const [content, portfolio] = await Promise.all([getCateringContent(), getCateringPortfolio()]);
   const activeItems = (content.items || []).filter(item => item.active !== false);
   const categories = content.categories || [];
   let selected = 'all';
+
+  initPortfolioHero(portfolio);
+  renderGallery(portfolio);
 
   const renderTabs = () => {
     const buttons = [{id:'all',name:'All'}].concat(categories);
@@ -106,8 +170,9 @@ async function initMenu() {
 
     grid.innerHTML = list.map((item, index) => {
       const category = categories.find(cat => cat.id === item.category);
-      const image = item.image
-        ? `<img src="${esc(item.image)}" alt="${esc(item.name)}" loading="lazy" decoding="async" ${index > 3 ? 'fetchpriority="low"' : ''}>`
+      const src = itemImage(item, portfolio, index);
+      const image = src
+        ? `<img src="${esc(src)}" alt="${esc(item.name)}" loading="lazy" decoding="async" ${index > 3 ? 'fetchpriority="low"' : ''} width="400" height="300">`
         : '';
       return `
         <article class="menu-card">
@@ -134,14 +199,14 @@ async function initMenu() {
   if (note) note.textContent = content.meta?.priceNote || '';
   renderTabs();
   renderCards();
-  renderGallery(content);
 }
 
 async function initDynamicProfile() {
   const nodes = document.querySelectorAll('[data-profile]');
   const introNodes = document.querySelectorAll('[data-brand-intro]');
-  if (!nodes.length && !introNodes.length) return;
-  const content = await getCateringContent();
+  const needsPortfolio = Boolean(document.querySelector('.brochure-cover,[data-catering-gallery-shell]'));
+  if (!nodes.length && !introNodes.length && !needsPortfolio) return;
+  const [content, portfolio] = await Promise.all([getCateringContent(), getCateringPortfolio()]);
   const profile = content.profile || {};
   nodes.forEach(node => {
     const key = node.dataset.profile;
@@ -150,6 +215,8 @@ async function initDynamicProfile() {
   introNodes.forEach(node => {
     if (content.brand?.brochureIntro) node.textContent = content.brand.brochureIntro;
   });
+  initPortfolioHero(portfolio);
+  renderGallery(portfolio);
 }
 
 function initPrintButtons() {
