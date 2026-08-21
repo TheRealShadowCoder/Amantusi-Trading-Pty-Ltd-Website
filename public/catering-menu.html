@@ -2,24 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#071923">
-  <meta name="description" content="Amantusi Catering digital menu and catering brochure for meetings, functions, institutions and events.">
+  <meta name="description" content="Explore Amantusi Catering menus, portfolio imagery and a structured catering brief for meetings, functions, institutions and events.">
+  <meta property="og:title" content="Amantusi Catering | Digital Menu">
+  <meta property="og:description" content="Explore catering options, build a brief and request structured catering pricing from Amantusi Trading Pty Ltd.">
+  <meta property="og:type" content="website">
   <title>Amantusi Catering | Digital Menu</title>
   <link rel="icon" href="/assets/amantusi-logo.svg" type="image/svg+xml">
   <link rel="preload" href="/assets/catering/signature-buffet.webp" as="image" type="image/webp" fetchpriority="high">
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/catering.css">
   <link rel="stylesheet" href="/catering-motion.css">
+  <link rel="stylesheet" href="/catering-ux500.css">
 </head>
 <body class="catering-body">
-  <header class="subsite-header">
+  <header class="subsite-header" id="top">
     <div class="subsite-nav">
-      <a class="subsite-brand" href="/">
+      <a class="subsite-brand" href="/" aria-label="Amantusi Trading home">
         <img src="/assets/amantusi-logo.svg" alt="Amantusi Trading logo">
         <span><strong>AMANTUSI</strong><small>CATERING</small></span>
       </a>
-      <nav class="subsite-links">
+      <nav class="subsite-links" aria-label="Catering navigation">
         <a href="/">Main Website</a>
         <a href="/catering-brochure.html">Catering Brochure</a>
         <a href="/company-profile.html">Company Profile</a>
@@ -29,11 +33,11 @@
   </header>
 
   <main>
-    <section class="menu-hero">
+    <section class="menu-hero" aria-labelledby="catering-main-title">
       <div class="container menu-hero-grid">
         <div>
           <p class="menu-kicker">Catering • functions • institutional service</p>
-          <h1><span data-catering-title>Amantusi Catering</span><br><em>Menu Collection.</em></h1>
+          <h1 id="catering-main-title"><span data-catering-title>Amantusi Catering</span><br><em>Menu Collection.</em></h1>
           <p data-catering-subtitle>Professional catering for meetings, functions, institutions and events.</p>
           <div class="menu-actions">
             <a class="menu-btn gold" href="#menu">View Menu</a>
@@ -53,7 +57,7 @@
       </div>
     </section>
 
-    <section class="menu-trust">
+    <section class="menu-trust" aria-label="Catering service principles">
       <div class="container menu-trust-grid">
         <div><strong>Flexible Menus</strong><small>Built around the client brief</small></div>
         <div><strong>Quantity Based</strong><small>Pricing aligned to guest count</small></div>
@@ -62,31 +66,31 @@
       </div>
     </section>
 
-    <section class="menu-section" id="menu">
+    <section class="menu-section" id="menu" tabindex="-1">
       <div class="container">
         <div class="menu-heading">
           <div>
             <p class="menu-kicker">Digital menu</p>
             <h2>Choose a category.<br>Build the brief.</h2>
           </div>
-          <p>The menu is managed by Amantusi. Items, descriptions, images and pricing can be updated from the admin portal without redesigning this page.</p>
+          <p>Explore published menu options, save favourites and build a catering brief. Final pricing remains aligned to guest count, menu selection, venue, service level and delivery requirements.</p>
         </div>
-        <div class="category-tabs" data-category-tabs></div>
-        <div class="menu-grid" data-menu-grid>
+        <div class="category-tabs" data-category-tabs aria-label="Menu categories"></div>
+        <div class="menu-grid" data-menu-grid aria-live="polite">
           <div class="empty-menu">Loading catering menu…</div>
         </div>
         <div class="price-note" data-price-note></div>
       </div>
     </section>
 
-    <section class="menu-section cm-gallery-shell" id="portfolio" data-catering-gallery-shell hidden>
+    <section class="menu-section cm-gallery-shell" id="portfolio" data-catering-gallery-shell hidden tabindex="-1">
       <div class="container">
         <div class="cm-gallery-heading">
           <div>
             <p class="menu-kicker">Catering moments • <span data-catering-portfolio-count>20</span> visuals</p>
             <h2>Presentation that<br>moves with the occasion.</h2>
           </div>
-          <span class="cm-gallery-hint">Drag or swipe to explore the complete collection</span>
+          <span class="cm-gallery-hint">Drag, swipe, use the keyboard or open an image full screen</span>
         </div>
         <div data-catering-gallery>
           <div data-catering-gallery-track></div>
@@ -99,14 +103,14 @@
         <article class="brochure-card">
           <p class="menu-kicker">Need a formal presentation?</p>
           <h3>Catering Services Brochure</h3>
-          <p>Open the brochure version for a more formal presentation of catering capabilities, event formats, service workflow and contact details.</p>
+          <p>Open the brochure version for a formal presentation of catering capabilities, event formats, service workflow and contact details.</p>
           <div class="menu-actions"><a class="menu-btn dark" href="/catering-brochure.html">Open Brochure</a></div>
         </article>
         <article class="brochure-card">
           <p class="menu-kicker">Procurement enquiry</p>
           <h3>Request Custom Pricing</h3>
-          <p>Send guest count, venue, date, menu requirements and any RFQ reference. Amantusi can prepare a structured quotation from the brief.</p>
-          <div class="menu-actions"><a class="menu-btn dark" href="/#quote">Request a Quote</a></div>
+          <p>Build a catering brief here, then continue into the structured quotation form with your selected options and event details already carried across.</p>
+          <div class="menu-actions"><button class="menu-btn dark" type="button" data-ux-builder-open>Build Catering Brief</button></div>
         </article>
       </div>
     </section>
@@ -120,5 +124,6 @@
   </footer>
   <script src="/catering-motion.js" defer></script>
   <script src="/catering.js" defer></script>
+  <script src="/catering-ux500.js" defer></script>
 </body>
 </html>
