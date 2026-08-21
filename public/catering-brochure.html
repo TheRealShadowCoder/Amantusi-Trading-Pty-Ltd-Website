@@ -2,24 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#071923">
-  <meta name="description" content="Amantusi Trading Pty Ltd catering services brochure.">
+  <meta name="description" content="Amantusi Trading Pty Ltd catering services brochure and visual portfolio.">
   <title>Amantusi Catering | Services Brochure</title>
   <link rel="icon" href="/assets/amantusi-logo.svg" type="image/svg+xml">
   <link rel="preload" href="/assets/catering/gala-buffet.webp" as="image" type="image/webp" fetchpriority="high">
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/catering.css">
   <link rel="stylesheet" href="/catering-motion.css">
+  <link rel="stylesheet" href="/catering-ux500.css">
 </head>
 <body class="catering-body">
-  <header class="subsite-header">
+  <header class="subsite-header" id="top">
     <div class="subsite-nav">
-      <a class="subsite-brand" href="/">
+      <a class="subsite-brand" href="/" aria-label="Amantusi Trading home">
         <img src="/assets/amantusi-logo.svg" alt="Amantusi Trading logo">
         <span><strong>AMANTUSI</strong><small>CATERING BROCHURE</small></span>
       </a>
-      <nav class="subsite-links">
+      <nav class="subsite-links" aria-label="Catering brochure navigation">
         <a href="/">Main Website</a>
         <a href="/catering-menu.html">Digital Menu</a>
         <a href="#portfolio">Portfolio</a>
@@ -32,16 +33,16 @@
   <button class="menu-btn gold brochure-nav-print" type="button" data-print>Print / Save PDF</button>
 
   <main>
-    <section class="brochure-cover">
+    <section class="brochure-cover" aria-labelledby="brochure-title">
       <div class="brochure-cover-inner">
         <img src="/assets/amantusi-logo.svg" alt="Amantusi Trading logo">
         <p class="menu-kicker">Amantusi Trading Pty Ltd</p>
-        <h1>Catering<br>Services Brochure</h1>
+        <h1 id="brochure-title">Catering<br>Services Brochure</h1>
         <p data-brand-intro>Flexible catering solutions designed around the client's brief, guest count, service format and delivery requirements.</p>
       </div>
     </section>
 
-    <section class="menu-section">
+    <section class="menu-section" id="services">
       <div class="container">
         <div class="menu-heading">
           <div><p class="menu-kicker">Catering division</p><h2>Professional food service.<br>Structured around the brief.</h2></div>
@@ -56,17 +57,17 @@
       </div>
     </section>
 
-    <section class="menu-section cm-gallery-shell" id="portfolio" data-catering-gallery-shell hidden>
+    <section class="menu-section cm-gallery-shell" id="portfolio" data-catering-gallery-shell hidden tabindex="-1">
       <div class="container">
         <div class="cm-gallery-heading">
           <div><p class="menu-kicker">Visual portfolio • <span data-catering-portfolio-count>20</span> scenes</p><h2>From boardrooms<br>to gala service.</h2></div>
-          <span class="cm-gallery-hint">Drag or swipe to explore the full catering collection</span>
+          <span class="cm-gallery-hint">Drag, swipe, use the keyboard or open an image full screen</span>
         </div>
         <div data-catering-gallery><div data-catering-gallery-track></div></div>
       </div>
     </section>
 
-    <section class="menu-section brochure-band">
+    <section class="menu-section brochure-band" id="process">
       <div class="container">
         <div class="menu-heading"><div><p class="menu-kicker">How it works</p><h2>Brief to quotation.</h2></div><p>The service process is designed to make procurement communication simple and documented.</p></div>
         <div class="process-line">
@@ -81,7 +82,7 @@
 
     <section class="menu-section">
       <div class="container brochure-grid">
-        <article class="brochure-card"><p class="menu-kicker">Digital menu</p><h3>Browse Menu Categories</h3><p>The digital menu can display current menu items, images and prices published by the Amantusi administrator.</p><div class="menu-actions"><a class="menu-btn dark" href="/catering-menu.html">Open Digital Menu</a></div></article>
+        <article class="brochure-card"><p class="menu-kicker">Digital menu</p><h3>Browse Menu Categories</h3><p>Explore current published menu items and build a reusable catering brief.</p><div class="menu-actions"><a class="menu-btn dark" href="/catering-menu.html">Open Digital Menu</a></div></article>
         <article class="brochure-card"><p class="menu-kicker">Contact</p><h3>Request Catering Pricing</h3><p>Email: <strong data-profile="email">zodwangema37@gmail.com</strong><br>Cell: <strong data-profile="phone">073 247 6716</strong></p><div class="menu-actions"><a class="menu-btn gold" href="/#quote">Request a Quotation</a></div></article>
       </div>
     </section>
@@ -95,5 +96,6 @@
   </footer>
   <script src="/catering-motion.js" defer></script>
   <script src="/catering.js" defer></script>
+  <script src="/catering-ux500.js" defer></script>
 </body>
 </html>
