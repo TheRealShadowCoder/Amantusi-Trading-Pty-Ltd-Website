@@ -34,10 +34,12 @@ function appendSource(csp, directive, source) {
 function allowGoogleIdentity(response) {
   const headers = new Headers(response.headers);
   let csp = headers.get('Content-Security-Policy') || "default-src 'self'";
-  csp = appendSource(csp, 'script-src', 'https://accounts.google.com');
-  csp = appendSource(csp, 'connect-src', 'https://accounts.google.com');
-  csp = appendSource(csp, 'frame-src', 'https://accounts.google.com');
+  csp = appendSource(csp, 'script-src', 'https://accounts.google.com/gsi/client');
+  csp = appendSource(csp, 'connect-src', 'https://accounts.google.com/gsi/');
+  csp = appendSource(csp, 'frame-src', 'https://accounts.google.com/gsi/');
+  csp = appendSource(csp, 'style-src', 'https://accounts.google.com/gsi/style');
   headers.set('Content-Security-Policy', csp);
+  headers.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
