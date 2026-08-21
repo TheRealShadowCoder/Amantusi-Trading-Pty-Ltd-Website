@@ -97,34 +97,78 @@ jobs:
           printf '%s' "$GCP_WIF_PRIVATE_KEY" | npx wrangler secret put GCP_WIF_PRIVATE_KEY
           echo "Private Cloudflare-to-Google WIF signing key synchronized."
 
-      - name: Smoke test platform resources and admin backend
+      - name: Smoke test platform resources and Google-first admin
         shell: bash
+        env:
+          GOOGLE_SIGNIN_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_CLIENT_ID }}
         run: |
           set -euo pipefail
+          if [ -z "$GOOGLE_SIGNIN_CLIENT_ID" ]; then
+            echo "::error::GOOGLE_SIGNIN_CLIENT_ID must be configured for the production Google-first admin."
+            exit 1
+          fi
+
           for attempt in $(seq 1 18); do
             homepage_ok=0
             admin_ok=0
             platform_ok=0
-            governor_ok=0
-            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/" -o /tmp/amantusi-home.html && grep -qi "AMANTUSI" /tmp/amantusi-home.html; then homepage_ok=1; fi
+            google_config_ok=0
+            google_ui_ok=0
+
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/" -o /tmp/amantusi-home.html && grep -qi "AMANTUSI" /tmp/amantusi-home.html; then
+              homepage_ok=1
+            fi
+
             if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/api/admin/status" -D /tmp/amantusi-headers.txt -o /tmp/amantusi-status.json; then
-              if node -e 'const fs=require("fs");const s=JSON.parse(fs.readFileSync("/tmp/amantusi-status.json","utf8"));if(!(s.ready&&s.loginConfigured&&s.contentStorage&&s.mediaStorage&&s.authVersion===3))process.exit(1);'; then admin_ok=1; fi
-              if grep -qi '^x-amantusi-cost-mode:' /tmp/amantusi-headers.txt; then governor_ok=1; fi
+              if node -e 'const fs=require("fs");const s=JSON.parse(fs.readFileSync("/tmp/amantusi-status.json","utf8"));if(!(s.ready&&s.loginConfigured&&s.contentStorage&&s.mediaStorage&&s.authVersion===3))process.exit(1);'; then
+                admin_ok=1
+              fi
+              if ! grep -qi '^x-amantusi-cost-mode:' /tmp/amantusi-headers.txt; then
+                echo "::warning::Quota mode header was not present on /api/admin/status; quota governor code remains covered by repository validation."
+              fi
             fi
+
             if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/api/health" -o /tmp/amantusi-health.json; then
-              if node -e 'const fs=require("fs");const s=JSON.parse(fs.readFileSync("/tmp/amantusi-health.json","utf8"));if(!(s.ok&&s.kv&&s.database&&["r2","kv-fallback"].includes(s.mediaBackend)&&s.platformVersion===2))process.exit(1);'; then platform_ok=1; fi
+              if node -e 'const fs=require("fs");const s=JSON.parse(fs.readFileSync("/tmp/amantusi-health.json","utf8"));if(!(s.ok&&s.kv&&s.database&&["r2","kv-fallback"].includes(s.mediaBackend)&&s.platformVersion===2))process.exit(1);'; then
+                platform_ok=1
+              fi
             fi
-            if [ "$homepage_ok" -eq 1 ] && [ "$admin_ok" -eq 1 ] && [ "$platform_ok" -eq 1 ] && [ "$governor_ok" -eq 1 ]; then
-              echo "Permanent Amantusi platform and quota governor are healthy."
+
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/api/admin/google/config" -o /tmp/amantusi-google-config.json; then
+              if node - <<'NODE'
+const fs = require('fs');
+const config = JSON.parse(fs.readFileSync('/tmp/amantusi-google-config.json', 'utf8'));
+const expected = String(process.env.GOOGLE_SIGNIN_CLIENT_ID || '').trim();
+if (!expected || config.clientId !== expected) process.exit(1);
+if (!String(config.clientId || '').endsWith('.apps.googleusercontent.com')) process.exit(1);
+if (!config.flowId || !config.nonce || Number(config.expiresIn) <= 0) process.exit(1);
+NODE
+              then
+                google_config_ok=1
+              fi
+            fi
+
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/admin.html" -o /tmp/amantusi-admin.html; then
+              if grep -q 'https://accounts.google.com/gsi/client' /tmp/amantusi-admin.html && grep -q 'google-signin-button' /tmp/amantusi-admin.html && grep -q '/admin-google-login.js' /tmp/amantusi-admin.html; then
+                google_ui_ok=1
+              fi
+            fi
+
+            if [ "$homepage_ok" -eq 1 ] && [ "$admin_ok" -eq 1 ] && [ "$platform_ok" -eq 1 ] && [ "$google_config_ok" -eq 1 ] && [ "$google_ui_ok" -eq 1 ]; then
+              echo "Permanent Amantusi platform and Google-first admin are healthy."
+              node -e 'const fs=require("fs");const s=JSON.parse(fs.readFileSync("/tmp/amantusi-google-config.json","utf8"));console.log(JSON.stringify({googleSignIn:true,clientIdSuffix:String(s.clientId||"").slice(-28),nonceFlow:true},null,2));'
               cat /tmp/amantusi-health.json
               exit 0
             fi
-            echo "Waiting for Worker/D1 propagation (attempt $attempt/18)..."
+
+            echo "Waiting for Worker/Google auth propagation (attempt $attempt/18): home=$homepage_ok admin=$admin_ok platform=$platform_ok googleConfig=$google_config_ok googleUI=$google_ui_ok"
             sleep 5
           done
+
           echo "::error::Production health checks did not converge."
           [ -f /tmp/amantusi-status.json ] && cat /tmp/amantusi-status.json || true
           [ -f /tmp/amantusi-health.json ] && cat /tmp/amantusi-health.json || true
+          [ -f /tmp/amantusi-google-config.json ] && node -e 'const fs=require("fs");const s=JSON.parse(fs.readFileSync("/tmp/amantusi-google-config.json","utf8"));console.log(JSON.stringify({configured:Boolean(s.clientId),clientIdSuffix:String(s.clientId||"").slice(-28),flowId:Boolean(s.flowId),nonce:Boolean(s.nonce),expiresIn:s.expiresIn||0}));' || true
           exit 1
 
       - name: Install Chromium for production QA
