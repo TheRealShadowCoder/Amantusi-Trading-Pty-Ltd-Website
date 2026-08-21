@@ -26,12 +26,17 @@ for (const [name, html] of [['menu', menu], ['brochure', brochure]]) {
   requireText(html, '/catering-responsive-v3.css', `${name} responsive stylesheet`);
   requireText(html, '/catering-responsive-v3.js', `${name} responsive runtime`);
   requireText(html, 'data-catering-nav-toggle', `${name} mobile nav toggle`);
-  if (html.indexOf('/catering-responsive-v3.css') < html.indexOf('/catering-premium500.css')) {
+
+  const premiumCss = html.indexOf('/catering-premium500.css');
+  const premiumJs = html.indexOf('/catering-premium500.js');
+  const responsiveCss = html.indexOf('/catering-responsive-v3.css');
+  const responsiveJs = html.indexOf('/catering-responsive-v3.js');
+  if (premiumCss >= 0 && responsiveCss < premiumCss) {
     throw new Error(`Responsive catering validation failed: ${name} responsive CSS must load after premium CSS`);
   }
-  if (html.indexOf('/catering-responsive-v3.js') < html.indexOf('/catering-premium500.js')) {
+  if (premiumJs >= 0 && responsiveJs < premiumJs) {
     throw new Error(`Responsive catering validation failed: ${name} responsive runtime must load after premium runtime`);
   }
 }
 
-console.log('Catering responsive v3 validated: phone, tablet, landscape, safe-area, touch and adaptive runtime wiring are present.');
+console.log('Catering responsive v3 validated: phone, tablet, landscape, safe-area, touch and adaptive runtime wiring are present, including safe-mode pages.');
