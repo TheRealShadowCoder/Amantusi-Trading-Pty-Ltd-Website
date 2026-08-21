@@ -10,12 +10,9 @@
   <link rel="preload" href="/assets/catering/gala-buffet.webp" as="image" type="image/webp" fetchpriority="high">
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/catering.css">
-  <link rel="stylesheet" href="/catering-motion.css">
-  <link rel="stylesheet" href="/catering-ux500.css">
-  <link rel="stylesheet" href="/catering-premium500.css">
   <link rel="stylesheet" href="/catering-responsive-v3.css">
 </head>
-<body class="catering-body">
+<body class="catering-body" data-catering-safe-mode="true">
   <header class="subsite-header" id="top">
     <div class="subsite-nav">
       <a class="subsite-brand" href="/" aria-label="Amantusi Trading home">
@@ -64,13 +61,13 @@
       <div class="container">
         <div class="cm-gallery-heading">
           <div><p class="menu-kicker">Visual portfolio • <span data-catering-portfolio-count>20</span> scenes</p><h2>From boardrooms<br>to gala service.</h2></div>
-          <span class="cm-gallery-hint">Drag, swipe, use the keyboard or open an image full screen</span>
+          <span class="cm-gallery-hint">Drag or swipe through the catering portfolio</span>
         </div>
         <div data-catering-gallery><div data-catering-gallery-track></div></div>
       </div>
     </section>
 
-    <section class="menu-section brochure-band" id="process" data-ux-process-section>
+    <section class="menu-section brochure-band" id="process">
       <div class="container">
         <div class="menu-heading"><div><p class="menu-kicker">How it works</p><h2>Brief to quotation.</h2></div><p>The service process is designed to make procurement communication simple and documented.</p></div>
         <div class="process-line">
@@ -85,7 +82,7 @@
 
     <section class="menu-section">
       <div class="container brochure-grid">
-        <article class="brochure-card"><p class="menu-kicker">Digital menu</p><h3>Browse Menu Categories</h3><p>Explore current published menu items and build a reusable catering brief.</p><div class="menu-actions"><a class="menu-btn dark" href="/catering-menu.html">Open Digital Menu</a></div></article>
+        <article class="brochure-card"><p class="menu-kicker">Digital menu</p><h3>Browse Menu Categories</h3><p>Explore current published menu items and catering visuals.</p><div class="menu-actions"><a class="menu-btn dark" href="/catering-menu.html">Open Digital Menu</a></div></article>
         <article class="brochure-card"><p class="menu-kicker">Contact</p><h3>Request Catering Pricing</h3><p>Email: <strong data-profile="email">zodwangema37@gmail.com</strong><br>Cell: <strong data-profile="phone">073 247 6716</strong></p><div class="menu-actions"><a class="menu-btn gold" href="/#quote">Request a Quotation</a></div></article>
       </div>
     </section>
@@ -97,11 +94,7 @@
       <div class="footer-legal"><span>Registration <span data-profile="registration">2016/443097/07</span></span><span>CSD No. <span data-profile="csd">MAAA0100552</span></span></div>
     </div>
   </footer>
-  <script src="/catering-motion.js" defer></script>
   <script src="/catering.js" defer></script>
-  <script src="/catering-mutation-guard.js" defer></script>
-  <script src="/catering-ux500.js" defer></script>
-  <script src="/catering-premium500.js" defer></script>
   <script src="/catering-responsive-v3.js" defer></script>
 </body>
 </html>
