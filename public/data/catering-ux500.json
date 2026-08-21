@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "capabilityCount": 500,
+  "principles": {
+    "staticFirst": true,
+    "adaptiveMotion": true,
+    "reducedMotion": true,
+    "saveData": true,
+    "noFabricatedClaims": true,
+    "noFabricatedPricing": true,
+    "noFabricatedAvailability": true,
+    "noDarkPatterns": true
+  },
+  "dataBoundFeatures": {
+    "packages": { "enabled": false, "items": [] },
+    "testimonials": { "enabled": false, "items": [] },
+    "clientLogos": { "enabled": false, "items": [] },
+    "serviceAreas": { "enabled": false, "items": [] },
+    "liveAvailability": { "enabled": false, "source": null },
+    "livePricing": { "enabled": false, "source": null },
+    "dietaryCertifications": { "enabled": false, "items": [] },
+    "actualEventPhotography": { "enabled": false, "items": [] }
+  },
+  "adaptivePolicy": {
+    "high": { "maxConcurrentDecorativeEffects": 8, "premiumPointerEffects": true, "springCards": true, "ambientLighting": true },
+    "standard": { "maxConcurrentDecorativeEffects": 4, "premiumPointerEffects": false, "springCards": false, "ambientLighting": false },
+    "lite": { "maxConcurrentDecorativeEffects": 1, "premiumPointerEffects": false, "springCards": false, "ambientLighting": false }
+  }
+}
