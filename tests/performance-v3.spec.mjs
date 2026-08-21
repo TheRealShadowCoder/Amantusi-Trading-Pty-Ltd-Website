@@ -48,7 +48,7 @@ test('dynamic procurement platform remains healthy and isolated from static brow
   expect(data.platformVersion).toBe(2);
 });
 
-test('static security headers and admin isolation remain active', async ({ request, page }) => {
+test('static security headers and Google-first admin isolation remain active', async ({ request, page }) => {
   const home=await request.get('/');
   expect(home.headers()['content-security-policy']).toContain("frame-ancestors 'none'");
   expect(home.headers()['strict-transport-security']).toContain('max-age=');
@@ -57,7 +57,13 @@ test('static security headers and admin isolation remain active', async ({ reque
 
   const admin=await page.goto('/admin.html');
   expect(admin?.ok()).toBeTruthy();
-  await expect(page.locator('#passkey-login')).toBeVisible();
+  await expect(page.locator('#google-auth-shell')).toBeVisible();
+  await expect(page.locator('#google-signin-button')).toBeVisible();
+  await expect(page.getByText('Continue with Google', { exact: true })).toBeVisible();
+  await expect(page.locator('#login-form')).toHaveCount(0);
+  await expect(page.locator('#admin-password')).toHaveCount(0);
+  await expect(page.locator('script[src="https://accounts.google.com/gsi/client"]')).toHaveCount(1);
+  await expect(page.locator('script[src="/admin-google-login.js"]')).toHaveCount(1);
   await expect(page.locator('script[src="/experience.js"]')).toHaveCount(0);
   await expect(page.locator('script[src="/animation-registry.js"]')).toHaveCount(0);
 });
