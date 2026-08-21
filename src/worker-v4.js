@@ -14,6 +14,7 @@ function wrapperHeaders(response, requestId, started) {
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('X-Frame-Options', 'DENY');
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), publickey-credentials-create=(self), publickey-credentials-get=(self)');
   headers.set('Server-Timing', headers.get('Server-Timing') || `app;dur=${Date.now() - started}`);
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
