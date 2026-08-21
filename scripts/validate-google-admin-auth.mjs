@@ -25,17 +25,18 @@ for (const [needle, label] of [
 for (const [needle, label] of [
   ["googleAuthRoute", 'Google auth Worker route'],
   ['https://accounts.google.com/gsi/client', 'Google Identity Services loader'],
-  ["google-password-hidden", 'password-first UI suppression'],
-  ["/admin-google-login.js", 'Google login client injection'],
-  ["frame-src", 'Google iframe CSP allowance']
+  ["googleLoginPage", 'dedicated Google-first admin page'],
+  ["getAdminSession", 'session-aware admin routing'],
+  ["/admin-google-login.js", 'Google login client'],
+  ["frame-src", 'Google iframe CSP allowance'],
+  ["same-origin-allow-popups", 'Google popup COOP policy']
 ]) requireText(worker, needle, label);
 
 for (const [needle, label] of [
   ["/api/admin/google/config", 'Google config endpoint'],
   ["/api/admin/google/session", 'Google session endpoint'],
   ['nonce: flow.nonce', 'client nonce wiring'],
-  ["text: 'continue_with'", 'Google button copy'],
-  ['revealEmergencyPassword', 'safe emergency fallback']
+  ["text: 'continue_with'", 'Google button copy']
 ]) requireText(client, needle, label);
 
 requireText(css, '.google-auth-shell', 'Google auth UI styles');
@@ -45,4 +46,4 @@ if (backend.includes('GOOGLE_OAUTH_CLIENT_SECRET')) {
   throw new Error('Google admin auth validation failed: authentication-only flow must not require a Google client secret.');
 }
 
-console.log('Google admin auth validated: Google Identity Services, nonce/JWKS verification, allowlist binding, Google-only policy and emergency fallback are wired.');
+console.log('Google admin auth validated: Google Identity Services, nonce/JWKS verification, allowlist binding and dedicated Google-first admin routing are wired.');
