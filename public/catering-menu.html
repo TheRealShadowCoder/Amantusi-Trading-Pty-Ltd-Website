@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="/catering-motion.css">
   <link rel="stylesheet" href="/catering-ux500.css">
   <link rel="stylesheet" href="/catering-premium500.css">
+  <link rel="stylesheet" href="/catering-responsive-v3.css">
 </head>
 <body class="catering-body">
   <header class="subsite-header" id="top">
@@ -24,7 +25,8 @@
         <img src="/assets/amantusi-logo.svg" alt="Amantusi Trading logo">
         <span><strong>AMANTUSI</strong><small>CATERING</small></span>
       </a>
-      <nav class="subsite-links" aria-label="Catering navigation">
+      <button class="catering-mobile-nav-toggle" type="button" data-catering-nav-toggle aria-expanded="false" aria-controls="catering-subsite-nav" aria-label="Open catering navigation"><span aria-hidden="true"></span></button>
+      <nav class="subsite-links" id="catering-subsite-nav" aria-label="Catering navigation">
         <a href="/">Main Website</a>
         <a href="/catering-brochure.html">Catering Brochure</a>
         <a href="/company-profile.html">Company Profile</a>
@@ -127,5 +129,6 @@
   <script src="/catering.js" defer></script>
   <script src="/catering-ux500.js" defer></script>
   <script src="/catering-premium500.js" defer></script>
+  <script src="/catering-responsive-v3.js" defer></script>
 </body>
 </html>
