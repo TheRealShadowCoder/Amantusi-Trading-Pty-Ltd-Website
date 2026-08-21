@@ -33,10 +33,18 @@ if (!/AmantusiCateringUX500/.test(uxJs)) throw new Error('UX500 public runtime A
 if (!/AmantusiCateringPremium500/.test(premiumJs)) throw new Error('Premium500 runtime API is missing.');
 
 for (const [name, html] of [['menu', menuHtml], ['brochure', brochureHtml]]) {
-  for (const marker of ['/catering-ux500.css','/catering-ux500.js','/catering-premium500.css','/catering-premium500.js']) {
-    if (!html.includes(marker)) throw new Error(`${name} page does not load ${marker}.`);
-  }
+  const safeMode = html.includes('data-catering-safe-mode="true"');
   if (!html.includes('viewport-fit=cover')) throw new Error(`${name} page is missing safe-area viewport support.`);
+  if (safeMode) {
+    for (const marker of ['/catering-ux500.js','/catering-premium500.js','/catering-mutation-guard.js','/catering-motion.js']) {
+      if (html.includes(marker)) throw new Error(`${name} safe mode must not load ${marker}.`);
+    }
+    if (!html.includes('/catering-responsive-v3.js')) throw new Error(`${name} safe mode must retain responsive runtime.`);
+  } else {
+    for (const marker of ['/catering-ux500.css','/catering-ux500.js','/catering-premium500.css','/catering-premium500.js']) {
+      if (!html.includes(marker)) throw new Error(`${name} page does not load ${marker}.`);
+    }
+  }
 }
 
 for (const [name, html] of [['index-fast', fastHtml], ['index', indexHtml]]) {
@@ -60,4 +68,4 @@ if (!/navigator\.share/.test(uxJs)) throw new Error('UX500 share enhancement is 
 if (!/amantusi-catering-brief/.test(uxJs)) throw new Error('UX500 catering brief persistence is missing.');
 if (!/amantusi-catering-brief/.test(await readFile('public/catering-quote-bridge.js','utf8'))) throw new Error('Quote bridge does not consume catering briefs.');
 
-console.log('Catering UX500 validated: 500 capability registry, adaptive premium layer, quote bridge and data-safe feature hooks are wired.');
+console.log('Catering UX500 assets validated; live catering pages may run in stability safe mode while advanced runtime assets remain available for isolated re-entry testing.');
