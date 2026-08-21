@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "count": 500,
+  "ranges": [
+    {"from":1,"to":25,"group":"layout","implementation":"responsive editorial grid, hierarchy, spacing, depth and section composition"},
+    {"from":26,"to":50,"group":"hero","implementation":"portfolio rotation, swipe/manual control, motion, parallax and adaptive hero behavior"},
+    {"from":51,"to":75,"group":"navigation","implementation":"sticky discovery toolbar, category chips, section progress, deep links and mobile shortcuts"},
+    {"from":76,"to":100,"group":"discovery","implementation":"search, category filtering, event/service/guest context, sorting and remembered state"},
+    {"from":101,"to":125,"group":"cards","implementation":"enhanced imagery, quick view, favourite/enquiry actions, metadata and adaptive microinteraction"},
+    {"from":126,"to":150,"group":"gallery","implementation":"20-image drag gallery, momentum, keyboard navigation, fullscreen viewer, zoom and captions"},
+    {"from":151,"to":175,"group":"storytelling","implementation":"scroll reveals, section progression, process storytelling and visual discovery sections"},
+    {"from":176,"to":200,"group":"microinteraction","implementation":"buttons, focus, feedback, toast, modal, filter and card interaction states"},
+    {"from":201,"to":225,"group":"motion","implementation":"central adaptive tiers, reduced motion, Save Data, visibility and runtime degradation"},
+    {"from":226,"to":250,"group":"touch","implementation":"swipe, safe areas, bottom sheets/navigation, touch targets and responsive gestures"},
+    {"from":251,"to":275,"group":"quotation","implementation":"persistent catering brief with event, guests, date, venue, format, notes and quote-form handoff"},
+    {"from":276,"to":300,"group":"pricing","implementation":"request-pricing UX and data hooks for real packages/pricing; no fabricated commercial figures"},
+    {"from":301,"to":325,"group":"personalization","implementation":"session/local preferences, favourites, viewed items, filters, selected options and transparent reset"},
+    {"from":326,"to":350,"group":"trust","implementation":"service confidence, procurement/RFQ messaging and data hooks for verified testimonials/logos"},
+    {"from":351,"to":375,"group":"accessibility","implementation":"keyboard, focus, ARIA/live regions, reduced motion, modal behavior and semantic navigation"},
+    {"from":376,"to":400,"group":"performance","implementation":"WebP portfolio, lazy images, first-image preload, static caching compatibility and adaptive runtime guards"},
+    {"from":401,"to":425,"group":"responsive","implementation":"mobile/tablet/desktop layouts, safe areas, bottom-sheet patterns and responsive galleries"},
+    {"from":426,"to":450,"group":"brochure","implementation":"print/PDF mode, share/copy support, brochure gallery and structured brief portability"},
+    {"from":451,"to":475,"group":"conversion","implementation":"enquiry basket, brief builder, selected-item summary, presets-ready data model and quote continuation"},
+    {"from":476,"to":500,"group":"experimental","implementation":"adaptive premium spotlight, spring depth, hero controls, gallery fan, service visualizer and cinematic mode"}
+  ]
+}
