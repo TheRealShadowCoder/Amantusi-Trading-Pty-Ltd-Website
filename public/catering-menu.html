@@ -7,6 +7,7 @@
   <meta name="description" content="Amantusi Catering digital menu and catering brochure for meetings, functions, institutions and events.">
   <title>Amantusi Catering | Digital Menu</title>
   <link rel="icon" href="/assets/amantusi-logo.svg" type="image/svg+xml">
+  <link rel="preload" href="/assets/catering/signature-buffet.webp" as="image" type="image/webp" fetchpriority="high">
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/catering.css">
   <link rel="stylesheet" href="/catering-motion.css">
@@ -36,6 +37,7 @@
           <p data-catering-subtitle>Professional catering for meetings, functions, institutions and events.</p>
           <div class="menu-actions">
             <a class="menu-btn gold" href="#menu">View Menu</a>
+            <a class="menu-btn ghost" href="#portfolio">Explore Portfolio</a>
             <a class="menu-btn ghost" href="/#quote">Request a Catering Quote</a>
             <button class="menu-btn ghost" type="button" data-print>Print / Save PDF</button>
           </div>
@@ -77,14 +79,14 @@
       </div>
     </section>
 
-    <section class="menu-section cm-gallery-shell" data-catering-gallery-shell hidden>
+    <section class="menu-section cm-gallery-shell" id="portfolio" data-catering-gallery-shell hidden>
       <div class="container">
         <div class="cm-gallery-heading">
           <div>
-            <p class="menu-kicker">Catering moments</p>
+            <p class="menu-kicker">Catering moments • <span data-catering-portfolio-count>20</span> visuals</p>
             <h2>Presentation that<br>moves with the occasion.</h2>
           </div>
-          <span class="cm-gallery-hint">Drag or swipe to explore • up to 20 published images</span>
+          <span class="cm-gallery-hint">Drag or swipe to explore the complete collection</span>
         </div>
         <div data-catering-gallery>
           <div data-catering-gallery-track></div>

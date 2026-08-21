@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "hero": ["signature-buffet", "formal-dining", "rooftop-cocktails"],
+  "menuFallbacks": {
+    "breakfast": "corporate-breakfast",
+    "platters": "charcuterie",
+    "meals": "carving-station",
+    "events": "gala-buffet",
+    "beverages": "coffee-pastry"
+  },
+  "items": [
+    {"key":"signature-buffet","name":"Signature Gourmet Buffet","category":"Buffet Service","src":"/assets/catering/signature-buffet.webp"},
+    {"key":"corporate-breakfast","name":"Executive Breakfast Meeting","category":"Corporate Catering","src":"/assets/catering/corporate-breakfast.webp"},
+    {"key":"canape-reception","name":"Canapé Reception","category":"Events & Functions","src":"/assets/catering/canape-reception.webp"},
+    {"key":"garden-buffet","name":"Garden Buffet Presentation","category":"Outdoor Functions","src":"/assets/catering/garden-buffet.webp"},
+    {"key":"dessert-florals","name":"Dessert Buffet with Florals","category":"Dessert Service","src":"/assets/catering/dessert-florals.webp"},
+    {"key":"coffee-pastry","name":"Coffee & Pastry Service","category":"Meeting Refreshments","src":"/assets/catering/coffee-pastry.webp"},
+    {"key":"executive-bento","name":"Executive Bento Dining","category":"Corporate Lunches","src":"/assets/catering/executive-bento.webp"},
+    {"key":"charcuterie","name":"Gourmet Grazing & Charcuterie","category":"Platters & Light Bites","src":"/assets/catering/charcuterie.webp"},
+    {"key":"formal-dining","name":"Formal Black & Gold Dining","category":"Premium Events","src":"/assets/catering/formal-dining.webp"},
+    {"key":"sushi-oyster","name":"Sushi & Oyster Bar","category":"Signature Stations","src":"/assets/catering/sushi-oyster.webp"},
+    {"key":"rooftop-cocktails","name":"Golden Hour Cocktail Reception","category":"Reception Service","src":"/assets/catering/rooftop-cocktails.webp"},
+    {"key":"carving-station","name":"Live Roast Carving Station","category":"Hot Meal Service","src":"/assets/catering/carving-station.webp"},
+    {"key":"wellness-buffet","name":"Fresh Wellness Buffet","category":"Fresh & Plant Forward","src":"/assets/catering/wellness-buffet.webp"},
+    {"key":"afternoon-tea","name":"Luxury Afternoon Tea","category":"Tea Service","src":"/assets/catering/afternoon-tea.webp"},
+    {"key":"seafood-buffet","name":"Candlelit Seafood Buffet","category":"Premium Seafood","src":"/assets/catering/seafood-buffet.webp"},
+    {"key":"boardroom-lunch","name":"Black & Gold Boardroom Lunch","category":"Corporate Catering","src":"/assets/catering/boardroom-lunch.webp"},
+    {"key":"champagne-desserts","name":"Champagne & Petit Fours","category":"Celebration Service","src":"/assets/catering/champagne-desserts.webp"},
+    {"key":"gala-buffet","name":"Candlelit Gala Buffet","category":"Formal Functions","src":"/assets/catering/gala-buffet.webp"},
+    {"key":"wedding-desserts","name":"Wedding Cake & Dessert Station","category":"Weddings & Celebrations","src":"/assets/catering/wedding-desserts.webp"},
+    {"key":"signature-mosaic","name":"Amantusi Catering Collection","category":"Signature Portfolio","src":"/assets/catering/signature-mosaic.webp"}
+  ]
+}
