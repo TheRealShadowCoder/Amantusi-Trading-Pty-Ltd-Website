@@ -105,14 +105,7 @@ jobs:
             fi
 
             if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/api/admin/google/config?t=$attempt" -o /tmp/google.json; then
-              if node - <<'NODE'
-const fs = require('fs');
-const x = JSON.parse(fs.readFileSync('/tmp/google.json','utf8'));
-const expected = String(process.env.GOOGLE_SIGNIN_CLIENT_ID || '').trim();
-if (!x.flowId || !x.nonce || Number(x.expiresIn) <= 0) process.exit(1);
-if (expected && x.clientId !== expected) process.exit(1);
-NODE
-              then
+              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/google.json","utf8"));const expected=String(process.env.GOOGLE_SIGNIN_CLIENT_ID||"").trim();if(!x.flowId||!x.nonce||Number(x.expiresIn)<=0||(expected&&x.clientId!==expected))process.exit(1);'; then
                 google_ok=1
               fi
             fi
