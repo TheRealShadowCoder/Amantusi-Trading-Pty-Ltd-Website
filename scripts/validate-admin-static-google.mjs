@@ -3,6 +3,9 @@ import fs from 'node:fs';
 const login = fs.readFileSync('public/admin.html', 'utf8');
 const dashboard = fs.readFileSync('public/admin-dashboard.html', 'utf8');
 const client = fs.readFileSync('public/admin-google-login.js', 'utf8');
+const worker = fs.readFileSync('src/worker-v4.js', 'utf8');
+const wrangler = fs.readFileSync('wrangler.jsonc', 'utf8');
+const deploy = fs.readFileSync('.github/workflows/deploy-cloudflare.yml', 'utf8');
 
 for (const [needle, label] of [
   ['Continue with Google', 'Google-first copy'],
@@ -26,4 +29,26 @@ if (!client.includes("location.replace('/admin-dashboard.html')")) {
   throw new Error('Static Google admin validation failed: Google client does not route authenticated users to admin-dashboard.html.');
 }
 
-console.log('Static Google admin validated: /admin.html is password-free and Google-only; the full CMS is preserved at /admin-dashboard.html.');
+for (const [needle, label] of [
+  ["path === '/admin-dashboard.html'", 'dashboard session guard'],
+  ["redirect('/admin.html')", 'unauthenticated dashboard redirect'],
+  ["redirect('/admin-dashboard.html')", 'authenticated login redirect']
+]) {
+  if (!worker.includes(needle)) throw new Error(`Static Google admin validation failed: missing ${label}.`);
+}
+
+if (!wrangler.includes('"/admin-dashboard.html"')) {
+  throw new Error('Static Google admin validation failed: admin-dashboard.html is not Worker-first.');
+}
+
+for (const [needle, label] of [
+  ['public/deployment.json', 'deployment build marker'],
+  ['x.sha!==process.env.GITHUB_SHA', 'exact SHA live verification'],
+  ['Assert Google-only static admin entry', 'pre-deploy Google-only assertion'],
+  ['Verify exact live build and Google admin entry', 'post-deploy Google verification'],
+  ['continue-on-error: true\n        run: npm audit', 'non-blocking dependency audit']
+]) {
+  if (!deploy.includes(needle)) throw new Error(`Static Google admin validation failed: missing ${label}.`);
+}
+
+console.log('Static Google admin validated: Google-only login, protected CMS dashboard, Worker-first routing and exact-SHA Cloudflare deployment verification are wired.');
