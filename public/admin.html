@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#071923">
   <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>Amantusi Admin | Operations & Content Management</title>
+  <title>Amantusi Admin | Google Sign-In</title>
   <link rel="icon" href="/assets/amantusi-logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/catering.css">
   <link rel="stylesheet" href="/admin-security.css">
-  <link rel="stylesheet" href="/admin-ops.css">
+  <link rel="stylesheet" href="/admin-google-login.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="admin-body">
   <section class="login-wrap" id="login-view">
@@ -20,147 +21,21 @@
       <h1>Amantusi Admin</h1>
       <p>Manage enquiries, quotations, suppliers, products, catering content and company information from one protected workspace.</p>
 
-      <form id="login-form" class="security-form">
-        <label class="security-label" for="admin-email">Administrator email</label>
-        <input id="admin-email" name="email" type="email" autocomplete="username webauthn" placeholder="admin@email.com" required>
-        <label class="security-label" for="admin-password">Password</label>
-        <input id="admin-password" name="password" type="password" autocomplete="current-password" placeholder="Admin password" required>
-        <button class="admin-button gold security-primary" type="submit">Login as Administrator</button>
-        <button class="admin-button secondary security-primary" id="passkey-login" type="button">Sign in with Passkey</button>
-        <p class="login-error" id="login-error" aria-live="polite"></p>
-      </form>
-
-      <button class="forgot-link" id="forgot-toggle" type="button">Forgot password?</button>
-      <form id="reset-request-form" class="reset-request-box hidden">
-        <p><strong>Password reset</strong></p>
-        <p>Enter your authorized administrator email. A time-limited reset link will be sent only if the address is approved and email recovery is configured.</p>
-        <label class="security-label" for="reset-email">Administrator email</label>
-        <input id="reset-email" name="email" type="email" autocomplete="email" placeholder="admin@email.com" required>
-        <button class="admin-button secondary security-primary" type="submit">Email Reset Link</button>
-        <p class="reset-status" id="reset-request-status" aria-live="polite"></p>
-      </form>
+      <div class="google-auth-shell" id="google-auth-shell">
+        <div class="google-auth-title">
+          <strong>Continue with Google</strong>
+          <span>Use your authorized Amantusi Google account. No website password is required.</span>
+        </div>
+        <div id="google-signin-button" aria-label="Continue with Google"></div>
+        <p id="google-login-status" aria-live="polite">Preparing secure Google Sign-In…</p>
+      </div>
 
       <div class="security-notice">
-        <strong>Protected administration area</strong>
-        <span>Failed sign-ins are monitored. Passkeys can be enabled as a second factor, and security notifications activate when the configured email and WhatsApp providers are connected.</span>
+        <strong>Google-protected administration</strong>
+        <span>Google verifies your account first. Amantusi then validates the signed identity token, one-time nonce and administrator allowlist before opening the operations workspace.</span>
       </div>
     </div>
   </section>
-
-  <section class="admin-shell hidden" id="admin-view">
-    <aside class="admin-side">
-      <a class="subsite-brand" href="/">
-        <img src="/assets/amantusi-logo.svg" alt="">
-        <span><strong>AMANTUSI</strong><small>OPERATIONS CMS</small></span>
-      </a>
-      <nav class="admin-nav" aria-label="Administration">
-        <button class="active" type="button" data-panel-target="ops-panel">Operations</button>
-        <button type="button" data-panel-target="leads-panel">Leads / RFQs</button>
-        <button type="button" data-panel-target="suppliers-panel">Suppliers</button>
-        <button type="button" data-panel-target="products-panel">Products</button>
-        <button type="button" data-panel-target="menu-panel">Catering Menu</button>
-        <button type="button" data-panel-target="brand-panel">Brochure & Brand</button>
-        <button type="button" data-panel-target="profile-panel">Company Profile</button>
-        <button type="button" data-panel-target="integrations-panel">SEO & Integrations</button>
-        <button type="button" data-panel-target="backup-panel">Backup / Security</button>
-        <a href="/catering-menu.html" target="_blank" rel="noopener">Preview Menu ↗</a>
-        <a href="/company-profile.html" target="_blank" rel="noopener">Preview Profile ↗</a>
-        <button type="button" id="logout-btn">Logout</button>
-      </nav>
-    </aside>
-
-    <main class="admin-main">
-      <div class="admin-top">
-        <div>
-          <p class="menu-kicker">Business operations</p>
-          <h1>Admin Dashboard</h1>
-          <small class="admin-identity" id="admin-identity"></small>
-        </div>
-        <span class="cms-status" id="cms-status">Checking platform…</span>
-      </div>
-
-      <section id="ops-panel" class="admin-section">
-        <div class="ops-heading"><div><p class="menu-kicker">Live overview</p><h2>Operations at a glance</h2></div><button class="admin-button secondary" id="refresh-dashboard" type="button">Refresh</button></div>
-        <div class="metric-grid" id="metric-grid" aria-live="polite"></div>
-        <div class="ops-grid two">
-          <div class="admin-panel"><div class="panel-title-row"><h2>Recent RFQs & Leads</h2><button class="admin-button mini" type="button" data-panel-target="leads-panel">View all</button></div><div id="recent-leads" class="ops-list"></div></div>
-          <div class="admin-panel"><h2>Platform Health</h2><div id="platform-health" class="health-grid"></div><div id="recent-errors" class="ops-events"></div></div>
-        </div>
-      </section>
-
-      <section id="leads-panel" class="admin-section hidden">
-        <div class="ops-heading"><div><p class="menu-kicker">Quotation pipeline</p><h2>Leads & RFQ Management</h2></div></div>
-        <div class="admin-panel compact-panel">
-          <div class="lead-filters">
-            <input id="lead-search" type="search" placeholder="Search reference, organisation, contact or email">
-            <select id="lead-status-filter"><option value="">All statuses</option><option>New</option><option>Reviewing</option><option>Sourcing</option><option>Quoted</option><option>Awaiting Approval</option><option>Approved</option><option>Fulfilment</option><option>Delivered</option><option>Closed</option><option>Lost</option></select>
-            <button class="admin-button secondary" id="refresh-leads" type="button">Refresh</button>
-          </div>
-        </div>
-        <div class="lead-workspace">
-          <div class="admin-panel lead-list-panel"><div id="lead-list" class="lead-list"></div></div>
-          <div class="admin-panel lead-detail-panel" id="lead-detail"><div class="empty-state"><strong>Select an enquiry</strong><span>Choose a lead to view the RFQ, attachments, timeline and quotation status.</span></div></div>
-        </div>
-      </section>
-
-      <section id="suppliers-panel" class="admin-section hidden">
-        <div class="ops-heading"><div><p class="menu-kicker">Procurement network</p><h2>Supplier Database</h2></div></div>
-        <div class="ops-grid two">
-          <div class="admin-panel"><h2>Add / Edit Supplier</h2><form id="supplier-form"><input type="hidden" id="supplier-id"><div class="admin-grid"><div class="admin-field"><label>Supplier Name</label><input id="supplier-name" required></div><div class="admin-field"><label>Contact Person</label><input id="supplier-contact"></div><div class="admin-field"><label>Email</label><input id="supplier-email" type="email"></div><div class="admin-field"><label>Phone</label><input id="supplier-phone"></div><div class="admin-field"><label>Categories</label><input id="supplier-categories" placeholder="FMCG, hygiene, office supply"></div><div class="admin-field"><label>Status</label><select id="supplier-status"><option>Active</option><option>Inactive</option><option>Review</option></select></div><div class="admin-field full"><label>Notes</label><textarea id="supplier-notes" rows="4"></textarea></div></div><div class="admin-toolbar"><button class="admin-button gold" type="submit">Save Supplier</button><button class="admin-button secondary" id="supplier-clear" type="button">Clear</button></div></form></div>
-          <div class="admin-panel"><h2>Suppliers</h2><div id="supplier-list" class="database-list"></div></div>
-        </div>
-      </section>
-
-      <section id="products-panel" class="admin-section hidden">
-        <div class="ops-heading"><div><p class="menu-kicker">Procurement catalogue</p><h2>Product & Pricing Database</h2></div></div>
-        <div class="ops-grid two">
-          <div class="admin-panel"><h2>Add / Edit Product</h2><form id="product-form"><input type="hidden" id="product-id"><div class="admin-grid"><div class="admin-field"><label>SKU / Code</label><input id="product-sku"></div><div class="admin-field"><label>Product Name</label><input id="product-name" required></div><div class="admin-field"><label>Category</label><input id="product-category"></div><div class="admin-field"><label>Unit</label><input id="product-unit" placeholder="each, case, kg"></div><div class="admin-field"><label>Cost Price</label><input id="product-cost" type="number" min="0" step="0.01"></div><div class="admin-field"><label>Selling Price</label><input id="product-sell" type="number" min="0" step="0.01"></div><div class="admin-field"><label>Supplier</label><select id="product-supplier"><option value="">Unassigned</option></select></div><div class="admin-field"><label>Active</label><select id="product-active"><option value="true">Yes</option><option value="false">No</option></select></div><div class="admin-field full"><label>Description / Specification</label><textarea id="product-description" rows="4"></textarea></div></div><div class="admin-toolbar"><button class="admin-button gold" type="submit">Save Product</button><button class="admin-button secondary" id="product-clear" type="button">Clear</button></div></form></div>
-          <div class="admin-panel"><h2>Products</h2><div id="product-list" class="database-list"></div></div>
-        </div>
-      </section>
-
-      <section id="menu-panel" class="admin-section hidden">
-        <div class="admin-panel">
-          <h2>Add / Edit Menu Item</h2>
-          <form id="item-form">
-            <input type="hidden" id="item-id"><input type="hidden" id="item-image-existing">
-            <div class="admin-grid">
-              <div class="admin-field"><label>Category</label><select id="item-category"></select></div>
-              <div class="admin-field"><label>Item Name</label><input id="item-name" required placeholder="e.g. Executive Breakfast Package"></div>
-              <div class="admin-field full"><label>Description</label><textarea id="item-description" rows="3" placeholder="Describe what is included, serving format or important details"></textarea></div>
-              <div class="admin-field"><label>Price (ZAR)</label><input id="item-price" type="number" min="0" step="0.01" placeholder="Leave blank for custom pricing"></div>
-              <div class="admin-field"><label>Price Label</label><input id="item-price-label" placeholder="e.g. From R95 pp or Request pricing"></div>
-              <div class="admin-field"><label>Menu Image</label><input id="item-image" type="file" accept="image/png,image/jpeg,image/webp"></div>
-              <div class="admin-field"><label>Visible on menu</label><select id="item-active"><option value="true">Yes</option><option value="false">No</option></select></div>
-            </div>
-            <div class="admin-toolbar"><button class="admin-button gold" type="submit">Save Item</button><button class="admin-button secondary" id="cancel-edit" type="button">Clear Form</button><button class="admin-button" id="publish-content" type="button">Publish All Changes</button></div>
-          </form>
-        </div>
-        <div class="admin-panel"><div class="panel-title-row"><h2>Current Menu</h2><button class="admin-button secondary" id="add-category" type="button">Add Category</button></div><div id="category-editor" class="hidden" style="margin-top:16px"><div class="admin-grid"><div class="admin-field"><label>Category Name</label><input id="category-name" placeholder="Category name"></div><div class="admin-field"><label>Short Description</label><input id="category-description" placeholder="What this category covers"></div></div><div class="admin-toolbar"><button class="admin-button gold" id="save-category" type="button">Save Category</button></div></div><div id="items-list"></div></div>
-      </section>
-
-      <section id="brand-panel" class="admin-section hidden"><div class="admin-panel"><h2>Catering Brochure & Brand Copy</h2><div class="admin-grid"><div class="admin-field"><label>Catering Title</label><input id="brand-title"></div><div class="admin-field"><label>Catering Subtitle</label><input id="brand-subtitle"></div><div class="admin-field full"><label>Brochure Introduction</label><textarea id="brand-intro" rows="4"></textarea></div><div class="admin-field full"><label>Pricing Note</label><textarea id="price-note" rows="3"></textarea></div></div><div class="admin-toolbar"><button class="admin-button gold" id="save-brand" type="button">Save Brand Copy</button><button class="admin-button" data-publish type="button">Publish All Changes</button></div></div></section>
-
-      <section id="profile-panel" class="admin-section hidden"><div class="admin-panel"><h2>Company Profile Details</h2><div class="admin-grid"><div class="admin-field"><label>Legal Name</label><input id="profile-legal"></div><div class="admin-field"><label>Positioning Line</label><input id="profile-positioning"></div><div class="admin-field"><label>Registration</label><input id="profile-registration"></div><div class="admin-field"><label>CSD No.</label><input id="profile-csd"></div><div class="admin-field"><label>Email</label><input id="profile-email" type="email"></div><div class="admin-field"><label>Cell</label><input id="profile-phone"></div><div class="admin-field full"><label>Address</label><input id="profile-address"></div><div class="admin-field full"><label>Company Overview</label><textarea id="profile-overview" rows="5"></textarea></div></div><div class="admin-toolbar"><button class="admin-button gold" id="save-profile" type="button">Save Profile</button><button class="admin-button" data-publish type="button">Publish All Changes</button></div></div></section>
-
-      <section id="integrations-panel" class="admin-section hidden">
-        <div class="ops-heading"><div><p class="menu-kicker">Discovery & measurement</p><h2>SEO, Analytics & Integrations</h2></div></div>
-        <div class="ops-grid two">
-          <div class="admin-panel"><h2>Search & Analytics</h2><form id="site-settings-form"><div class="admin-grid"><div class="admin-field full"><label>Public Site URL</label><input id="site-public-url" type="url" placeholder="https://www.example.co.za"><small>Use the final custom domain when connected.</small></div><div class="admin-field full"><label>GA4 Measurement ID</label><input id="site-ga-id" placeholder="G-XXXXXXXXXX"><small>Optional Google Analytics. First-party analytics works even without this.</small></div><div class="admin-field full"><label>Google Search Console Verification Token</label><input id="site-google-verification" placeholder="Verification content value"><small>Paste only the content value from Google's HTML meta tag.</small></div></div><div class="admin-toolbar"><button class="admin-button gold" type="submit">Save SEO Settings</button></div><p class="reset-status" id="site-settings-status" aria-live="polite"></p></form></div>
-          <div class="admin-panel"><h2>Technical SEO Status</h2><div class="integration-links"><a href="/sitemap.xml" target="_blank" rel="noopener">Open XML Sitemap ↗</a><a href="/robots.txt" target="_blank" rel="noopener">Open robots.txt ↗</a><a href="/api/health" target="_blank" rel="noopener">Open Platform Health ↗</a></div><div id="integration-health" class="health-grid"></div></div>
-        </div>
-      </section>
-
-      <section id="backup-panel" class="admin-section hidden">
-        <div class="ops-grid two">
-          <div class="admin-panel"><h2>Backup & Restore</h2><p class="panel-copy">Export the catering/profile content as JSON before major changes. Import the same file later to restore content.</p><div class="admin-toolbar"><button class="admin-button gold" id="export-json" type="button">Export JSON Backup</button><label class="admin-button secondary" style="cursor:pointer">Import JSON<input id="import-json" type="file" accept="application/json" hidden></label></div></div>
-          <div class="admin-panel"><h2>Administrator Security</h2><p class="panel-copy">Register a device passkey and optionally require it after a valid password. Passkeys use WebAuthn and remain bound to the administrator account.</p><div class="admin-toolbar"><button class="admin-button gold" id="register-passkey" type="button">Register Passkey</button><button class="admin-button secondary" id="dashboard-reset-password" type="button">Reset My Password by Email</button></div><label class="mfa-toggle"><input type="checkbox" id="require-passkey-mfa"><span>Require passkey after password login</span></label><div id="passkey-list" class="passkey-list"></div><p class="reset-status" id="passkey-status" aria-live="polite"></p><p class="reset-status" id="dashboard-reset-status" aria-live="polite"></p></div>
-        </div>
-        <div class="admin-panel"><div class="panel-title-row"><h2>Monitoring & Error Log</h2><button class="admin-button secondary" id="refresh-system" type="button">Refresh</button></div><div id="system-status" class="health-grid"></div><div id="system-events" class="ops-events"></div></div>
-      </section>
-    </main>
-  </section>
-  <script src="/admin-ops.js" defer></script>
-  <script src="/admin.js" defer></script>
+  <script src="/admin-google-login.js" defer></script>
 </body>
 </html>
