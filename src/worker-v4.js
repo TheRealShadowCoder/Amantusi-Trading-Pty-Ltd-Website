@@ -44,6 +44,18 @@ function allowGoogleIdentity(response) {
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
+function redirect(location) {
+  return new Response(null, {
+    status: 302,
+    headers: {
+      location,
+      'cache-control': 'no-store, no-cache, must-revalidate',
+      pragma: 'no-cache',
+      expires: '0'
+    }
+  });
+}
+
 function googleLoginPage() {
   const html = `<!doctype html>
 <html lang="en">
@@ -67,16 +79,14 @@ function googleLoginPage() {
       <p class="menu-kicker">Secure operations platform</p>
       <h1>Amantusi Admin</h1>
       <p>Manage enquiries, quotations, suppliers, products, catering content and company information from one protected workspace.</p>
-
       <div class="google-auth-shell" id="google-auth-shell">
         <div class="google-auth-title">
           <strong>Continue with Google</strong>
-          <span>Use an authorized Amantusi Google account. No website password is required.</span>
+          <span>Use your authorized Amantusi Google account. No website password is required.</span>
         </div>
         <div id="google-signin-button" aria-label="Continue with Google"></div>
         <p id="google-login-status" aria-live="polite">Preparing secure Google Sign-In…</p>
       </div>
-
       <div class="security-notice">
         <strong>Google-protected administration</strong>
         <span>Google verifies your account first. Amantusi then validates the signed identity token, one-time nonce and administrator allowlist before opening the operations workspace.</span>
@@ -86,50 +96,29 @@ function googleLoginPage() {
   <script src="/admin-google-login.js" defer></script>
 </body>
 </html>`;
-
   return new Response(html, {
     status: 200,
     headers: {
       'content-type': 'text/html; charset=utf-8',
       'cache-control': 'no-store, no-cache, must-revalidate',
-      'pragma': 'no-cache',
-      'expires': '0',
+      pragma: 'no-cache',
+      expires: '0',
       'x-robots-tag': 'noindex, nofollow, noarchive'
     }
   });
 }
 
-function injectAdminSafetyNet(response) {
+function injectAuthenticatedAdminControls(response) {
   if (!response.ok) return response;
-  response = allowGoogleIdentity(response);
   return new HTMLRewriter()
     .on('head', {
       element(element) {
-        element.append('<link rel="stylesheet" href="/admin-cost.css"><link rel="stylesheet" href="/admin-google-login.css"><script src="https://accounts.google.com/gsi/client" async defer></script>', { html: true });
-      }
-    })
-    .on('#login-form', {
-      element(element) {
-        element.setAttribute('hidden', '');
-        element.setAttribute('aria-hidden', 'true');
-        element.before('<div class="google-auth-shell" id="google-auth-shell"><div class="google-auth-title"><strong>Continue with Google</strong><span>Use an authorized Amantusi Google account. No website password is required.</span></div><div id="google-signin-button" aria-label="Continue with Google"></div><p id="google-login-status" aria-live="polite">Preparing secure Google Sign-In…</p></div>', { html: true });
-      }
-    })
-    .on('#forgot-toggle', {
-      element(element) {
-        element.setAttribute('hidden', '');
-        element.setAttribute('aria-hidden', 'true');
-      }
-    })
-    .on('#reset-request-form', {
-      element(element) {
-        element.setAttribute('hidden', '');
-        element.setAttribute('aria-hidden', 'true');
+        element.append('<link rel="stylesheet" href="/admin-cost.css">', { html: true });
       }
     })
     .on('body', {
       element(element) {
-        element.append('<script src="/admin-google-login.js" defer></script><script src="/admin-cost.js" defer></script>', { html: true });
+        element.append('<script src="/admin-cost.js" defer></script>', { html: true });
       }
     })
     .transform(response);
@@ -151,12 +140,18 @@ export default {
       return addQuotaHeaders(wrapperHeaders(googleAuth, requestId, started), decision.state);
     }
 
-    if (path === '/admin.html' && request.method === 'GET') {
+    if ((path === '/admin.html' || path === '/admin-dashboard.html') && request.method === 'GET') {
       const admin = await getAdminSession(request, env);
-      if (!admin) {
+      if (path === '/admin.html') {
+        if (admin) {
+          return addQuotaHeaders(wrapperHeaders(redirect('/admin-dashboard.html'), requestId, started), decision.state);
+        }
         let response = allowGoogleIdentity(googleLoginPage());
         response = wrapperHeaders(response, requestId, started);
         return addQuotaHeaders(response, decision.state);
+      }
+      if (!admin) {
+        return addQuotaHeaders(wrapperHeaders(redirect('/admin.html'), requestId, started), decision.state);
       }
     }
 
@@ -172,7 +167,7 @@ export default {
         if (allowOptionalTelemetry(decision.state)) ctx?.waitUntil?.(promise);
       }
     });
-    if (path === '/admin.html') response = injectAdminSafetyNet(response);
+    if (path === '/admin-dashboard.html') response = injectAuthenticatedAdminControls(response);
     return addQuotaHeaders(response, decision.state);
   }
 };
