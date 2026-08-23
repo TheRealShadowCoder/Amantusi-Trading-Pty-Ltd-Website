@@ -32,6 +32,16 @@ function appendSource(csp, directive, source) {
   return `${csp}; ${directive} 'self' ${source}`;
 }
 
+function noStoreAdmin(response, mode = 'google-only') {
+  const headers = new Headers(response.headers);
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  headers.set('Pragma', 'no-cache');
+  headers.set('Expires', '0');
+  headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+  headers.set('X-Amantusi-Admin-Mode', mode);
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
 function allowGoogleIdentity(response) {
   const headers = new Headers(response.headers);
   let csp = headers.get('Content-Security-Policy') || "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'";
@@ -45,15 +55,10 @@ function allowGoogleIdentity(response) {
 }
 
 function redirect(location) {
-  return new Response(null, {
+  return noStoreAdmin(new Response(null, {
     status: 302,
-    headers: {
-      location,
-      'cache-control': 'no-store, no-cache, must-revalidate',
-      pragma: 'no-cache',
-      expires: '0'
-    }
-  });
+    headers: { location }
+  }), 'google-only');
 }
 
 function googleLoginPage() {
@@ -96,32 +101,29 @@ function googleLoginPage() {
   <script src="/admin-google-login.js" defer></script>
 </body>
 </html>`;
-  return new Response(html, {
+  return noStoreAdmin(new Response(html, {
     status: 200,
     headers: {
-      'content-type': 'text/html; charset=utf-8',
-      'cache-control': 'no-store, no-cache, must-revalidate',
-      pragma: 'no-cache',
-      expires: '0',
-      'x-robots-tag': 'noindex, nofollow, noarchive'
+      'content-type': 'text/html; charset=utf-8'
     }
-  });
+  }), 'google-only');
 }
 
 function injectAuthenticatedAdminControls(response) {
-  if (!response.ok) return response;
-  return new HTMLRewriter()
+  if (!response.ok) return noStoreAdmin(response, 'dashboard');
+  const transformed = new HTMLRewriter()
     .on('head', {
       element(element) {
-        element.append('<link rel="stylesheet" href="/admin-cost.css">', { html: true });
+        element.append('<link rel="stylesheet" href="/admin-cost.css"><style>body:has(#admin-view) #login-view{display:none!important}</style>', { html: true });
       }
     })
     .on('body', {
       element(element) {
-        element.append('<script src="/admin-cost.js" defer></script>', { html: true });
+        element.append('<script src="/admin-cost.js" defer></script><script>window.__AMANTUSI_GOOGLE_ONLY__=true;</script>', { html: true });
       }
     })
     .transform(response);
+  return noStoreAdmin(transformed, 'dashboard');
 }
 
 export default {
@@ -147,6 +149,7 @@ export default {
           return addQuotaHeaders(wrapperHeaders(redirect('/admin-dashboard.html'), requestId, started), decision.state);
         }
         let response = allowGoogleIdentity(googleLoginPage());
+        response = noStoreAdmin(response, 'google-only');
         response = wrapperHeaders(response, requestId, started);
         return addQuotaHeaders(response, decision.state);
       }
@@ -167,7 +170,11 @@ export default {
         if (allowOptionalTelemetry(decision.state)) ctx?.waitUntil?.(promise);
       }
     });
-    if (path === '/admin-dashboard.html') response = injectAuthenticatedAdminControls(response);
+
+    if (path === '/admin-dashboard.html') {
+      response = injectAuthenticatedAdminControls(response);
+    }
+
     return addQuotaHeaders(response, decision.state);
   }
 };
