@@ -12,21 +12,18 @@
     node.dataset.state = state;
   }
 
-  function revealEmergencyPassword(message = '') {
+  function hidePasswordOnlyControls() {
     const form = $('#login-form');
     const forgot = $('#forgot-toggle');
-    if (form) {
-      form.hidden = false;
-      form.classList.remove('google-password-hidden');
-      form.removeAttribute('aria-hidden');
-    }
-    if (forgot) forgot.hidden = false;
-    if (message) setStatus(message, 'warning');
-  }
-
-  function hidePasswordOnlyControls() {
+    const reset = $('#reset-request-form');
     const resetButton = $('#dashboard-reset-password');
     const mfaToggle = $('#require-passkey-mfa')?.closest('label');
+    if (form) {
+      form.hidden = true;
+      form.setAttribute('aria-hidden', 'true');
+    }
+    if (forgot) forgot.hidden = true;
+    if (reset) reset.hidden = true;
     if (resetButton) resetButton.hidden = true;
     if (mfaToggle) mfaToggle.hidden = true;
   }
@@ -76,7 +73,7 @@
     }
 
     setStatus('Google account verified. Opening Amantusi Admin…', 'success');
-    location.replace('/admin.html');
+    location.replace('/admin-dashboard.html');
   }
 
   async function initializeGoogleLogin() {
@@ -84,12 +81,17 @@
     const button = $('#google-signin-button');
     if (!shell || !button || initialized) return;
 
-    const active = await fetch('/api/admin/me', { cache: 'no-store', credentials: 'same-origin' }).catch(() => null);
+    const active = await fetch('/api/admin/me', {
+      cache: 'no-store',
+      credentials: 'same-origin'
+    }).catch(() => null);
+
     if (active?.ok) {
-      hidePasswordOnlyControls();
+      location.replace('/admin-dashboard.html');
       return;
     }
 
+    hidePasswordOnlyControls();
     setStatus('Preparing secure Google Sign-In…', 'loading');
 
     try {
@@ -121,7 +123,7 @@
       });
       setStatus('Use your authorized Google account to continue.', 'ready');
     } catch (error) {
-      revealEmergencyPassword(`${error.message || 'Google Sign-In is not available.'} Existing emergency login is shown temporarily.`);
+      setStatus(`${error.message || 'Google Sign-In is not available.'} Reload the page and try again.`, 'error');
     }
   }
 
