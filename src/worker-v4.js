@@ -73,7 +73,7 @@ function googleLoginPage() {
           <strong>Continue with Google</strong>
           <span>Use an authorized Amantusi Google account. No website password is required.</span>
         </div>
-        <div id="google-signin-button" aria-label="Google Sign-In"></div>
+        <div id="google-signin-button" aria-label="Continue with Google"></div>
         <p id="google-login-status" aria-live="polite">Preparing secure Google Sign-In…</p>
       </div>
 
@@ -99,17 +99,37 @@ function googleLoginPage() {
   });
 }
 
-function injectAuthenticatedAdminControls(response) {
+function injectAdminSafetyNet(response) {
   if (!response.ok) return response;
+  response = allowGoogleIdentity(response);
   return new HTMLRewriter()
     .on('head', {
       element(element) {
-        element.append('<link rel="stylesheet" href="/admin-cost.css">', { html: true });
+        element.append('<link rel="stylesheet" href="/admin-cost.css"><link rel="stylesheet" href="/admin-google-login.css"><script src="https://accounts.google.com/gsi/client" async defer></script>', { html: true });
+      }
+    })
+    .on('#login-form', {
+      element(element) {
+        element.setAttribute('hidden', '');
+        element.setAttribute('aria-hidden', 'true');
+        element.before('<div class="google-auth-shell" id="google-auth-shell"><div class="google-auth-title"><strong>Continue with Google</strong><span>Use an authorized Amantusi Google account. No website password is required.</span></div><div id="google-signin-button" aria-label="Continue with Google"></div><p id="google-login-status" aria-live="polite">Preparing secure Google Sign-In…</p></div>', { html: true });
+      }
+    })
+    .on('#forgot-toggle', {
+      element(element) {
+        element.setAttribute('hidden', '');
+        element.setAttribute('aria-hidden', 'true');
+      }
+    })
+    .on('#reset-request-form', {
+      element(element) {
+        element.setAttribute('hidden', '');
+        element.setAttribute('aria-hidden', 'true');
       }
     })
     .on('body', {
       element(element) {
-        element.append('<script src="/admin-cost.js" defer></script>', { html: true });
+        element.append('<script src="/admin-google-login.js" defer></script><script src="/admin-cost.js" defer></script>', { html: true });
       }
     })
     .transform(response);
@@ -152,7 +172,7 @@ export default {
         if (allowOptionalTelemetry(decision.state)) ctx?.waitUntil?.(promise);
       }
     });
-    if (path === '/admin.html') response = injectAuthenticatedAdminControls(response);
+    if (path === '/admin.html') response = injectAdminSafetyNet(response);
     return addQuotaHeaders(response, decision.state);
   }
 };
