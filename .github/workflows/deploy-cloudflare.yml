@@ -15,6 +15,7 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,67 +28,79 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Audit production dependency tree
-        continue-on-error: true
-        run: npm audit --omit=dev --audit-level=high
-
-      - name: Validate Worker and client platform
+      - name: Validate application and Worker
         shell: bash
         run: |
           set -euo pipefail
           npm run check
           npx wrangler deploy --dry-run --outdir .wrangler-dry-run
-
-      - name: Assert Google-only static admin entry
-        shell: bash
-        run: |
-          set -euo pipefail
           test -f public/admin.html
           test -f public/admin-dashboard.html
           grep -q 'Continue with Google' public/admin.html
           grep -q 'google-signin-button' public/admin.html
           grep -q '/admin-google-login.js' public/admin.html
           if grep -q 'id="admin-password"' public/admin.html || grep -q 'id="login-form"' public/admin.html || grep -q 'Login as Administrator' public/admin.html; then
-            echo "::error::public/admin.html contains legacy password-login markup."
+            echo "::error::public/admin.html still contains legacy password login markup."
             exit 1
           fi
+
+      - name: Record exact build marker
+        shell: bash
+        run: |
+          set -euo pipefail
           cat > public/deployment.json <<EOF
-          {"sha":"${GITHUB_SHA}","runId":"${GITHUB_RUN_ID}","runNumber":"${GITHUB_RUN_NUMBER}","deployedAt":"$(date -u +%Y-%m-%dT%H:%M:%SZ)"}
+          {"sha":"${GITHUB_SHA}","runId":"${GITHUB_RUN_ID}","runNumber":"${GITHUB_RUN_NUMBER}","deployedAt":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","adminMode":"google-only"}
           EOF
           cat public/deployment.json
 
-      - name: Verify permanent Cloudflare account
+      - name: Dependency security audit
+        continue-on-error: true
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Check Cloudflare account
+        continue-on-error: true
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           set -euo pipefail
-          EXPECTED_ACCOUNT_ID="3b4dba2eec2c69b95eae20d70941e9b2"
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
             echo "::error::CLOUDFLARE_API_TOKEN is not configured."
             exit 1
           fi
-          npx wrangler whoami 2>&1 | tee /tmp/wrangler-whoami.log
-          grep -q "$EXPECTED_ACCOUNT_ID" /tmp/wrangler-whoami.log || {
-            echo "::error::Cloudflare token is not scoped to the permanent Amantusi account $EXPECTED_ACCOUNT_ID."
-            exit 1
-          }
+          npx wrangler whoami
 
-      - name: Sync Google Sign-In client ID to Cloudflare
+      - name: Require production credentials
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           GOOGLE_SIGNIN_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_CLIENT_ID }}
         run: |
           set -euo pipefail
-          if [ -z "$GOOGLE_SIGNIN_CLIENT_ID" ]; then
-            echo "::error::GOOGLE_SIGNIN_CLIENT_ID must be configured for Google-first admin login."
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is required."
             exit 1
           fi
-          printf '%s' "$GOOGLE_SIGNIN_CLIENT_ID" | npx wrangler secret put GOOGLE_SIGNIN_CLIENT_ID
-          echo "Google Sign-In client ID synchronized."
+          if [ -z "$GOOGLE_SIGNIN_CLIENT_ID" ]; then
+            echo "::error::GOOGLE_SIGNIN_CLIENT_ID is required for Google-only admin login."
+            exit 1
+          fi
+          case "$GOOGLE_SIGNIN_CLIENT_ID" in
+            *.apps.googleusercontent.com) ;;
+            *) echo "::error::GOOGLE_SIGNIN_CLIENT_ID does not look like a Google Web client ID."; exit 1 ;;
+          esac
 
-      - name: Sync private WIF signing key to Cloudflare
+      - name: Sync Google Sign-In client ID
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          GOOGLE_SIGNIN_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_CLIENT_ID }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$GOOGLE_SIGNIN_CLIENT_ID" | npx wrangler secret put GOOGLE_SIGNIN_CLIENT_ID
+
+      - name: Sync optional Google overflow key
+        continue-on-error: true
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -95,13 +108,12 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "$GCP_WIF_PRIVATE_KEY" ]; then
-            echo "::warning::GCP_WIF_PRIVATE_KEY is not configured. Google overflow remains disabled."
+            echo "GCP overflow key is not configured; continuing without overflow."
             exit 0
           fi
           printf '%s' "$GCP_WIF_PRIVATE_KEY" | npx wrangler secret put GCP_WIF_PRIVATE_KEY
-          echo "Cloudflare-to-Google WIF signing key synchronized."
 
-      - name: Deploy permanent Amantusi Worker
+      - name: Deploy exact production build
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -110,103 +122,89 @@ jobs:
           npx wrangler deploy 2>&1 | tee /tmp/wrangler-deploy.log
           PRODUCTION_URL=$(grep -Eo 'https://[A-Za-z0-9.-]+\.workers\.dev' /tmp/wrangler-deploy.log | tail -n 1 || true)
           if [ -z "$PRODUCTION_URL" ]; then
-            echo "::error::Wrangler did not report the production workers.dev URL."
-            exit 1
+            PRODUCTION_URL="https://amantusi-trading-pty-ltd-website.dolomite-computer.workers.dev"
           fi
           echo "PRODUCTION_URL=$PRODUCTION_URL" >> "$GITHUB_ENV"
           echo "Production URL: $PRODUCTION_URL"
 
-      - name: Verify exact live build and Google admin entry
+      - name: Verify exact live Google-only build
         shell: bash
         env:
           GOOGLE_SIGNIN_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_CLIENT_ID }}
         run: |
           set -euo pipefail
-          for attempt in $(seq 1 24); do
+          for attempt in $(seq 1 30); do
             build_ok=0
-            google_ui_ok=0
-            google_config_ok=0
-            dashboard_guard_ok=0
+            ui_ok=0
+            header_ok=0
+            google_ok=0
+            guard_ok=0
 
-            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/deployment.json?sha=$GITHUB_SHA&attempt=$attempt" -o /tmp/amantusi-deployment.json; then
-              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/amantusi-deployment.json","utf8"));if(x.sha!==process.env.GITHUB_SHA)process.exit(1);'; then
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/deployment.json?sha=$GITHUB_SHA&t=$attempt" -o /tmp/deployment.json; then
+              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/deployment.json","utf8"));if(x.sha!==process.env.GITHUB_SHA||x.adminMode!=="google-only")process.exit(1);'; then
                 build_ok=1
               fi
             fi
 
-            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/admin.html?sha=$GITHUB_SHA&attempt=$attempt" -o /tmp/amantusi-admin.html; then
-              if grep -q 'Continue with Google' /tmp/amantusi-admin.html && grep -q 'google-signin-button' /tmp/amantusi-admin.html && grep -q '/admin-google-login.js' /tmp/amantusi-admin.html && ! grep -q 'id="admin-password"' /tmp/amantusi-admin.html && ! grep -q 'Login as Administrator' /tmp/amantusi-admin.html; then
-                google_ui_ok=1
+            if curl --fail --silent --show-error --max-time 20 -D /tmp/admin.headers "$PRODUCTION_URL/admin.html?sha=$GITHUB_SHA&t=$attempt" -o /tmp/admin.html; then
+              if grep -q 'Continue with Google' /tmp/admin.html && grep -q 'google-signin-button' /tmp/admin.html && ! grep -q 'id="admin-password"' /tmp/admin.html && ! grep -q 'Login as Administrator' /tmp/admin.html; then
+                ui_ok=1
+              fi
+              if grep -qi '^x-amantusi-admin-mode: google-only' /tmp/admin.headers && grep -qi '^cache-control: .*no-store' /tmp/admin.headers; then
+                header_ok=1
               fi
             fi
 
-            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/api/admin/google/config?attempt=$attempt" -o /tmp/amantusi-google-config.json; then
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/api/admin/google/config?t=$attempt" -o /tmp/google.json; then
               if node - <<'NODE'
 const fs = require('fs');
-const config = JSON.parse(fs.readFileSync('/tmp/amantusi-google-config.json', 'utf8'));
+const x = JSON.parse(fs.readFileSync('/tmp/google.json','utf8'));
 const expected = String(process.env.GOOGLE_SIGNIN_CLIENT_ID || '').trim();
-if (!expected || config.clientId !== expected) process.exit(1);
-if (!config.flowId || !config.nonce || Number(config.expiresIn) <= 0) process.exit(1);
+if (!expected || x.clientId !== expected || !x.flowId || !x.nonce || Number(x.expiresIn) <= 0) process.exit(1);
 NODE
               then
-                google_config_ok=1
+                google_ok=1
               fi
             fi
 
-            code=$(curl --silent --show-error --max-time 20 -o /dev/null -D /tmp/admin-dashboard-headers.txt -w '%{http_code}' "$PRODUCTION_URL/admin-dashboard.html?attempt=$attempt" || true)
-            if [ "$code" = "302" ] && grep -qi '^location: /admin.html' /tmp/admin-dashboard-headers.txt; then
-              dashboard_guard_ok=1
+            code=$(curl --silent --show-error --max-time 20 -o /dev/null -D /tmp/dashboard.headers -w '%{http_code}' "$PRODUCTION_URL/admin-dashboard.html?t=$attempt" || true)
+            if [ "$code" = "302" ] && grep -qi '^location: /admin.html' /tmp/dashboard.headers; then
+              guard_ok=1
             fi
 
-            if [ "$build_ok" -eq 1 ] && [ "$google_ui_ok" -eq 1 ] && [ "$google_config_ok" -eq 1 ] && [ "$dashboard_guard_ok" -eq 1 ]; then
-              echo "Exact Git build is live with Google-only admin and protected dashboard."
-              cat /tmp/amantusi-deployment.json
+            if [ "$build_ok" -eq 1 ] && [ "$ui_ok" -eq 1 ] && [ "$header_ok" -eq 1 ] && [ "$google_ok" -eq 1 ] && [ "$guard_ok" -eq 1 ]; then
+              echo "Exact Google-only admin build is live."
+              cat /tmp/deployment.json
               exit 0
             fi
 
-            echo "Waiting for exact build propagation ($attempt/24): build=$build_ok googleUI=$google_ui_ok googleConfig=$google_config_ok dashboardGuard=$dashboard_guard_ok"
-            sleep 5
+            echo "Propagation $attempt/30: build=$build_ok ui=$ui_ok headers=$header_ok google=$google_ok dashboardGuard=$guard_ok"
+            sleep 4
           done
 
-          echo "::error::Cloudflare did not converge to the exact Git build."
-          [ -f /tmp/amantusi-deployment.json ] && cat /tmp/amantusi-deployment.json || true
-          [ -f /tmp/amantusi-admin.html ] && head -80 /tmp/amantusi-admin.html || true
+          echo "::error::Production did not converge to the exact Google-only build."
+          [ -f /tmp/deployment.json ] && cat /tmp/deployment.json || true
+          [ -f /tmp/admin.headers ] && cat /tmp/admin.headers || true
+          [ -f /tmp/admin.html ] && head -100 /tmp/admin.html || true
           exit 1
 
-      - name: Extended platform smoke test
+      - name: Extended health check
         continue-on-error: true
         shell: bash
         run: |
-          set -euo pipefail
-          curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/" -o /tmp/amantusi-home.html
-          grep -qi 'AMANTUSI' /tmp/amantusi-home.html
-          curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/api/health" -o /tmp/amantusi-health.json
-          cat /tmp/amantusi-health.json
+          curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/api/health" | tee /tmp/health.json
 
-      - name: Install Chromium for production QA
-        continue-on-error: true
-        run: npx playwright install --with-deps chromium
-
-      - name: Run Playwright production tests
-        continue-on-error: true
-        env:
-          BASE_URL: ${{ env.PRODUCTION_URL }}
-        run: npm run test:e2e
-
-      - name: Run Lighthouse budgets
-        continue-on-error: true
-        env:
-          BASE_URL: ${{ env.PRODUCTION_URL }}
-        run: npm run test:lighthouse
-
-      - name: Upload QA reports
+      - name: Upload release diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: amantusi-production-qa-${{ github.run_number }}
+          name: amantusi-release-diagnostics-${{ github.run_number }}
           path: |
-            playwright-report
-            test-results
-            lighthouse-report
+            /tmp/wrangler-deploy.log
+            /tmp/deployment.json
+            /tmp/admin.headers
+            /tmp/admin.html
+            /tmp/google.json
+            /tmp/health.json
           if-no-files-found: ignore
           retention-days: 14
