@@ -34,6 +34,11 @@ jobs:
           set -euo pipefail
           npm run check
           npx wrangler deploy --dry-run --outdir .wrangler-dry-run
+
+      - name: Assert Google-only static admin entry
+        shell: bash
+        run: |
+          set -euo pipefail
           test -f public/admin.html
           test -f public/admin-dashboard.html
           grep -q 'Continue with Google' public/admin.html
@@ -127,7 +132,7 @@ jobs:
           echo "PRODUCTION_URL=$PRODUCTION_URL" >> "$GITHUB_ENV"
           echo "Production URL: $PRODUCTION_URL"
 
-      - name: Verify exact live Google-only build
+      - name: Verify exact live build and Google admin entry
         shell: bash
         env:
           GOOGLE_SIGNIN_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_CLIENT_ID }}
