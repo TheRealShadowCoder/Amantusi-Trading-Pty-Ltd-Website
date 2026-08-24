@@ -25,8 +25,6 @@ jobs:
         with:
           node-version: 22
 
-      # This repository intentionally does not currently commit package-lock.json.
-      # Do not enable setup-node npm caching or use npm ci until a lockfile is added.
       - name: Install dependencies
         run: npm install
 
@@ -45,16 +43,37 @@ jobs:
           test -f public/admin-dashboard.html
           grep -q 'Continue with Google' public/admin.html
           grep -q 'google-signin-button' public/admin.html
-          grep -q '/admin-google-login.js' public/admin.html
-          if grep -q 'id="admin-password"' public/admin.html || grep -q 'id="login-form"' public/admin.html || grep -q 'Login as Administrator' public/admin.html; then
-            echo "::error::public/admin.html contains legacy password-login markup."
+          grep -q 'href="/api/admin/google/oauth/start"' public/admin.html
+          if grep -q 'admin-google-login.js' public/admin.html || grep -q 'accounts.google.com/gsi/client' public/admin.html || grep -q 'id="admin-password"' public/admin.html || grep -q 'id="login-form"' public/admin.html || grep -q 'Login as Administrator' public/admin.html; then
+            echo "::error::public/admin.html contains obsolete GIS or password-login markup."
             exit 1
           fi
-          printf '%s\n' "{\"sha\":\"${GITHUB_SHA}\",\"runId\":\"${GITHUB_RUN_ID}\",\"runNumber\":\"${GITHUB_RUN_NUMBER}\",\"deployedAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"adminMode\":\"google-only\"}" > public/deployment.json
+          printf '%s\n' "{\"sha\":\"${GITHUB_SHA}\",\"runId\":\"${GITHUB_RUN_ID}\",\"runNumber\":\"${GITHUB_RUN_NUMBER}\",\"deployedAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"adminMode\":\"google-oauth-redirect\"}" > public/deployment.json
           cat public/deployment.json
 
-      # This is the only Cloudflare publication step. Existing Worker secrets,
-      # including GOOGLE_SIGNIN_CLIENT_ID, persist across normal deployments.
+      - name: Sync Google OAuth credentials
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          GOOGLE_SIGNIN_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is not configured."
+            exit 1
+          fi
+          if [ -n "$GOOGLE_SIGNIN_CLIENT_ID" ]; then
+            printf '%s' "$GOOGLE_SIGNIN_CLIENT_ID" | npx wrangler secret put GOOGLE_SIGNIN_CLIENT_ID
+          else
+            echo "::warning::GOOGLE_SIGNIN_CLIENT_ID is not present in GitHub secrets; preserving the existing Worker secret if one exists."
+          fi
+          if [ -n "$GOOGLE_OAUTH_CLIENT_SECRET" ]; then
+            printf '%s' "$GOOGLE_OAUTH_CLIENT_SECRET" | npx wrangler secret put GOOGLE_OAUTH_CLIENT_SECRET
+          else
+            echo "::warning::GOOGLE_OAUTH_CLIENT_SECRET is not present in GitHub secrets yet. The new login page will deploy, but OAuth code exchange will remain unavailable until this secret is added and the workflow is rerun."
+          fi
+
       - name: Deploy permanent Amantusi Worker
         shell: bash
         env:
@@ -78,6 +97,7 @@ jobs:
         shell: bash
         env:
           GOOGLE_SIGNIN_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
         run: |
           set -euo pipefail
           success=0
@@ -86,16 +106,17 @@ jobs:
             ui_ok=0
             header_ok=0
             google_ok=0
+            oauth_ok=0
             guard_ok=0
 
             if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/deployment.json?sha=$GITHUB_SHA&t=$attempt" -o /tmp/deployment.json; then
-              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/deployment.json","utf8"));if(x.sha!==process.env.GITHUB_SHA||x.adminMode!=="google-only")process.exit(1);'; then
+              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/deployment.json","utf8"));if(x.sha!==process.env.GITHUB_SHA||x.adminMode!=="google-oauth-redirect")process.exit(1);'; then
                 build_ok=1
               fi
             fi
 
             if curl --fail --silent --show-error --max-time 20 -D /tmp/admin.headers "$PRODUCTION_URL/admin.html?sha=$GITHUB_SHA&t=$attempt" -o /tmp/admin.html; then
-              if grep -q 'Continue with Google' /tmp/admin.html && grep -q 'google-signin-button' /tmp/admin.html && ! grep -q 'id="admin-password"' /tmp/admin.html && ! grep -q 'Login as Administrator' /tmp/admin.html; then
+              if grep -q 'Continue with Google' /tmp/admin.html && grep -q 'href="/api/admin/google/oauth/start"' /tmp/admin.html && ! grep -q 'admin-google-login.js' /tmp/admin.html && ! grep -q 'accounts.google.com/gsi/client' /tmp/admin.html && ! grep -q 'id="admin-password"' /tmp/admin.html; then
                 ui_ok=1
               fi
               if grep -qi '^x-amantusi-admin-mode: google-only' /tmp/admin.headers && grep -qi '^cache-control: .*no-store' /tmp/admin.headers; then
@@ -104,9 +125,18 @@ jobs:
             fi
 
             if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/api/admin/google/config?t=$attempt" -o /tmp/google.json; then
-              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/google.json","utf8"));const expected=String(process.env.GOOGLE_SIGNIN_CLIENT_ID||"").trim();if(!x.flowId||!x.nonce||Number(x.expiresIn)<=0)process.exit(1);if(expected&&x.clientId!==expected)process.exit(1);'; then
+              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/google.json","utf8"));const expected=String(process.env.GOOGLE_SIGNIN_CLIENT_ID||"").trim();if(!x.flowId||!x.nonce||x.preferredFlow!=="redirect")process.exit(1);if(expected&&x.clientId!==expected)process.exit(1);'; then
                 google_ok=1
               fi
+            fi
+
+            if [ -n "$GOOGLE_OAUTH_CLIENT_SECRET" ]; then
+              oauth_code=$(curl --silent --show-error --max-time 20 -o /dev/null -D /tmp/oauth.headers -w '%{http_code}' "$PRODUCTION_URL/api/admin/google/oauth/start?t=$attempt" || true)
+              if [ "$oauth_code" = "302" ] && grep -qi '^location: https://accounts.google.com/o/oauth2/v2/auth' /tmp/oauth.headers; then
+                oauth_ok=1
+              fi
+            else
+              oauth_ok=1
             fi
 
             code=$(curl --silent --show-error --max-time 20 -o /dev/null -D /tmp/dashboard.headers -w '%{http_code}' "$PRODUCTION_URL/admin-dashboard.html?t=$attempt" || true)
@@ -114,8 +144,8 @@ jobs:
               guard_ok=1
             fi
 
-            echo "Live check $attempt/15: build=$build_ok ui=$ui_ok headers=$header_ok google=$google_ok dashboardGuard=$guard_ok"
-            if [ "$build_ok" -eq 1 ] && [ "$ui_ok" -eq 1 ] && [ "$header_ok" -eq 1 ] && [ "$google_ok" -eq 1 ] && [ "$guard_ok" -eq 1 ]; then
+            echo "Live check $attempt/15: build=$build_ok ui=$ui_ok headers=$header_ok google=$google_ok oauthRedirect=$oauth_ok dashboardGuard=$guard_ok"
+            if [ "$build_ok" -eq 1 ] && [ "$ui_ok" -eq 1 ] && [ "$header_ok" -eq 1 ] && [ "$google_ok" -eq 1 ] && [ "$oauth_ok" -eq 1 ] && [ "$guard_ok" -eq 1 ]; then
               success=1
               break
             fi
@@ -123,7 +153,7 @@ jobs:
           done
 
           if [ "$success" -eq 1 ]; then
-            echo "Exact Google-only admin build is live."
+            echo "Exact Google OAuth redirect admin build is live."
             cat /tmp/deployment.json
             exit 0
           fi
@@ -132,6 +162,7 @@ jobs:
           [ -f /tmp/deployment.json ] && cat /tmp/deployment.json || true
           [ -f /tmp/admin.headers ] && cat /tmp/admin.headers || true
           [ -f /tmp/admin.html ] && head -100 /tmp/admin.html || true
+          [ -f /tmp/oauth.headers ] && cat /tmp/oauth.headers || true
           exit 1
 
       - name: Dependency security audit
