@@ -16,20 +16,9 @@ function wrapperHeaders(response, requestId, started) {
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('X-Frame-Options', 'DENY');
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), publickey-credentials-create=(self), publickey-credentials-get=(self), identity-credentials-get=(self)');
+  headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), publickey-credentials-create=(self), publickey-credentials-get=(self)');
   headers.set('Server-Timing', headers.get('Server-Timing') || `app;dur=${Date.now() - started}`);
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
-}
-
-function appendSource(csp, directive, source) {
-  const pattern = new RegExp(`(^|;\\s*)${directive}\\s+([^;]*)`, 'i');
-  if (pattern.test(csp)) {
-    return csp.replace(pattern, (match, prefix, values) => {
-      if (String(values).includes(source)) return match;
-      return `${prefix}${directive} ${values.trim()} ${source}`;
-    });
-  }
-  return `${csp}; ${directive} 'self' ${source}`;
 }
 
 function noStoreAdmin(response, mode = 'google-only') {
@@ -40,69 +29,6 @@ function noStoreAdmin(response, mode = 'google-only') {
   headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
   headers.set('X-Amantusi-Admin-Mode', mode);
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
-}
-
-function allowGoogleIdentity(response) {
-  const headers = new Headers(response.headers);
-  let csp = headers.get('Content-Security-Policy') || "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'";
-
-  csp = appendSource(csp, 'script-src', 'https://accounts.google.com/gsi/client');
-  csp = appendSource(csp, 'script-src-elem', 'https://accounts.google.com/gsi/client');
-  csp = appendSource(csp, 'connect-src', 'https://accounts.google.com/gsi/');
-  csp = appendSource(csp, 'connect-src', 'https://accounts.google.com');
-  csp = appendSource(csp, 'frame-src', 'https://accounts.google.com/gsi/');
-  csp = appendSource(csp, 'frame-src', 'https://accounts.google.com');
-  csp = appendSource(csp, 'style-src', 'https://accounts.google.com/gsi/style');
-  csp = appendSource(csp, 'img-src', 'https://*.gstatic.com');
-  csp = appendSource(csp, 'img-src', 'https://*.googleusercontent.com');
-
-  headers.set('Content-Security-Policy', csp);
-  headers.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
-  headers.set('Cross-Origin-Embedder-Policy', 'unsafe-none');
-  headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), publickey-credentials-create=(self), publickey-credentials-get=(self), identity-credentials-get=(self)');
-  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
-}
-
-async function googleIdentityProxy(request) {
-  const sourceUrl = new URL('https://accounts.google.com/gsi/client');
-  const requestedLanguage = new URL(request.url).searchParams.get('hl') || 'en';
-  if (/^[a-zA-Z]{2,3}(?:-[a-zA-Z]{2,4})?$/.test(requestedLanguage)) {
-    sourceUrl.searchParams.set('hl', requestedLanguage);
-  }
-
-  try {
-    const upstream = await fetch(sourceUrl.toString(), { redirect: 'follow' });
-    if (!upstream.ok || !upstream.body) {
-      return new Response('Google Identity Services is temporarily unavailable.', {
-        status: 502,
-        headers: {
-          'content-type': 'text/plain; charset=utf-8',
-          'cache-control': 'no-store',
-          'x-content-type-options': 'nosniff'
-        }
-      });
-    }
-
-    return new Response(upstream.body, {
-      status: 200,
-      headers: {
-        'content-type': 'application/javascript; charset=utf-8',
-        'cache-control': 'public, max-age=300, stale-while-revalidate=600',
-        'x-content-type-options': 'nosniff',
-        'cross-origin-resource-policy': 'same-origin',
-        'x-amantusi-google-gis-source': 'worker-proxy'
-      }
-    });
-  } catch (_) {
-    return new Response('Google Identity Services could not be reached by the Amantusi gateway.', {
-      status: 502,
-      headers: {
-        'content-type': 'text/plain; charset=utf-8',
-        'cache-control': 'no-store',
-        'x-content-type-options': 'nosniff'
-      }
-    });
-  }
 }
 
 function redirect(location) {
@@ -137,24 +63,29 @@ function googleLoginPage() {
       <div class="google-auth-shell" id="google-auth-shell">
         <div class="google-auth-title">
           <strong>Continue with Google</strong>
-          <span>Use your authorized Amantusi Google account. No website password is required.</span>
+          <span>Sign in on Google's secure website, then return automatically to Amantusi Admin. No website password is required.</span>
         </div>
-        <div id="google-signin-button" aria-label="Continue with Google"></div>
-        <p id="google-login-status" aria-live="polite">Preparing secure Google Sign-In…</p>
+        <div id="google-signin-button" aria-label="Continue with Google">
+          <a id="google-oauth-start" class="google-oauth-button" href="/api/admin/google/oauth/start">
+            <span class="google-oauth-mark" aria-hidden="true">G</span>
+            <span>Continue with Google</span>
+          </a>
+        </div>
+        <p id="google-login-status">You will be redirected securely to Google to choose your authorized administrator account.</p>
       </div>
       <div class="security-notice">
         <strong>Google-protected administration</strong>
-        <span>Google verifies your account first. Amantusi then validates the signed identity token, one-time nonce and administrator allowlist before opening the operations workspace.</span>
+        <span>Google authenticates your account on its own domain. Amantusi verifies the signed ID token, one-time state, nonce, PKCE challenge and administrator allowlist before opening the operations workspace.</span>
       </div>
     </div>
   </section>
-  <script src="/admin-google-login.js" defer></script>
 </body>
 </html>`;
   return noStoreAdmin(new Response(html, {
     status: 200,
     headers: {
-      'content-type': 'text/html; charset=utf-8'
+      'content-type': 'text/html; charset=utf-8',
+      'content-security-policy': "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
     }
   }), 'google-only');
 }
@@ -182,19 +113,13 @@ export default {
     const requestId = crypto.randomUUID();
     const path = new URL(request.url).pathname;
 
-    if (request.method === 'GET' && path === '/vendor/google-gsi.js') {
-      return wrapperHeaders(await googleIdentityProxy(request), requestId, started);
-    }
+    // Authentication routes must not be blocked by optional quota shedding.
+    const googleAuth = await googleAuthRoute(request, env);
+    if (googleAuth) return wrapperHeaders(googleAuth, requestId, started);
 
     const decision = await evaluateQuotaPolicy(request, env);
-
     if (!decision.allowed) {
       return addQuotaHeaders(wrapperHeaders(quotaRejectedResponse(decision), requestId, started), decision.state);
-    }
-
-    const googleAuth = await googleAuthRoute(request, env);
-    if (googleAuth) {
-      return addQuotaHeaders(wrapperHeaders(googleAuth, requestId, started), decision.state);
     }
 
     if ((path === '/admin.html' || path === '/admin-dashboard.html') && request.method === 'GET') {
@@ -203,10 +128,7 @@ export default {
         if (admin) {
           return addQuotaHeaders(wrapperHeaders(redirect('/admin-dashboard.html'), requestId, started), decision.state);
         }
-        let response = allowGoogleIdentity(googleLoginPage());
-        response = noStoreAdmin(response, 'google-only');
-        response = wrapperHeaders(response, requestId, started);
-        return addQuotaHeaders(response, decision.state);
+        return addQuotaHeaders(wrapperHeaders(googleLoginPage(), requestId, started), decision.state);
       }
       if (!admin) {
         return addQuotaHeaders(wrapperHeaders(redirect('/admin.html'), requestId, started), decision.state);
