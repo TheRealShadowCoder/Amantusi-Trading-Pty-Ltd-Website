@@ -16,7 +16,7 @@ function wrapperHeaders(response, requestId, started) {
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('X-Frame-Options', 'DENY');
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), publickey-credentials-create=(self), publickey-credentials-get=(self)');
+  headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), publickey-credentials-create=(self), publickey-credentials-get=(self), identity-credentials-get=(self)');
   headers.set('Server-Timing', headers.get('Server-Timing') || `app;dur=${Date.now() - started}`);
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
@@ -45,12 +45,22 @@ function noStoreAdmin(response, mode = 'google-only') {
 function allowGoogleIdentity(response) {
   const headers = new Headers(response.headers);
   let csp = headers.get('Content-Security-Policy') || "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'";
+
+  // Google Identity Services documented CSP endpoints.
   csp = appendSource(csp, 'script-src', 'https://accounts.google.com/gsi/client');
+  csp = appendSource(csp, 'script-src-elem', 'https://accounts.google.com/gsi/client');
   csp = appendSource(csp, 'connect-src', 'https://accounts.google.com/gsi/');
+  csp = appendSource(csp, 'connect-src', 'https://accounts.google.com');
   csp = appendSource(csp, 'frame-src', 'https://accounts.google.com/gsi/');
+  csp = appendSource(csp, 'frame-src', 'https://accounts.google.com');
   csp = appendSource(csp, 'style-src', 'https://accounts.google.com/gsi/style');
+  csp = appendSource(csp, 'img-src', 'https://*.gstatic.com');
+  csp = appendSource(csp, 'img-src', 'https://*.googleusercontent.com');
+
   headers.set('Content-Security-Policy', csp);
   headers.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  headers.set('Cross-Origin-Embedder-Policy', 'unsafe-none');
+  headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), publickey-credentials-create=(self), publickey-credentials-get=(self), identity-credentials-get=(self)');
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
