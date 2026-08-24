@@ -1,7 +1,10 @@
 const SESSION_COOKIE = 'amantusi_admin';
 const SESSION_HOURS = 8;
-const FLOW_TTL_SECONDS = 300;
+const FLOW_TTL_SECONDS = 600;
 const GOOGLE_JWKS_URL = 'https://www.googleapis.com/oauth2/v3/certs';
+const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
+const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+const GOOGLE_REDIRECT_PATH = '/api/admin/google/oauth/callback';
 const GOOGLE_ISSUERS = new Set(['accounts.google.com', 'https://accounts.google.com']);
 const PBKDF2_ITERATIONS = 210000;
 const AUTH_VERSION = 3;
@@ -23,6 +26,34 @@ function json(data, status = 200, headers = {}) {
       'cache-control': 'no-store',
       'x-content-type-options': 'nosniff',
       ...headers
+    }
+  });
+}
+
+function redirect(location, status = 302, headers = {}) {
+  return new Response(null, {
+    status,
+    headers: {
+      location,
+      'cache-control': 'no-store',
+      pragma: 'no-cache',
+      ...headers
+    }
+  });
+}
+
+function oauthErrorPage(message, status = 500) {
+  const safe = String(message || 'Google Sign-In could not be completed.')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+  return new Response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Amantusi Admin | Google Sign-In</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#071923;font-family:Arial,sans-serif;color:#071923}.card{width:min(92vw,460px);background:#fff;border-radius:24px;padding:28px;box-sizing:border-box}.card h1{margin:0 0 12px}.card p{line-height:1.55;color:#33444f}.card a{display:block;margin-top:20px;padding:14px 18px;border-radius:14px;background:#071923;color:#fff;text-align:center;text-decoration:none;font-weight:700}</style></head><body><main class="card"><h1>Google Sign-In</h1><p>${safe}</p><a href="/admin.html">Return to Amantusi Admin</a></main></body></html>`, {
+    status,
+    headers: {
+      'content-type': 'text/html; charset=utf-8',
+      'cache-control': 'no-store',
+      'x-content-type-options': 'nosniff'
     }
   });
 }
@@ -54,6 +85,11 @@ function randomToken(size = 32) {
   const bytes = new Uint8Array(size);
   crypto.getRandomValues(bytes);
   return base64url(bytes);
+}
+
+async function sha256Base64url(value) {
+  const digest = await crypto.subtle.digest('SHA-256', enc.encode(String(value)));
+  return base64url(new Uint8Array(digest));
 }
 
 async function hmac(secret, value) {
@@ -171,7 +207,14 @@ async function bindGoogleSubject(env, email, subject) {
   if (!existing) await env.CMS_KV.put(key, subject);
 }
 
-async function createFlow(env) {
+async function markGoogleOnly(env, email) {
+  await Promise.all([
+    env.CMS_KV.put(`auth:google-only:${email}`, '1'),
+    env.CMS_KV.put(`auth:bootstrap-disabled:${email}`, new Date().toISOString())
+  ]);
+}
+
+async function createLegacyFlow(env) {
   const flowId = randomToken(18);
   const nonce = randomToken(24);
   await env.CMS_KV.put(`auth:google-flow:${flowId}`, JSON.stringify({ nonce, createdAt: Date.now() }), {
@@ -180,7 +223,7 @@ async function createFlow(env) {
   return { flowId, nonce };
 }
 
-async function takeFlow(env, flowId) {
+async function takeLegacyFlow(env, flowId) {
   const key = `auth:google-flow:${flowId}`;
   const raw = await env.CMS_KV.get(key);
   if (!raw) return null;
@@ -188,12 +231,125 @@ async function takeFlow(env, flowId) {
   try { return JSON.parse(raw); } catch (_) { return null; }
 }
 
+async function createOauthFlow(env) {
+  const state = randomToken(24);
+  const nonce = randomToken(24);
+  const codeVerifier = randomToken(48);
+  const codeChallenge = await sha256Base64url(codeVerifier);
+  await env.CMS_KV.put(`auth:google-oauth:${state}`, JSON.stringify({
+    nonce,
+    codeVerifier,
+    createdAt: Date.now()
+  }), { expirationTtl: FLOW_TTL_SECONDS });
+  return { state, nonce, codeVerifier, codeChallenge };
+}
+
+async function takeOauthFlow(env, state) {
+  const key = `auth:google-oauth:${state}`;
+  const raw = await env.CMS_KV.get(key);
+  if (!raw) return null;
+  await env.CMS_KV.delete(key);
+  try { return JSON.parse(raw); } catch (_) { return null; }
+}
+
+function oauthRedirectUri(request) {
+  return `${new URL(request.url).origin}${GOOGLE_REDIRECT_PATH}`;
+}
+
+async function googleOauthStart(request, env) {
+  if (!env.CMS_KV) return oauthErrorPage('Admin storage is unavailable.', 503);
+  const clientId = String(env.GOOGLE_SIGNIN_CLIENT_ID || '').trim();
+  const clientSecret = String(env.GOOGLE_OAUTH_CLIENT_SECRET || '').trim();
+  if (!clientId || !clientSecret) {
+    return oauthErrorPage('Google OAuth is not fully configured on the server. The administrator must add the OAuth client secret before Google login can continue.', 503);
+  }
+
+  const flow = await createOauthFlow(env);
+  const auth = new URL(GOOGLE_AUTH_URL);
+  auth.searchParams.set('client_id', clientId);
+  auth.searchParams.set('redirect_uri', oauthRedirectUri(request));
+  auth.searchParams.set('response_type', 'code');
+  auth.searchParams.set('scope', 'openid email profile');
+  auth.searchParams.set('state', flow.state);
+  auth.searchParams.set('nonce', flow.nonce);
+  auth.searchParams.set('code_challenge', flow.codeChallenge);
+  auth.searchParams.set('code_challenge_method', 'S256');
+  auth.searchParams.set('prompt', 'select_account');
+  auth.searchParams.set('access_type', 'online');
+  auth.searchParams.set('include_granted_scopes', 'false');
+  return redirect(auth.toString());
+}
+
+async function exchangeAuthorizationCode(request, env, code, flow) {
+  const body = new URLSearchParams({
+    code,
+    client_id: String(env.GOOGLE_SIGNIN_CLIENT_ID || '').trim(),
+    client_secret: String(env.GOOGLE_OAUTH_CLIENT_SECRET || '').trim(),
+    redirect_uri: oauthRedirectUri(request),
+    grant_type: 'authorization_code',
+    code_verifier: String(flow.codeVerifier || '')
+  });
+  const response = await fetch(GOOGLE_TOKEN_URL, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded',
+      accept: 'application/json'
+    },
+    body: body.toString()
+  });
+  let payload = {};
+  try { payload = await response.json(); } catch (_) {}
+  if (!response.ok || !payload.id_token) {
+    const detail = String(payload.error_description || payload.error || 'Google token exchange failed.');
+    throw new Error(detail);
+  }
+  return payload;
+}
+
+async function googleOauthCallback(request, env) {
+  if (!env.CMS_KV) return oauthErrorPage('Admin storage is unavailable.', 503);
+  const url = new URL(request.url);
+  if (url.searchParams.get('error')) {
+    return oauthErrorPage(`Google did not complete sign-in: ${url.searchParams.get('error_description') || url.searchParams.get('error')}`, 400);
+  }
+
+  const state = String(url.searchParams.get('state') || '');
+  const code = String(url.searchParams.get('code') || '');
+  if (!state || !code) return oauthErrorPage('Google returned an incomplete authorization response.', 400);
+
+  const flow = await takeOauthFlow(env, state);
+  if (!flow?.nonce || !flow?.codeVerifier) return oauthErrorPage('This Google sign-in request expired or was already used. Start again.', 400);
+
+  const clientId = String(env.GOOGLE_SIGNIN_CLIENT_ID || '').trim();
+  const clientSecret = String(env.GOOGLE_OAUTH_CLIENT_SECRET || '').trim();
+  if (!clientId || !clientSecret) return oauthErrorPage('Google OAuth server credentials are not configured.', 503);
+
+  try {
+    const tokens = await exchangeAuthorizationCode(request, env, code, flow);
+    const claims = await verifyGoogleIdToken(tokens.id_token, clientId, flow.nonce);
+    const email = String(claims.email || '').trim().toLowerCase();
+    const account = ACCOUNTS[email];
+    if (!account) return oauthErrorPage('This Google account is not authorized for Amantusi Admin.', 403);
+
+    await bindGoogleSubject(env, email, String(claims.sub));
+    const token = await issueSession(env, email);
+    await markGoogleOnly(env, email);
+
+    return redirect('/admin-dashboard.html', 302, {
+      'set-cookie': `${SESSION_COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${SESSION_HOURS * 3600}`
+    });
+  } catch (error) {
+    console.error(JSON.stringify({ type: 'google_admin_oauth_error', message: String(error?.message || error) }));
+    return oauthErrorPage('Google sign-in could not be verified. Return to Admin and try again.', 401);
+  }
+}
+
 async function googleConfig(request, env) {
   if (!env.CMS_KV) return json({ error: 'Admin storage is unavailable.' }, 503);
   const clientId = String(env.GOOGLE_SIGNIN_CLIENT_ID || '').trim();
   if (!clientId) return json({ error: 'Google Sign-In is not configured yet.', code: 'GOOGLE_SIGNIN_NOT_CONFIGURED' }, 503);
-  const flow = await createFlow(env);
-  return json({ clientId, ...flow, expiresIn: FLOW_TTL_SECONDS });
+  const flow = await createLegacyFlow(env);
+  return json({ clientId, ...flow, expiresIn: FLOW_TTL_SECONDS, preferredFlow: 'redirect' });
 }
 
 async function googleSession(request, env) {
@@ -204,7 +360,7 @@ async function googleSession(request, env) {
 
   let body = {};
   try { body = await request.json(); } catch (_) { return json({ error: 'Invalid request.' }, 400); }
-  const flow = await takeFlow(env, String(body.flowId || ''));
+  const flow = await takeLegacyFlow(env, String(body.flowId || ''));
   if (!flow?.nonce) return json({ error: 'Google sign-in expired. Start again.' }, 400);
 
   try {
@@ -215,11 +371,7 @@ async function googleSession(request, env) {
 
     await bindGoogleSubject(env, email, String(claims.sub));
     const token = await issueSession(env, email);
-
-    await Promise.all([
-      env.CMS_KV.put(`auth:google-only:${email}`, '1'),
-      env.CMS_KV.put(`auth:bootstrap-disabled:${email}`, new Date().toISOString())
-    ]);
+    await markGoogleOnly(env, email);
 
     return json({
       ok: true,
@@ -254,6 +406,8 @@ async function passwordLoginBlocked(request, env) {
 export async function googleAuthRoute(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
+  if (path === '/api/admin/google/oauth/start' && request.method === 'GET') return googleOauthStart(request, env);
+  if (path === GOOGLE_REDIRECT_PATH && request.method === 'GET') return googleOauthCallback(request, env);
   if (path === '/api/admin/google/config' && request.method === 'GET') return googleConfig(request, env);
   if (path === '/api/admin/google/session' && request.method === 'POST') return googleSession(request, env);
   if (path === '/api/admin/session' && request.method === 'POST') return passwordLoginBlocked(request, env);
