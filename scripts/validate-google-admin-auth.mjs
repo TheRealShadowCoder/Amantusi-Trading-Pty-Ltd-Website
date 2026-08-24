@@ -45,11 +45,17 @@ for (const [needle, label] of [
   ['Retry Google Sign-In', 'recoverable Google load failure']
 ]) requireText(client, needle, label);
 
-requireText(css, '.google-auth-shell', 'Google auth UI styles');
+for (const [needle, label] of [
+  ['.google-auth-shell', 'Google auth UI styles'],
+  ['color:#071923', 'dark Google login text'],
+  ['color:#33444f', 'readable secondary login text'],
+  ['color:#991b1b', 'high-contrast Google error text']
+]) requireText(css, needle, label);
+
 requireText(deploy, 'GOOGLE_SIGNIN_CLIENT_ID', 'Cloudflare Google client ID sync');
 
 if (backend.includes('GOOGLE_OAUTH_CLIENT_SECRET')) {
   throw new Error('Google admin auth validation failed: authentication-only flow must not require a Google client secret.');
 }
 
-console.log('Google admin auth validated: Google Identity Services resilient loading, FedCM/CSP permissions, nonce/JWKS verification, allowlist binding and dedicated Google-first admin routing are wired.');
+console.log('Google admin auth validated: Google Identity Services resilient loading, FedCM/CSP permissions, readable high-contrast login UI, nonce/JWKS verification, allowlist binding and dedicated Google-first admin routing are wired.');
