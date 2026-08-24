@@ -2,7 +2,10 @@
   'use strict';
 
   const $ = (selector) => document.querySelector(selector);
-  const GOOGLE_SCRIPT_URL = 'https://accounts.google.com/gsi/client';
+  const GOOGLE_SCRIPT_SOURCES = [
+    'https://accounts.google.com/gsi/client?hl=en',
+    '/vendor/google-gsi.js?hl=en'
+  ];
   let flow = null;
   let initialized = false;
   let loadingGoogle = null;
@@ -62,41 +65,37 @@
     });
   }
 
+  function removeGoogleScripts() {
+    document.querySelectorAll('script[data-amantusi-google-gis="true"]').forEach((node) => node.remove());
+  }
+
   async function loadGoogleIdentity() {
     if (googleReady()) return true;
     if (loadingGoogle) return loadingGoogle;
 
     loadingGoogle = (async () => {
-      const existing = document.querySelector(`script[src^="${GOOGLE_SCRIPT_URL}"]`);
-      if (existing) {
-        try {
-          await waitForScript(existing, 6000);
-          if (googleReady()) return true;
-        } catch (_) {
-          existing.remove();
-        }
-      }
-
+      removeGoogleScripts();
       let lastError = null;
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        const stale = document.getElementById('amantusi-google-identity-services');
-        if (stale) stale.remove();
 
-        const script = document.createElement('script');
-        script.id = 'amantusi-google-identity-services';
-        script.src = `${GOOGLE_SCRIPT_URL}?hl=en`;
-        script.async = true;
-        script.defer = true;
-        script.referrerPolicy = 'strict-origin-when-cross-origin';
-        document.head.appendChild(script);
+      for (const source of GOOGLE_SCRIPT_SOURCES) {
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          const script = document.createElement('script');
+          script.id = 'amantusi-google-identity-services';
+          script.dataset.amantusiGoogleGis = 'true';
+          script.src = source;
+          script.async = true;
+          script.defer = true;
+          script.referrerPolicy = 'strict-origin-when-cross-origin';
+          document.head.appendChild(script);
 
-        try {
-          await waitForScript(script, 12000);
-          if (googleReady()) return true;
-        } catch (error) {
-          lastError = error;
-          script.remove();
-          if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, attempt * 700));
+          try {
+            await waitForScript(script, source.startsWith('/') ? 10000 : 7000);
+            if (googleReady()) return true;
+          } catch (error) {
+            lastError = error;
+            script.remove();
+            if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+          }
         }
       }
 
@@ -166,12 +165,13 @@
       retry.addEventListener('click', () => {
         retry.disabled = true;
         initialized = false;
+        removeGoogleScripts();
         initializeGoogleLogin().finally(() => { retry.disabled = false; });
       });
       shell.appendChild(retry);
     }
     retry.hidden = false;
-    setStatus(`${error?.message || 'Google Sign-In is not available.'} Check that accounts.google.com is not blocked, then retry.`, 'error');
+    setStatus(`${error?.message || 'Google Sign-In is not available.'} Direct Google loading and the Amantusi secure fallback both failed. Retry, or check whether Google sign-in is blocked by your network.`, 'error');
   }
 
   async function initializeGoogleLogin() {
