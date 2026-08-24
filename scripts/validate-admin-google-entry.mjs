@@ -1,13 +1,13 @@
 import fs from 'node:fs';
 
 const worker = fs.readFileSync('src/worker-v4.js', 'utf8');
+const backend = fs.readFileSync('src/google-auth.js', 'utf8');
 
 for (const [needle, label] of [
   ["getAdminSession", 'session-aware admin entry'],
   ["googleLoginPage", 'dedicated Google login page'],
   ["Continue with Google", 'Google-first login copy'],
-  ["/admin-google-login.js", 'Google login client'],
-  ["https://accounts.google.com/gsi/client", 'Google Identity Services loader'],
+  ["/api/admin/google/oauth/start", 'Google OAuth redirect start link'],
   ["(path === '/admin.html' || path === '/admin-dashboard.html')", 'dual admin route interception'],
   ["redirect('/admin-dashboard.html')", 'authenticated admin redirect'],
   ["redirect('/admin.html')", 'unauthenticated dashboard redirect'],
@@ -16,8 +16,17 @@ for (const [needle, label] of [
   if (!worker.includes(needle)) throw new Error(`Admin Google entry validation failed: missing ${label}`);
 }
 
-if (worker.includes('Admin password') || worker.includes('Login as Administrator')) {
-  throw new Error('Admin Google entry validation failed: password-first copy must not appear in the dedicated entry page.');
+for (const [needle, label] of [
+  ["/api/admin/google/oauth/start", 'OAuth start endpoint'],
+  ["/api/admin/google/oauth/callback", 'OAuth callback endpoint'],
+  ["response_type', 'code'", 'authorization code flow'],
+  ["GOOGLE_OAUTH_CLIENT_SECRET", 'server-side client secret']
+]) {
+  if (!backend.includes(needle)) throw new Error(`Admin Google entry validation failed: missing ${label}`);
 }
 
-console.log('Admin Google entry validated: /admin.html is Google-first, authenticated users route to the CMS dashboard, and unauthenticated dashboard access is redirected to Google login.');
+for (const forbidden of ['Admin password', 'Login as Administrator', 'accounts.google.com/gsi/client', '/vendor/google-gsi.js', '/admin-google-login.js']) {
+  if (worker.includes(forbidden)) throw new Error(`Admin Google entry validation failed: obsolete browser/password login dependency remains (${forbidden}).`);
+}
+
+console.log('Admin Google entry validated: /admin.html uses dependency-free Google OAuth redirect, authenticated users route to the CMS dashboard, and unauthenticated dashboard access returns to Google login.');

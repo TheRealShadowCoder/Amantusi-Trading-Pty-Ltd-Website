@@ -2,9 +2,8 @@ import fs from 'node:fs';
 
 const backend = fs.readFileSync('src/google-auth.js', 'utf8');
 const worker = fs.readFileSync('src/worker-v4.js', 'utf8');
-const client = fs.readFileSync('public/admin-google-login.js', 'utf8');
+const login = fs.readFileSync('public/admin.html', 'utf8');
 const css = fs.readFileSync('public/admin-google-login.css', 'utf8');
-const wrangler = fs.readFileSync('wrangler.jsonc', 'utf8');
 const deploy = fs.readFileSync('.github/workflows/deploy-cloudflare.yml', 'utf8');
 
 function requireText(source, needle, label) {
@@ -13,54 +12,61 @@ function requireText(source, needle, label) {
 
 for (const [needle, label] of [
   ['https://www.googleapis.com/oauth2/v3/certs', 'Google JWKS verification'],
+  ['https://accounts.google.com/o/oauth2/v2/auth', 'Google authorization endpoint'],
+  ['https://oauth2.googleapis.com/token', 'Google token endpoint'],
+  ['GOOGLE_OAUTH_CLIENT_SECRET', 'server-side OAuth client secret'],
+  ["response_type', 'code'", 'authorization code response type'],
+  ["code_challenge_method', 'S256'", 'PKCE S256 challenge'],
+  ['code_verifier', 'PKCE verifier exchange'],
+  ['auth:google-oauth:', 'one-time OAuth state storage'],
+  ['claims.nonce', 'nonce verification'],
   ["header.alg !== 'RS256'", 'RS256 enforcement'],
   ['claims.email_verified', 'verified email check'],
-  ['claims.nonce', 'nonce verification'],
   ['GOOGLE_ISSUERS', 'issuer verification'],
   ['audiences.includes(clientId)', 'audience verification'],
   ['auth:google-sub:', 'stable Google subject binding'],
   ['auth:google-only:', 'Google-only account policy'],
-  ["SameSite=Strict", 'strict session cookie']
+  ["SameSite=Strict", 'strict session cookie'],
+  ["/api/admin/google/oauth/start", 'OAuth start route'],
+  ['GOOGLE_REDIRECT_PATH', 'OAuth callback route']
 ]) requireText(backend, needle, label);
 
 for (const [needle, label] of [
-  ["googleAuthRoute", 'Google auth Worker route'],
-  ['https://accounts.google.com/gsi/client', 'Google Identity Services upstream'],
-  ['googleIdentityProxy', 'same-origin Google GIS fallback'],
-  ["path === '/vendor/google-gsi.js'", 'Google GIS proxy route'],
-  ["googleLoginPage", 'dedicated Google-first admin page'],
-  ["getAdminSession", 'session-aware admin routing'],
-  ["/admin-google-login.js", 'Google login client'],
-  ["script-src-elem", 'Google external script element CSP allowance'],
-  ["https://accounts.google.com/gsi/", 'Google GIS parent CSP allowance'],
-  ["frame-src", 'Google iframe CSP allowance'],
-  ["identity-credentials-get=(self)", 'FedCM permissions policy'],
-  ["same-origin-allow-popups", 'Google popup COOP policy']
+  ['googleAuthRoute', 'Google auth Worker route'],
+  ['googleLoginPage', 'dedicated Google-first admin page'],
+  ['getAdminSession', 'session-aware admin routing'],
+  ['/api/admin/google/oauth/start', 'redirect-based Google login link']
 ]) requireText(worker, needle, label);
 
 for (const [needle, label] of [
-  ["/api/admin/google/config", 'Google config endpoint'],
-  ["/api/admin/google/session", 'Google session endpoint'],
-  ['nonce: flow.nonce', 'client nonce wiring'],
-  ["text: 'continue_with'", 'Google button copy'],
-  ['loadGoogleIdentity', 'resilient GIS loader'],
-  ["'/vendor/google-gsi.js?hl=en'", 'same-origin GIS client fallback'],
-  ["use_fedcm_for_button: true", 'FedCM button mode'],
-  ['Retry Google Sign-In', 'recoverable Google load failure']
-]) requireText(client, needle, label);
+  ['href="/api/admin/google/oauth/start"', 'static OAuth start link'],
+  ['Continue with Google', 'Google login copy']
+]) requireText(login, needle, label);
+
+for (const forbidden of [
+  'accounts.google.com/gsi/client',
+  '/vendor/google-gsi.js',
+  '/admin-google-login.js',
+  'id="admin-password"',
+  'Login as Administrator'
+]) {
+  if (login.includes(forbidden)) throw new Error(`Google admin auth validation failed: obsolete browser login dependency remains (${forbidden}).`);
+}
 
 for (const [needle, label] of [
   ['.google-auth-shell', 'Google auth UI styles'],
+  ['.google-oauth-button', 'Google OAuth redirect button styles'],
   ['color:#071923', 'dark Google login text'],
-  ['color:#33444f', 'readable secondary login text'],
-  ['color:#991b1b', 'high-contrast Google error text']
+  ['color:#33444f', 'readable secondary login text']
 ]) requireText(css, needle, label);
 
-requireText(wrangler, '"/vendor/google-gsi.js"', 'Worker-first Google GIS fallback route');
-requireText(deploy, 'GOOGLE_SIGNIN_CLIENT_ID', 'Cloudflare Google client ID sync');
+for (const [needle, label] of [
+  ['GOOGLE_SIGNIN_CLIENT_ID', 'Google client ID deployment support'],
+  ['GOOGLE_OAUTH_CLIENT_SECRET', 'Google OAuth client secret deployment support']
+]) requireText(deploy, needle, label);
 
-if (backend.includes('GOOGLE_OAUTH_CLIENT_SECRET')) {
-  throw new Error('Google admin auth validation failed: authentication-only flow must not require a Google client secret.');
+if (worker.includes('googleIdentityProxy') || worker.includes('/vendor/google-gsi.js')) {
+  throw new Error('Google admin auth validation failed: obsolete GIS proxy remains in Worker.');
 }
 
-console.log('Google admin auth validated: direct + same-origin Google Identity Services loading, FedCM/CSP permissions, readable high-contrast login UI, nonce/JWKS verification, allowlist binding and Google-only admin routing are wired.');
+console.log('Google admin auth validated: server-side authorization-code redirect, PKCE/state/nonce protections, JWKS verification, allowlist binding, readable UI and Google-only admin routing are wired.');
