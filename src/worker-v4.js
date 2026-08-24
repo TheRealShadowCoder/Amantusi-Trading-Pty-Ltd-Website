@@ -8,7 +8,7 @@ import {
   allowOptionalTelemetry
 } from './quota-governor.js';
 import { overflowRoute } from './google-overflow.js';
-import { googleAuthRoute } from './google-auth.js';
+import { googleAuthRoute } from './google-auth-secretless.js';
 
 function wrapperHeaders(response, requestId, started) {
   const headers = new Headers(response.headers);
