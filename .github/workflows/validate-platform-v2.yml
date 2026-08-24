@@ -6,6 +6,7 @@ on:
       - platform-v2-upgrade
       - 'perf/**'
       - 'feature/**'
+      - 'fix/**'
   pull_request:
     branches:
       - main
@@ -17,8 +18,8 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - name: Install dependencies
@@ -26,6 +27,7 @@ jobs:
       - name: Syntax and Wrangler validation
         run: |
           set -euo pipefail
+          ruby -e "require 'yaml'; YAML.parse_file('.github/workflows/deploy-cloudflare.yml')"
           npm run check
           bash -n scripts/setup-gcp-cloudflare-wif.sh
           npx wrangler deploy --dry-run --outdir .wrangler-dry-run
