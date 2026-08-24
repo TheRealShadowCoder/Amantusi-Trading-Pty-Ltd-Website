@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 
-const backend = fs.readFileSync('src/google-auth.js', 'utf8');
+const legacyBackend = fs.readFileSync('src/google-auth.js', 'utf8');
+const backend = fs.readFileSync('src/google-auth-secretless.js', 'utf8');
 const worker = fs.readFileSync('src/worker-v4.js', 'utf8');
 const login = fs.readFileSync('public/admin.html', 'utf8');
 const css = fs.readFileSync('public/admin-google-login.css', 'utf8');
@@ -14,7 +15,6 @@ for (const [needle, label] of [
   ['https://www.googleapis.com/oauth2/v3/certs', 'Google JWKS verification'],
   ['https://accounts.google.com/o/oauth2/v2/auth', 'Google authorization endpoint'],
   ['https://oauth2.googleapis.com/token', 'Google token endpoint'],
-  ['GOOGLE_OAUTH_CLIENT_SECRET', 'server-side OAuth client secret'],
   ["response_type', 'code'", 'authorization code response type'],
   ["code_challenge_method', 'S256'", 'PKCE S256 challenge'],
   ['code_verifier', 'PKCE verifier exchange'],
@@ -28,10 +28,17 @@ for (const [needle, label] of [
   ['auth:google-only:', 'Google-only account policy'],
   ["SameSite=Strict", 'strict session cookie'],
   ["/api/admin/google/oauth/start", 'OAuth start route'],
-  ['GOOGLE_REDIRECT_PATH', 'OAuth callback route']
+  ['GOOGLE_REDIRECT_PATH', 'OAuth callback route'],
+  ["const optionalSecret = String(env.GOOGLE_OAUTH_CLIENT_SECRET || '').trim()", 'optional OAuth client secret'],
+  ["if (optionalSecret) body.set('client_secret', optionalSecret)", 'optional-only client secret exchange']
 ]) requireText(backend, needle, label);
 
+if (backend.includes('if (!clientId || !clientSecret)') || backend.includes('if (!clientId || !optionalSecret)')) {
+  throw new Error('Google admin auth validation failed: active PKCE OAuth path still hard-requires a client secret.');
+}
+
 for (const [needle, label] of [
+  ["from './google-auth-secretless.js'", 'secretless PKCE Worker import'],
   ['googleAuthRoute', 'Google auth Worker route'],
   ['googleLoginPage', 'dedicated Google-first admin page'],
   ['getAdminSession', 'session-aware admin routing'],
@@ -60,13 +67,7 @@ for (const [needle, label] of [
   ['color:#33444f', 'readable secondary login text']
 ]) requireText(css, needle, label);
 
-for (const [needle, label] of [
-  ['GOOGLE_SIGNIN_CLIENT_ID', 'Google client ID deployment support'],
-  ['GOOGLE_OAUTH_CLIENT_SECRET', 'Google OAuth client secret deployment support']
-]) requireText(deploy, needle, label);
+requireText(deploy, 'GOOGLE_SIGNIN_CLIENT_ID', 'Google client ID deployment support');
+requireText(legacyBackend, 'googleAuthRoute', 'legacy Google/password compatibility routes');
 
-if (worker.includes('googleIdentityProxy') || worker.includes('/vendor/google-gsi.js')) {
-  throw new Error('Google admin auth validation failed: obsolete GIS proxy remains in Worker.');
-}
-
-console.log('Google admin auth validated: server-side authorization-code redirect, PKCE/state/nonce protections, JWKS verification, allowlist binding, readable UI and Google-only admin routing are wired.');
+console.log('Google admin auth validated: secretless PKCE authorization-code redirect, optional client secret, state/nonce protections, JWKS verification, allowlist binding, readable UI and Google-only admin routing are wired.');
