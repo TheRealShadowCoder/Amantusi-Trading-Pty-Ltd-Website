@@ -24,10 +24,11 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 22
-          cache: npm
 
+      # This repository intentionally does not currently commit package-lock.json.
+      # Do not enable setup-node npm caching or use npm ci until a lockfile is added.
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Validate application and Worker
         shell: bash
@@ -49,13 +50,11 @@ jobs:
             echo "::error::public/admin.html contains legacy password-login markup."
             exit 1
           fi
-          cat > public/deployment.json <<EOF
-          {"sha":"${GITHUB_SHA}","runId":"${GITHUB_RUN_ID}","runNumber":"${GITHUB_RUN_NUMBER}","deployedAt":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","adminMode":"google-only"}
-          EOF
+          printf '%s\n' "{\"sha\":\"${GITHUB_SHA}\",\"runId\":\"${GITHUB_RUN_ID}\",\"runNumber\":\"${GITHUB_RUN_NUMBER}\",\"deployedAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"adminMode\":\"google-only\"}" > public/deployment.json
           cat public/deployment.json
 
-      # This is the only Cloudflare publication step. Existing Worker secrets
-      # (including GOOGLE_SIGNIN_CLIENT_ID) persist across normal deployments.
+      # This is the only Cloudflare publication step. Existing Worker secrets,
+      # including GOOGLE_SIGNIN_CLIENT_ID, persist across normal deployments.
       - name: Deploy permanent Amantusi Worker
         shell: bash
         env:
@@ -105,7 +104,7 @@ jobs:
             fi
 
             if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/api/admin/google/config?t=$attempt" -o /tmp/google.json; then
-              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/google.json","utf8"));const expected=String(process.env.GOOGLE_SIGNIN_CLIENT_ID||"").trim();if(!x.flowId||!x.nonce||Number(x.expiresIn)<=0||(expected&&x.clientId!==expected))process.exit(1);'; then
+              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/google.json","utf8"));const expected=String(process.env.GOOGLE_SIGNIN_CLIENT_ID||"").trim();if(!x.flowId||!x.nonce||Number(x.expiresIn)<=0)process.exit(1);if(expected&&x.clientId!==expected)process.exit(1);'; then
                 google_ok=1
               fi
             fi
@@ -145,19 +144,3 @@ jobs:
         run: |
           set -euo pipefail
           curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/api/health" | tee /tmp/health.json
-
-      - name: Upload release diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: amantusi-release-diagnostics-${{ github.run_number }}
-          path: |
-            /tmp/wrangler-deploy.log
-            /tmp/deployment.json
-            /tmp/admin.headers
-            /tmp/admin.html
-            /tmp/google.json
-            /tmp/dashboard.headers
-            /tmp/health.json
-          if-no-files-found: ignore
-          retention-days: 14
