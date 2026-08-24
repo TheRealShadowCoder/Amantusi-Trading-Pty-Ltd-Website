@@ -23,18 +23,22 @@
       <div class="google-auth-shell" id="google-auth-shell">
         <div class="google-auth-title">
           <strong>Continue with Google</strong>
-          <span>Use your authorized Amantusi Google account. No website password is required.</span>
+          <span>Sign in on Google's secure website, then return automatically to Amantusi Admin. No website password is required.</span>
         </div>
-        <div id="google-signin-button" aria-label="Continue with Google"></div>
-        <p id="google-login-status" aria-live="polite">Preparing secure Google Sign-In…</p>
+        <div id="google-signin-button" aria-label="Continue with Google">
+          <a id="google-oauth-start" class="google-oauth-button" href="/api/admin/google/oauth/start">
+            <span class="google-oauth-mark" aria-hidden="true">G</span>
+            <span>Continue with Google</span>
+          </a>
+        </div>
+        <p id="google-login-status">You will be redirected securely to Google to choose your authorized administrator account.</p>
       </div>
 
       <div class="security-notice">
         <strong>Google-protected administration</strong>
-        <span>Google verifies your account first. Amantusi then validates the signed identity token, one-time nonce and administrator allowlist before opening the operations workspace.</span>
+        <span>Google authenticates your account on its own domain. Amantusi then verifies the signed ID token, one-time state, nonce, PKCE challenge and administrator allowlist before opening the operations workspace.</span>
       </div>
     </div>
   </section>
-  <script src="/admin-google-login.js" defer></script>
 </body>
 </html>
