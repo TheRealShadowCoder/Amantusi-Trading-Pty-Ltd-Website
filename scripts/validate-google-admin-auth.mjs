@@ -28,7 +28,10 @@ for (const [needle, label] of [
   ["googleLoginPage", 'dedicated Google-first admin page'],
   ["getAdminSession", 'session-aware admin routing'],
   ["/admin-google-login.js", 'Google login client'],
+  ["script-src-elem", 'Google external script element CSP allowance'],
+  ["https://accounts.google.com/gsi/", 'Google GIS parent CSP allowance'],
   ["frame-src", 'Google iframe CSP allowance'],
+  ["identity-credentials-get=(self)", 'FedCM permissions policy'],
   ["same-origin-allow-popups", 'Google popup COOP policy']
 ]) requireText(worker, needle, label);
 
@@ -36,7 +39,10 @@ for (const [needle, label] of [
   ["/api/admin/google/config", 'Google config endpoint'],
   ["/api/admin/google/session", 'Google session endpoint'],
   ['nonce: flow.nonce', 'client nonce wiring'],
-  ["text: 'continue_with'", 'Google button copy']
+  ["text: 'continue_with'", 'Google button copy'],
+  ['loadGoogleIdentity', 'resilient GIS loader'],
+  ["use_fedcm_for_button: true", 'FedCM button mode'],
+  ['Retry Google Sign-In', 'recoverable Google load failure']
 ]) requireText(client, needle, label);
 
 requireText(css, '.google-auth-shell', 'Google auth UI styles');
@@ -46,4 +52,4 @@ if (backend.includes('GOOGLE_OAUTH_CLIENT_SECRET')) {
   throw new Error('Google admin auth validation failed: authentication-only flow must not require a Google client secret.');
 }
 
-console.log('Google admin auth validated: Google Identity Services, nonce/JWKS verification, allowlist binding and dedicated Google-first admin routing are wired.');
+console.log('Google admin auth validated: Google Identity Services resilient loading, FedCM/CSP permissions, nonce/JWKS verification, allowlist binding and dedicated Google-first admin routing are wired.');
