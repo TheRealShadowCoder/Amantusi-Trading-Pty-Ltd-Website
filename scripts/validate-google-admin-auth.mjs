@@ -4,6 +4,7 @@ const backend = fs.readFileSync('src/google-auth.js', 'utf8');
 const worker = fs.readFileSync('src/worker-v4.js', 'utf8');
 const client = fs.readFileSync('public/admin-google-login.js', 'utf8');
 const css = fs.readFileSync('public/admin-google-login.css', 'utf8');
+const wrangler = fs.readFileSync('wrangler.jsonc', 'utf8');
 const deploy = fs.readFileSync('.github/workflows/deploy-cloudflare.yml', 'utf8');
 
 function requireText(source, needle, label) {
@@ -24,7 +25,9 @@ for (const [needle, label] of [
 
 for (const [needle, label] of [
   ["googleAuthRoute", 'Google auth Worker route'],
-  ['https://accounts.google.com/gsi/client', 'Google Identity Services loader'],
+  ['https://accounts.google.com/gsi/client', 'Google Identity Services upstream'],
+  ['googleIdentityProxy', 'same-origin Google GIS fallback'],
+  ["path === '/vendor/google-gsi.js'", 'Google GIS proxy route'],
   ["googleLoginPage", 'dedicated Google-first admin page'],
   ["getAdminSession", 'session-aware admin routing'],
   ["/admin-google-login.js", 'Google login client'],
@@ -41,6 +44,7 @@ for (const [needle, label] of [
   ['nonce: flow.nonce', 'client nonce wiring'],
   ["text: 'continue_with'", 'Google button copy'],
   ['loadGoogleIdentity', 'resilient GIS loader'],
+  ["'/vendor/google-gsi.js?hl=en'", 'same-origin GIS client fallback'],
   ["use_fedcm_for_button: true", 'FedCM button mode'],
   ['Retry Google Sign-In', 'recoverable Google load failure']
 ]) requireText(client, needle, label);
@@ -52,10 +56,11 @@ for (const [needle, label] of [
   ['color:#991b1b', 'high-contrast Google error text']
 ]) requireText(css, needle, label);
 
+requireText(wrangler, '"/vendor/google-gsi.js"', 'Worker-first Google GIS fallback route');
 requireText(deploy, 'GOOGLE_SIGNIN_CLIENT_ID', 'Cloudflare Google client ID sync');
 
 if (backend.includes('GOOGLE_OAUTH_CLIENT_SECRET')) {
   throw new Error('Google admin auth validation failed: authentication-only flow must not require a Google client secret.');
 }
 
-console.log('Google admin auth validated: Google Identity Services resilient loading, FedCM/CSP permissions, readable high-contrast login UI, nonce/JWKS verification, allowlist binding and dedicated Google-first admin routing are wired.');
+console.log('Google admin auth validated: direct + same-origin Google Identity Services loading, FedCM/CSP permissions, readable high-contrast login UI, nonce/JWKS verification, allowlist binding and Google-only admin routing are wired.');

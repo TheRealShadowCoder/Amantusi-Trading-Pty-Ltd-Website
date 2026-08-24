@@ -46,7 +46,6 @@ function allowGoogleIdentity(response) {
   const headers = new Headers(response.headers);
   let csp = headers.get('Content-Security-Policy') || "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'";
 
-  // Google Identity Services documented CSP endpoints.
   csp = appendSource(csp, 'script-src', 'https://accounts.google.com/gsi/client');
   csp = appendSource(csp, 'script-src-elem', 'https://accounts.google.com/gsi/client');
   csp = appendSource(csp, 'connect-src', 'https://accounts.google.com/gsi/');
@@ -62,6 +61,48 @@ function allowGoogleIdentity(response) {
   headers.set('Cross-Origin-Embedder-Policy', 'unsafe-none');
   headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), publickey-credentials-create=(self), publickey-credentials-get=(self), identity-credentials-get=(self)');
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
+async function googleIdentityProxy(request) {
+  const sourceUrl = new URL('https://accounts.google.com/gsi/client');
+  const requestedLanguage = new URL(request.url).searchParams.get('hl') || 'en';
+  if (/^[a-zA-Z]{2,3}(?:-[a-zA-Z]{2,4})?$/.test(requestedLanguage)) {
+    sourceUrl.searchParams.set('hl', requestedLanguage);
+  }
+
+  try {
+    const upstream = await fetch(sourceUrl.toString(), { redirect: 'follow' });
+    if (!upstream.ok || !upstream.body) {
+      return new Response('Google Identity Services is temporarily unavailable.', {
+        status: 502,
+        headers: {
+          'content-type': 'text/plain; charset=utf-8',
+          'cache-control': 'no-store',
+          'x-content-type-options': 'nosniff'
+        }
+      });
+    }
+
+    return new Response(upstream.body, {
+      status: 200,
+      headers: {
+        'content-type': 'application/javascript; charset=utf-8',
+        'cache-control': 'public, max-age=300, stale-while-revalidate=600',
+        'x-content-type-options': 'nosniff',
+        'cross-origin-resource-policy': 'same-origin',
+        'x-amantusi-google-gis-source': 'worker-proxy'
+      }
+    });
+  } catch (_) {
+    return new Response('Google Identity Services could not be reached by the Amantusi gateway.', {
+      status: 502,
+      headers: {
+        'content-type': 'text/plain; charset=utf-8',
+        'cache-control': 'no-store',
+        'x-content-type-options': 'nosniff'
+      }
+    });
+  }
 }
 
 function redirect(location) {
@@ -85,7 +126,6 @@ function googleLoginPage() {
   <link rel="stylesheet" href="/catering.css">
   <link rel="stylesheet" href="/admin-security.css">
   <link rel="stylesheet" href="/admin-google-login.css">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="admin-body">
   <section class="login-wrap" id="login-view">
@@ -141,6 +181,11 @@ export default {
     const started = Date.now();
     const requestId = crypto.randomUUID();
     const path = new URL(request.url).pathname;
+
+    if (request.method === 'GET' && path === '/vendor/google-gsi.js') {
+      return wrapperHeaders(await googleIdentityProxy(request), requestId, started);
+    }
+
     const decision = await evaluateQuotaPolicy(request, env);
 
     if (!decision.allowed) {

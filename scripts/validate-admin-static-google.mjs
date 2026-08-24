@@ -11,10 +11,13 @@ for (const [needle, label] of [
   ['Continue with Google', 'Google-first copy'],
   ['id="google-auth-shell"', 'Google auth shell'],
   ['id="google-signin-button"', 'Google button mount'],
-  ['https://accounts.google.com/gsi/client', 'Google Identity Services loader'],
   ['/admin-google-login.js', 'Google login client']
 ]) {
   if (!login.includes(needle)) throw new Error(`Static Google admin validation failed: missing ${label}`);
+}
+
+if (login.includes('<script src="https://accounts.google.com/gsi/client"')) {
+  throw new Error('Static Google admin validation failed: direct GIS script tag remains; resilient loader must own Google library loading.');
 }
 
 for (const forbidden of ['id="login-form"', 'id="admin-password"', 'Login as Administrator', 'Forgot password?']) {
@@ -25,20 +28,24 @@ if (!dashboard.includes('id="admin-view"') || !dashboard.includes('Admin Dashboa
   throw new Error('Static Google admin validation failed: preserved admin dashboard asset is incomplete.');
 }
 
-if (!client.includes("location.replace('/admin-dashboard.html')")) {
-  throw new Error('Static Google admin validation failed: Google client does not route authenticated users to admin-dashboard.html.');
+for (const [needle, label] of [
+  ["location.replace('/admin-dashboard.html')", 'authenticated dashboard redirect'],
+  ["'/vendor/google-gsi.js?hl=en'", 'same-origin Google GIS fallback']
+]) {
+  if (!client.includes(needle)) throw new Error(`Static Google admin validation failed: missing ${label}.`);
 }
 
 for (const [needle, label] of [
   ["path === '/admin-dashboard.html'", 'dashboard session guard'],
+  ["path === '/vendor/google-gsi.js'", 'Google GIS Worker proxy'],
   ["redirect('/admin.html')", 'unauthenticated dashboard redirect'],
   ["redirect('/admin-dashboard.html')", 'authenticated login redirect']
 ]) {
   if (!worker.includes(needle)) throw new Error(`Static Google admin validation failed: missing ${label}.`);
 }
 
-if (!wrangler.includes('"/admin-dashboard.html"')) {
-  throw new Error('Static Google admin validation failed: admin-dashboard.html is not Worker-first.');
+for (const route of ['"/admin-dashboard.html"', '"/vendor/google-gsi.js"']) {
+  if (!wrangler.includes(route)) throw new Error(`Static Google admin validation failed: ${route} is not Worker-first.`);
 }
 
 for (const [needle, label] of [
@@ -51,4 +58,4 @@ for (const [needle, label] of [
   if (!deploy.includes(needle)) throw new Error(`Static Google admin validation failed: missing ${label}.`);
 }
 
-console.log('Static Google admin validated: Google-only login, protected CMS dashboard, Worker-first routing and exact-SHA Cloudflare deployment verification are wired.');
+console.log('Static Google admin validated: Google-only login, resilient same-origin GIS fallback, protected CMS dashboard, Worker-first routing and exact-SHA deployment verification are wired.');
