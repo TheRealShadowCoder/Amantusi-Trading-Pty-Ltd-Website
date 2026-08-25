@@ -4,7 +4,7 @@
   "account_id": "3b4dba2eec2c69b95eae20d70941e9b2",
   "compatibility_date": "2026-08-16",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "./src/worker-v4.js",
+  "main": "./src/worker-v5.js",
   "workers_dev": true,
   "preview_urls": false,
   "observability": {
