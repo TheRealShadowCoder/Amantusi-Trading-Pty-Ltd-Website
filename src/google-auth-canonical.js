@@ -1,4 +1,4 @@
-import { googleAuthRoute as secretlessGoogleAuthRoute } from './google-auth-secretless.js';
+import { googleAuthRoute as oidcGoogleAuthRoute } from './google-oidc-fragment.js';
 
 export const GOOGLE_CANONICAL_ORIGIN = 'https://amantusi-trading-pty-ltd-website.dolomite-computer.workers.dev';
 export const GOOGLE_CANONICAL_REDIRECT_URI = `${GOOGLE_CANONICAL_ORIGIN}/api/admin/google/oauth/callback`;
@@ -12,7 +12,7 @@ function canonicalize(request) {
 export async function googleAuthRoute(request, env) {
   const path = new URL(request.url).pathname;
   if (path === '/api/admin/google/oauth/start' || path === '/api/admin/google/oauth/callback') {
-    return secretlessGoogleAuthRoute(canonicalize(request), env);
+    return oidcGoogleAuthRoute(canonicalize(request), env);
   }
-  return secretlessGoogleAuthRoute(request, env);
+  return oidcGoogleAuthRoute(request, env);
 }
