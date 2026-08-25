@@ -1,0 +1,86 @@
+name: Configure Google OAuth Redirect URI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/configure-google-oauth-redirect.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+  GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+  GOOGLE_SIGNIN_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_CLIENT_ID }}
+  GOOGLE_REDIRECT_URI: https://amantusi-trading-pty-ltd-website.dolomite-computer.workers.dev/api/admin/google/oauth/callback
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Authenticate to Google Cloud using existing WIF
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Attempt supported OAuth client update
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${GOOGLE_SIGNIN_CLIENT_ID:-}" ]; then
+            echo "::error::GOOGLE_SIGNIN_CLIENT_ID is missing from GitHub Actions secrets."
+            exit 1
+          fi
+
+          candidates=("$GOOGLE_SIGNIN_CLIENT_ID" "${GOOGLE_SIGNIN_CLIENT_ID%%.apps.googleusercontent.com}")
+          matched=""
+          for candidate in "${candidates[@]}"; do
+            if gcloud iam oauth-clients describe "$candidate" --project="$GCP_PROJECT_ID" --location=global --format=json >/tmp/oauth-client.json 2>/tmp/oauth-client.err; then
+              matched="$candidate"
+              break
+            fi
+          done
+
+          if [ -z "$matched" ]; then
+            {
+              echo "## Google OAuth redirect registration"
+              echo
+              echo "The existing Google Auth Platform Web application client is not exposed through the IAM OAuth Clients API used by gcloud, so GitHub Actions cannot mutate its Authorized redirect URIs automatically."
+              echo
+              echo "Add this exact URI in Google Auth Platform → Clients → your Web application → Authorized redirect URIs:"
+              echo
+              echo '\`\`\`text'
+              echo "$GOOGLE_REDIRECT_URI"
+              echo '\`\`\`'
+              echo
+              echo "The Amantusi Worker is already hard-locked to this exact canonical callback."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "Classic Google Auth Platform client is not programmatically editable through gcloud iam oauth-clients."
+            exit 0
+          fi
+
+          existing="$(jq -r '(.allowedRedirectUris // .allowed_redirect_uris // [])[]?' /tmp/oauth-client.json)"
+          uris="$(printf '%s\n%s\n' "$existing" "$GOOGLE_REDIRECT_URI" | sed '/^$/d' | sort -u | paste -sd, -)"
+
+          gcloud iam oauth-clients update "$matched" \
+            --project="$GCP_PROJECT_ID" \
+            --location=global \
+            --allowed-redirect-uris="$uris" \
+            --quiet
+
+          gcloud iam oauth-clients describe "$matched" --project="$GCP_PROJECT_ID" --location=global --format=json >/tmp/oauth-client-after.json
+          jq -e --arg uri "$GOOGLE_REDIRECT_URI" '((.allowedRedirectUris // .allowed_redirect_uris // []) | index($uri)) != null' /tmp/oauth-client-after.json >/dev/null
+
+          echo "Google OAuth redirect URI registered automatically." >> "$GITHUB_STEP_SUMMARY"
