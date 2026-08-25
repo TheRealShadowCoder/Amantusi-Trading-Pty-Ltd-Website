@@ -6,9 +6,21 @@
     status.style.color = error ? '#991b1b' : '#33444f';
   };
 
+  function responseParams() {
+    const hash = location.hash.startsWith('#') ? location.hash.slice(1) : '';
+    const query = location.search.startsWith('?') ? location.search.slice(1) : '';
+    const hashParams = new URLSearchParams(hash);
+    const queryParams = new URLSearchParams(query);
+
+    // Google OIDC implicit responses normally use the fragment. Query parsing is
+    // retained as a defensive compatibility fallback for redirected errors.
+    return hashParams.has('id_token') || hashParams.has('state') || hashParams.has('error')
+      ? hashParams
+      : queryParams;
+  }
+
   async function complete() {
-    const raw = location.hash.startsWith('#') ? location.hash.slice(1) : '';
-    const params = new URLSearchParams(raw);
+    const params = responseParams();
     const payload = {
       state: params.get('state') || '',
       credential: params.get('id_token') || '',
@@ -16,14 +28,16 @@
       error_description: params.get('error_description') || ''
     };
 
+    // Remove OAuth/OIDC response material from browser history immediately.
     history.replaceState(null, '', location.pathname);
 
     if (payload.error) {
       setStatus(payload.error_description || payload.error, true);
       return;
     }
+
     if (!payload.state || !payload.credential) {
-      setStatus('Google returned an incomplete sign-in response. Return to Admin and try again.', true);
+      setStatus('Google did not return the signed identity token required to complete sign-in. Return to Admin and try again.', true);
       return;
     }
 
