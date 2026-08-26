@@ -1,7 +1,19 @@
 import workerV4 from './worker-v4.js';
+import { getAdminSession } from './security-v3.js';
 import { googleAuthRoute } from './google-auth-canonical.js';
 import { googleOauthStartFixed } from './google-oidc-startfix.js';
 import { googleOauthDiagnostics } from './google-auth-diagnostics.js';
+import { adminSettingsRoute } from './admin-settings-control.js';
+
+function noStore(response, mode = 'settings') {
+  const headers = new Headers(response.headers);
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  headers.set('Pragma', 'no-cache');
+  headers.set('Expires', '0');
+  headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+  headers.set('X-Amantusi-Admin-Mode', mode);
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
 
 export default {
   async fetch(request, env, ctx) {
@@ -18,6 +30,16 @@ export default {
     if (path === '/api/admin/google/oauth/callback') {
       const response = await googleAuthRoute(request, env);
       if (response) return response;
+    }
+
+    const settingsApi = await adminSettingsRoute(request, env);
+    if (settingsApi) return noStore(settingsApi, 'settings-api');
+
+    if (path === '/admin-settings.html' && request.method === 'GET') {
+      const admin = await getAdminSession(request, env);
+      if (!admin) return noStore(new Response(null, { status: 302, headers: { location: '/admin.html' } }), 'settings-auth');
+      const response = await workerV4.fetch(request, env, ctx);
+      return noStore(response, 'settings');
     }
 
     return workerV4.fetch(request, env, ctx);

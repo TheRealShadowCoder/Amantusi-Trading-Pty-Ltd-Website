@@ -98,6 +98,11 @@ function injectAuthenticatedAdminControls(response) {
         element.append('<link rel="stylesheet" href="/admin-cost.css"><style>body:has(#admin-view) #login-view{display:none!important}</style>', { html: true });
       }
     })
+    .on('.admin-nav', {
+      element(element) {
+        element.append('<a href="/admin-settings.html" class="admin-settings-link">Settings Control Centre</a>', { html: true });
+      }
+    })
     .on('body', {
       element(element) {
         element.append('<script src="/admin-cost.js" defer></script><script>window.__AMANTUSI_GOOGLE_ONLY__=true;</script>', { html: true });

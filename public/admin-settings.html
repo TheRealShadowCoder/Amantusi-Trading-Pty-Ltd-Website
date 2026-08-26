@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071923">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Amantusi Admin | Settings Control Centre</title>
+  <link rel="icon" href="/assets/amantusi-logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/admin-settings.css">
+</head>
+<body class="settings-body">
+  <div class="settings-app" id="settings-app">
+    <aside class="settings-sidebar" id="settings-sidebar">
+      <a class="settings-brand" href="/admin-dashboard.html" aria-label="Return to Amantusi Admin Dashboard">
+        <img src="/assets/amantusi-logo.svg" alt="">
+        <span><strong>AMANTUSI</strong><small>ADMIN CONTROL CENTRE</small></span>
+      </a>
+      <div class="settings-sidebar-copy">
+        <span class="settings-eyebrow">Enterprise administration</span>
+        <h1>Settings</h1>
+        <p>Security, infrastructure, operations, governance and all 1,000 administration capabilities.</p>
+      </div>
+      <nav class="settings-nav" id="settings-nav" aria-label="Settings categories"></nav>
+      <div class="settings-side-actions">
+        <a href="/admin-dashboard.html">← Dashboard</a>
+        <button id="settings-export-side" type="button">Export configuration</button>
+      </div>
+    </aside>
+
+    <main class="settings-main">
+      <header class="settings-topbar">
+        <button class="settings-menu-toggle" id="settings-menu-toggle" type="button" aria-label="Open settings navigation">☰</button>
+        <div class="settings-topbar-title">
+          <span>AMANTUSI ADMIN</span>
+          <strong>Control Centre</strong>
+        </div>
+        <div class="settings-topbar-meta">
+          <span id="settings-save-state" class="settings-save-state">Loading…</span>
+          <a href="/admin-dashboard.html" class="settings-dashboard-link">Dashboard</a>
+        </div>
+      </header>
+
+      <section class="settings-content">
+        <section class="permanent-access-card" aria-labelledby="permanent-access-title">
+          <div class="permanent-access-icon">✓</div>
+          <div>
+            <span class="settings-eyebrow">Protected identity policy</span>
+            <h2 id="permanent-access-title">Permanent Superadmin Access</h2>
+            <p><strong id="permanent-admin-email">s.k.businessline@gmail.com</strong> is protected at the server layer and cannot be removed, suspended, demoted or expired by Admin Settings.</p>
+          </div>
+          <span class="policy-lock">IMMUTABLE</span>
+        </section>
+
+        <section class="settings-metrics" aria-label="Control centre overview">
+          <article><span>Capabilities</span><strong id="metric-capabilities">1,000</strong><small>50 administrative groups</small></article>
+          <article><span>Enabled</span><strong id="metric-enabled">—</strong><small>persistent capability states</small></article>
+          <article><span>Security</span><strong id="metric-security">—</strong><small>mandatory policies enforced</small></article>
+          <article><span>Infrastructure</span><strong id="metric-infrastructure">—</strong><small>runtime bindings online</small></article>
+        </section>
+
+        <section class="settings-panel settings-overview-panel">
+          <div class="settings-panel-head">
+            <div><span class="settings-eyebrow">Core administration</span><h2>Security & Preferences</h2></div>
+            <button id="save-core-settings" class="settings-primary" type="button">Save core settings</button>
+          </div>
+          <div class="core-settings-grid">
+            <label><span>Interface theme</span><select id="setting-theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option><option value="premium">Amantusi Premium</option></select></label>
+            <label><span>Information density</span><select id="setting-density"><option value="comfortable">Comfortable</option><option value="compact">Compact</option><option value="dense">Dense</option></select></label>
+            <label><span>Interface scale</span><input id="setting-scale" type="range" min="85" max="120" step="5"><output id="setting-scale-value">100%</output></label>
+            <label class="switch-setting"><span>Reduced motion</span><input id="setting-reduced-motion" type="checkbox"><i></i></label>
+            <label class="switch-setting"><span>High contrast</span><input id="setting-high-contrast" type="checkbox"><i></i></label>
+            <label class="switch-setting locked"><span>Google-only authentication</span><input id="setting-google-only" type="checkbox" checked disabled><i></i><small>Mandatory</small></label>
+            <label class="switch-setting locked"><span>Brute-force protection</span><input id="setting-brute-force" type="checkbox" checked disabled><i></i><small>Mandatory</small></label>
+            <label class="switch-setting locked"><span>Critical-action MFA</span><input id="setting-critical-mfa" type="checkbox" checked disabled><i></i><small>Mandatory</small></label>
+            <label class="switch-setting"><span>Passkey for critical actions</span><input id="setting-passkey-critical" type="checkbox"><i></i></label>
+            <label class="switch-setting"><span>New-device verification</span><input id="setting-new-device" type="checkbox"><i></i></label>
+            <label><span>Session duration</span><select id="setting-session-hours"><option value="4">4 hours</option><option value="8">8 hours</option><option value="12">12 hours</option></select></label>
+            <label><span>Idle timeout</span><select id="setting-idle-minutes"><option value="30">30 minutes</option><option value="60">60 minutes</option><option value="120">120 minutes</option></select></label>
+          </div>
+        </section>
+
+        <section class="settings-panel">
+          <div class="settings-panel-head">
+            <div><span class="settings-eyebrow">Authorized administrators</span><h2>Identity Protection</h2></div>
+          </div>
+          <div id="identity-list" class="identity-list"></div>
+        </section>
+
+        <section class="settings-panel">
+          <div class="settings-panel-head capability-heading">
+            <div><span class="settings-eyebrow">1,000-upgrade registry</span><h2>Administration Capabilities</h2></div>
+            <div class="capability-actions">
+              <button id="bulk-enable-visible" type="button">Enable visible</button>
+              <button id="bulk-disable-visible" type="button">Disable visible</button>
+              <button id="save-capability-settings" class="settings-primary" type="button" disabled>All capability changes saved</button>
+            </div>
+          </div>
+          <div class="settings-searchbar">
+            <div class="settings-search-wrap"><span>⌕</span><input id="settings-search" type="search" placeholder="Search all 1,000 settings…" autocomplete="off"></div>
+            <select id="settings-category-filter"><option value="">All 50 categories</option></select>
+            <select id="settings-status-filter"><option value="">All states</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option><option value="attention">Attention</option></select>
+          </div>
+          <div class="capability-summary"><span id="settings-result-count">1,000 settings</span><span>Changes are staged locally until you press Save.</span></div>
+          <div id="settings-grid" class="settings-grid" aria-live="polite"></div>
+          <div class="settings-load-more"><button id="settings-load-more" type="button">Show more settings</button></div>
+        </section>
+
+        <section class="settings-panel">
+          <div class="settings-panel-head">
+            <div><span class="settings-eyebrow">Runtime verification</span><h2>Infrastructure Diagnostics</h2></div>
+            <button id="refresh-diagnostics" type="button">Refresh</button>
+          </div>
+          <div id="diagnostics-grid" class="diagnostics-grid"></div>
+        </section>
+
+        <section class="settings-panel">
+          <div class="settings-panel-head">
+            <div><span class="settings-eyebrow">Tamper-evident changes</span><h2>Settings Audit Timeline</h2></div>
+            <button id="refresh-audit" type="button">Refresh audit</button>
+          </div>
+          <div id="settings-audit" class="settings-audit"></div>
+        </section>
+
+        <section class="settings-panel danger-zone">
+          <div><span class="settings-eyebrow">Protected operations</span><h2>Configuration Recovery</h2><p>Export the complete settings state or reset configurable preferences to safe defaults. Permanent administrator access and mandatory security policies are never removed by reset.</p></div>
+          <div class="danger-actions"><button id="settings-export" type="button">Export JSON</button><button id="settings-reset" type="button">Reset configurable settings</button></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="settings-toast" id="settings-toast" role="status" aria-live="polite"></div>
+  <script src="/admin-settings-registry.js"></script>
+  <script src="/admin-settings.js" defer></script>
+</body>
+</html>
