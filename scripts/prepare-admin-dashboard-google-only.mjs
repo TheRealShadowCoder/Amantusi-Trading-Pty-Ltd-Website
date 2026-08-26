@@ -13,17 +13,17 @@ if (start < 0 || end < 0 || end <= start) {
   process.exit(1);
 }
 
-const googleOnlyFallback = `  <section class="login-wrap" id="login-view">
+const googlePrimaryFallback = `  <section class="login-wrap" id="login-view">
     <div class="login-card secure-login-card">
       <img src="/assets/amantusi-logo.svg" alt="Amantusi Trading">
       <p class="menu-kicker">Secure operations platform</p>
       <h1>Amantusi Admin</h1>
-      <p>This dashboard requires your authorized Google administrator account.</p>
+      <p>This dashboard requires an authorized administrator session.</p>
 
       <div class="google-auth-shell" id="dashboard-google-auth-shell">
         <div class="google-auth-title">
           <strong>Continue with Google</strong>
-          <span>Use the protected Google sign-in selected for Amantusi Admin. Website passwords and direct passkey sign-in are not offered here.</span>
+          <span>Google is the primary administrator sign-in. Use the protected backup recovery path only when Google access is unavailable.</span>
         </div>
         <div aria-label="Continue with Google">
           <a class="google-oauth-button" href="/api/admin/google/oauth/start">
@@ -33,9 +33,11 @@ const googleOnlyFallback = `  <section class="login-wrap" id="login-view">
         </div>
       </div>
 
+      <p style="margin:16px 0 0;text-align:center"><a href="/admin-recovery.html" class="forgot-link">Can’t use Google or forgot backup password? Open secure recovery</a></p>
+
       <div class="security-notice">
-        <strong>Google-protected administration</strong>
-        <span>Authentication is handled by Google and verified by the Amantusi administrator allowlist before the dashboard opens.</span>
+        <strong>Google primary · protected backup recovery</strong>
+        <span>Emergency backup access requires a preconfigured backup password plus a one-time code sent to the authorized administrator email.</span>
       </div>
 
       <!-- Compatibility nodes for legacy dashboard JavaScript. They are never visible authentication controls. -->
@@ -52,7 +54,7 @@ const googleOnlyFallback = `  <section class="login-wrap" id="login-view">
     </div>
   </section>`;
 
-let next = html.slice(0, start) + googleOnlyFallback + html.slice(end);
+let next = html.slice(0, start) + googlePrimaryFallback + html.slice(end);
 if (!next.includes('/admin-google-login.css')) {
   next = next.replace(
     '  <link rel="stylesheet" href="/admin-security.css">',
@@ -71,6 +73,12 @@ if (!next.includes('/admin-global-interactions.js')) {
     '  <script src="/admin-global-interactions.js" defer></script>\n</body>'
   );
 }
+if (!next.includes('href="/admin-recovery.html?mode=setup"')) {
+  next = next.replace(
+    '        <a href="/admin-settings.html" class="admin-settings-link">Settings Control Centre</a>',
+    '        <a href="/admin-settings.html" class="admin-settings-link">Settings Control Centre</a>\n        <a href="/admin-recovery.html?mode=setup" class="admin-settings-link">Backup Recovery Setup</a>'
+  );
+}
 
 for (const forbidden of [
   'type="password"',
@@ -80,22 +88,24 @@ for (const forbidden of [
   'Reset My Password by Email'
 ]) {
   if (next.includes(forbidden)) {
-    console.error(`Google-only dashboard preparation failed; forbidden legacy marker remains: ${forbidden}`);
+    console.error(`Admin dashboard preparation failed; forbidden legacy marker remains: ${forbidden}`);
     process.exit(1);
   }
 }
 
 for (const required of [
   'href="/api/admin/google/oauth/start"',
+  'href="/admin-recovery.html"',
+  'href="/admin-recovery.html?mode=setup"',
   'href="/admin-settings.html"',
   '/admin-global-interactions.css',
   '/admin-global-interactions.js'
 ]) {
   if (!next.includes(required)) {
-    console.error(`Google-only dashboard preparation failed; required marker is missing: ${required}`);
+    console.error(`Admin dashboard preparation failed; required marker is missing: ${required}`);
     process.exit(1);
   }
 }
 
 fs.writeFileSync(path, next);
-console.log('Prepared admin-dashboard.html with Google-only authentication, Settings navigation and shared admin help/3D interactions.');
+console.log('Prepared admin-dashboard.html with Google-primary authentication, backup recovery setup, Settings navigation and shared admin help/3D interactions.');
