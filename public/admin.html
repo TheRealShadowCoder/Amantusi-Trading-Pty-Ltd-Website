@@ -24,7 +24,7 @@
       <div class="google-auth-shell" id="google-auth-shell">
         <div class="google-auth-title">
           <strong>Continue with Google</strong>
-          <span>Sign in on Google's secure website, then return automatically to Amantusi Admin. No website password is required.</span>
+          <span>Google is the primary administrator sign-in. Use your authorized Google account whenever it is available.</span>
         </div>
         <div id="google-signin-button" aria-label="Continue with Google">
           <a id="google-oauth-start" class="google-oauth-button" href="/api/admin/google/oauth/start">
@@ -35,9 +35,11 @@
         <p id="google-login-status">You will be redirected securely to Google to choose your authorized administrator account.</p>
       </div>
 
+      <p style="margin:16px 0 0;text-align:center"><a href="/admin-recovery.html" class="forgot-link">Can’t use Google or forgot backup password? Open secure recovery</a></p>
+
       <div class="security-notice">
-        <strong>Google-protected administration</strong>
-        <span>Google authenticates your account on its own domain. Amantusi then verifies the signed ID token, one-time state, nonce, PKCE challenge and administrator allowlist before opening the operations workspace.</span>
+        <strong>Google primary · protected backup recovery</strong>
+        <span>Backup recovery is available only after it has been initialized from a Google-authenticated admin session. Emergency access requires both the backup password and a one-time code sent to the authorized administrator email.</span>
       </div>
     </div>
   </section>
