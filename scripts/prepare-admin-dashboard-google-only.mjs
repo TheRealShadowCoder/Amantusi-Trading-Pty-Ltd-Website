@@ -23,7 +23,7 @@ const googleOnlyFallback = `  <section class="login-wrap" id="login-view">
       <div class="google-auth-shell" id="dashboard-google-auth-shell">
         <div class="google-auth-title">
           <strong>Continue with Google</strong>
-          <span>Use the same protected Google sign-in selected for Amantusi Admin. Website passwords and direct passkey sign-in are not offered here.</span>
+          <span>Use the protected Google sign-in selected for Amantusi Admin. Website passwords and direct passkey sign-in are not offered here.</span>
         </div>
         <div aria-label="Continue with Google">
           <a class="google-oauth-button" href="/api/admin/google/oauth/start">
@@ -59,12 +59,25 @@ if (!next.includes('/admin-google-login.css')) {
     '  <link rel="stylesheet" href="/admin-security.css">\n  <link rel="stylesheet" href="/admin-google-login.css">'
   );
 }
+if (!next.includes('/admin-global-interactions.css')) {
+  next = next.replace(
+    '  <link rel="stylesheet" href="/admin-google-login.css">',
+    '  <link rel="stylesheet" href="/admin-google-login.css">\n  <link rel="stylesheet" href="/admin-global-interactions.css">'
+  );
+}
+if (!next.includes('/admin-global-interactions.js')) {
+  next = next.replace(
+    '</body>',
+    '  <script src="/admin-global-interactions.js" defer></script>\n</body>'
+  );
+}
 
 for (const forbidden of [
   'type="password"',
   'Login as Administrator',
   'Sign in with Passkey',
-  'Forgot password?'
+  'Forgot password?',
+  'Reset My Password by Email'
 ]) {
   if (next.includes(forbidden)) {
     console.error(`Google-only dashboard preparation failed; forbidden legacy marker remains: ${forbidden}`);
@@ -72,10 +85,17 @@ for (const forbidden of [
   }
 }
 
-if (!next.includes('href="/api/admin/google/oauth/start"')) {
-  console.error('Google-only dashboard preparation failed; Google OAuth entry is missing.');
-  process.exit(1);
+for (const required of [
+  'href="/api/admin/google/oauth/start"',
+  'href="/admin-settings.html"',
+  '/admin-global-interactions.css',
+  '/admin-global-interactions.js'
+]) {
+  if (!next.includes(required)) {
+    console.error(`Google-only dashboard preparation failed; required marker is missing: ${required}`);
+    process.exit(1);
+  }
 }
 
 fs.writeFileSync(path, next);
-console.log('Prepared admin-dashboard.html with Google-only visible authentication fallback.');
+console.log('Prepared admin-dashboard.html with Google-only authentication, Settings navigation and shared admin help/3D interactions.');
