@@ -27,6 +27,7 @@
       <nav class="settings-nav" id="settings-nav" aria-label="Settings categories"></nav>
       <div class="settings-side-actions">
         <a href="/admin-dashboard.html">← Dashboard</a>
+        <a href="/admin-recovery.html?mode=setup">Backup recovery</a>
         <button id="settings-export-side" type="button">Export configuration</button>
       </div>
     </aside>
@@ -66,7 +67,7 @@
         <section class="settings-panel settings-overview-panel">
           <div class="settings-panel-head">
             <div><span class="settings-eyebrow">Core administration</span><h2>Security & Preferences</h2></div>
-            <button id="save-core-settings" class="settings-primary" type="button">Save core settings</button>
+            <div class="capability-actions"><a href="/admin-recovery.html?mode=setup">Manage backup recovery</a><button id="save-core-settings" class="settings-primary" type="button">Save core settings</button></div>
           </div>
           <div class="core-settings-grid">
             <label><span>Interface theme</span><select id="setting-theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option><option value="premium">Amantusi Premium</option></select></label>
@@ -74,7 +75,8 @@
             <label><span>Interface scale</span><input id="setting-scale" type="range" min="85" max="120" step="5"><output id="setting-scale-value">100%</output></label>
             <label class="switch-setting"><span>Reduced motion</span><input id="setting-reduced-motion" type="checkbox"><i></i></label>
             <label class="switch-setting"><span>High contrast</span><input id="setting-high-contrast" type="checkbox"><i></i></label>
-            <label class="switch-setting locked"><span>Google-only authentication</span><input id="setting-google-only" type="checkbox" checked disabled><i></i><small>Mandatory</small></label>
+            <label class="switch-setting locked"><span>Google-primary authentication</span><input id="setting-google-only" type="checkbox" checked disabled><i></i><small>Mandatory standard sign-in</small></label>
+            <label class="switch-setting locked"><span>Backup recovery: password + email code</span><input id="setting-backup-recovery" type="checkbox" checked disabled><i></i><small>Protected break-glass path</small></label>
             <label class="switch-setting locked"><span>Brute-force protection</span><input id="setting-brute-force" type="checkbox" checked disabled><i></i><small>Mandatory</small></label>
             <label class="switch-setting locked"><span>Critical-action MFA</span><input id="setting-critical-mfa" type="checkbox" checked disabled><i></i><small>Mandatory</small></label>
             <label class="switch-setting"><span>Passkey for critical actions</span><input id="setting-passkey-critical" type="checkbox"><i></i></label>
@@ -127,7 +129,7 @@
         </section>
 
         <section class="settings-panel danger-zone">
-          <div><span class="settings-eyebrow">Protected operations</span><h2>Configuration Recovery</h2><p>Export the complete settings state or reset configurable preferences to safe defaults. Permanent administrator access and mandatory security policies are never removed by reset.</p></div>
+          <div><span class="settings-eyebrow">Protected operations</span><h2>Configuration Recovery</h2><p>Export the complete settings state or reset configurable preferences to safe defaults. Permanent administrator access, Google-primary sign-in and protected backup recovery are never removed by reset.</p></div>
           <div class="danger-actions"><button id="settings-export" type="button">Export JSON</button><button id="settings-reset" type="button">Reset configurable settings</button></div>
         </section>
       </section>
