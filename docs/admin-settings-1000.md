@@ -37,6 +37,10 @@ The dashboard links directly to the Settings Control Centre.
 
 Provider-dependent capabilities such as SMS, WhatsApp, external accounting, payments and AI integrations are represented and governed in the control plane, but become operational only when their corresponding provider credentials and services are configured.
 
+## Production release
+
+The Settings Control Centre is deployed through the permanent Cloudflare Worker production workflow and remains accessible only after a valid Amantusi administrator session has been established.
+
 ## Release validation
 
 The platform CI must verify the exact 50 × 20 registry, protected superadmin presence in core session and active Google OIDC allowlists, server-side immutable access policy, authenticated settings routing, responsive layouts, persistence actions, audit/export/reset controls and Wrangler Worker bundling before merge.
