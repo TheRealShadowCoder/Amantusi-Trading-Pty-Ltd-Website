@@ -1,0 +1,93 @@
+name: Verify Admin Backup Recovery Production
+
+on:
+  workflow_run:
+    workflows: ["Deploy Amantusi Platform to Permanent Cloudflare Worker"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-admin-recovery:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PRODUCTION_URL: https://amantusi-trading-pty-ltd-website.dolomite-computer.workers.dev
+      DEPLOYED_SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: Verify protected backup recovery is live
+        shell: bash
+        run: |
+          set -euo pipefail
+          success=0
+          for attempt in $(seq 1 12); do
+            build_ok=0
+            login_link_ok=0
+            page_ok=0
+            config_ok=0
+            email_ok=0
+            legacy_reset_ok=0
+            legacy_api_ok=0
+            setup_guard_ok=0
+
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/deployment.json?recovery=$attempt" -o /tmp/deployment.json; then
+              if DEPLOYED_SHA="$DEPLOYED_SHA" node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/deployment.json","utf8"));if(x.sha!==process.env.DEPLOYED_SHA)process.exit(1);'; then
+                build_ok=1
+              fi
+            fi
+
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/admin.html?recovery=$attempt" -o /tmp/admin.html; then
+              if grep -q 'Continue with Google' /tmp/admin.html && grep -q 'href="/admin-recovery.html"' /tmp/admin.html && ! grep -q 'type="password"' /tmp/admin.html; then
+                login_link_ok=1
+              fi
+            fi
+
+            if curl --fail --silent --show-error --max-time 20 -D /tmp/recovery.headers "$PRODUCTION_URL/admin-recovery.html?recovery=$attempt" -o /tmp/recovery.html; then
+              if grep -q 'Backup administrator recovery' /tmp/recovery.html && grep -q 'backup-login-start' /tmp/recovery.html && grep -q 'backup-reset-start' /tmp/recovery.html && grep -qi '^cache-control: .*no-store' /tmp/recovery.headers; then
+                page_ok=1
+              fi
+            fi
+
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/api/admin/recovery/config?recovery=$attempt" -o /tmp/recovery-config.json; then
+              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/recovery-config.json","utf8"));if(x.recoveryEngine!=="break-glass-v1"||x.primary!=="google"||x.backup!=="password+email-code"||x.codeDigits!==8||x.codeTtlMinutes!==10)process.exit(1);'; then
+                config_ok=1
+              fi
+              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/recovery-config.json","utf8"));if(x.emailDelivery!==true)process.exit(1);'; then
+                email_ok=1
+              fi
+            fi
+
+            code=$(curl --silent --show-error --max-time 20 -o /dev/null -D /tmp/legacy-reset.headers -w '%{http_code}' "$PRODUCTION_URL/admin-reset.html?recovery=$attempt" || true)
+            if [ "$code" = "302" ] && grep -qi '^location: /admin-recovery.html?mode=reset&reason=legacy-reset-upgraded' /tmp/legacy-reset.headers; then
+              legacy_reset_ok=1
+            fi
+
+            code=$(curl --silent --show-error --max-time 20 -o /tmp/legacy-api.json -w '%{http_code}' -X POST -H 'content-type: application/json' --data '{"email":"nobody@example.invalid","password":"invalid"}' "$PRODUCTION_URL/api/admin/session" || true)
+            if [ "$code" = "410" ] && grep -q 'LEGACY_AUTH_RETIRED' /tmp/legacy-api.json; then
+              legacy_api_ok=1
+            fi
+
+            code=$(curl --silent --show-error --max-time 20 -o /tmp/setup-guard.json -w '%{http_code}' -X POST -H 'content-type: application/json' --data '{}' "$PRODUCTION_URL/api/admin/recovery/setup/request" || true)
+            if [ "$code" = "401" ] && grep -q 'Google administrator session required' /tmp/setup-guard.json; then
+              setup_guard_ok=1
+            fi
+
+            echo "Recovery production check $attempt/12: build=$build_ok loginLink=$login_link_ok page=$page_ok config=$config_ok emailDelivery=$email_ok legacyReset=$legacy_reset_ok legacyAPI=$legacy_api_ok setupGuard=$setup_guard_ok"
+            if [ "$build_ok" -eq 1 ] && [ "$login_link_ok" -eq 1 ] && [ "$page_ok" -eq 1 ] && [ "$config_ok" -eq 1 ] && [ "$email_ok" -eq 1 ] && [ "$legacy_reset_ok" -eq 1 ] && [ "$legacy_api_ok" -eq 1 ] && [ "$setup_guard_ok" -eq 1 ]; then
+              success=1
+              break
+            fi
+            sleep 5
+          done
+
+          if [ "$success" -ne 1 ]; then
+            echo "::error::Admin backup recovery production verification failed."
+            [ -f /tmp/recovery-config.json ] && cat /tmp/recovery-config.json || true
+            [ -f /tmp/recovery.headers ] && cat /tmp/recovery.headers || true
+            [ -f /tmp/legacy-reset.headers ] && cat /tmp/legacy-reset.headers || true
+            exit 1
+          fi
+
+          echo "Admin backup recovery is live: Google primary, backup password + email OTP, recovery email delivery configured, legacy reset upgraded and legacy direct auth retired for $DEPLOYED_SHA."
