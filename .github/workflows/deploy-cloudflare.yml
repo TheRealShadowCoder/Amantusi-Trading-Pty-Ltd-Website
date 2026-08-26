@@ -77,6 +77,29 @@ jobs:
             echo "::warning::GOOGLE_OAUTH_CLIENT_SECRET is not present in GitHub secrets yet. The new login page will deploy, but OAuth code exchange will remain unavailable until this secret is added and the workflow is rerun."
           fi
 
+      - name: Sync backup recovery email credentials
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALERT_FROM_EMAIL: ${{ secrets.ALERT_FROM_EMAIL }}
+        run: |
+          set -euo pipefail
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is not configured."
+            exit 1
+          fi
+          if [ -n "$RESEND_API_KEY" ]; then
+            printf '%s' "$RESEND_API_KEY" | npx wrangler secret put RESEND_API_KEY
+          else
+            echo "::warning::RESEND_API_KEY is not present in GitHub secrets; preserving any existing Worker secret. Backup recovery email will remain unavailable if the Worker has no existing value."
+          fi
+          if [ -n "$ALERT_FROM_EMAIL" ]; then
+            printf '%s' "$ALERT_FROM_EMAIL" | npx wrangler secret put ALERT_FROM_EMAIL
+          else
+            echo "::warning::ALERT_FROM_EMAIL is not present in GitHub secrets; preserving any existing Worker secret. It must be a Resend-authorized sender address."
+          fi
+
       - name: Deploy permanent Amantusi Worker
         shell: bash
         env:
