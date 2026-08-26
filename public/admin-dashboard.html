@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="/catering.css">
   <link rel="stylesheet" href="/admin-security.css">
   <link rel="stylesheet" href="/admin-ops.css">
+  <link rel="stylesheet" href="/admin-google-login.css">
+  <link rel="stylesheet" href="/admin-global-interactions.css">
 </head>
 <body class="admin-body">
   <section class="login-wrap" id="login-view">
@@ -18,32 +20,37 @@
       <img src="/assets/amantusi-logo.svg" alt="Amantusi Trading">
       <p class="menu-kicker">Secure operations platform</p>
       <h1>Amantusi Admin</h1>
-      <p>Manage enquiries, quotations, suppliers, products, catering content and company information from one protected workspace.</p>
+      <p>This dashboard requires your authorized Google administrator account.</p>
 
-      <form id="login-form" class="security-form">
-        <label class="security-label" for="admin-email">Administrator email</label>
-        <input id="admin-email" name="email" type="email" autocomplete="username webauthn" placeholder="admin@email.com" required>
-        <label class="security-label" for="admin-password">Password</label>
-        <input id="admin-password" name="password" type="password" autocomplete="current-password" placeholder="Admin password" required>
-        <button class="admin-button gold security-primary" type="submit">Login as Administrator</button>
-        <button class="admin-button secondary security-primary" id="passkey-login" type="button">Sign in with Passkey</button>
-        <p class="login-error" id="login-error" aria-live="polite"></p>
-      </form>
-
-      <button class="forgot-link" id="forgot-toggle" type="button">Forgot password?</button>
-      <form id="reset-request-form" class="reset-request-box hidden">
-        <p><strong>Password reset</strong></p>
-        <p>Enter your authorized administrator email. A time-limited reset link will be sent only if the address is approved and email recovery is configured.</p>
-        <label class="security-label" for="reset-email">Administrator email</label>
-        <input id="reset-email" name="email" type="email" autocomplete="email" placeholder="admin@email.com" required>
-        <button class="admin-button secondary security-primary" type="submit">Email Reset Link</button>
-        <p class="reset-status" id="reset-request-status" aria-live="polite"></p>
-      </form>
+      <div class="google-auth-shell" id="dashboard-google-auth-shell">
+        <div class="google-auth-title">
+          <strong>Continue with Google</strong>
+          <span>Use the protected Google sign-in selected for Amantusi Admin. Website passwords and direct passkey sign-in are not offered here.</span>
+        </div>
+        <div aria-label="Continue with Google">
+          <a class="google-oauth-button" href="/api/admin/google/oauth/start">
+            <span class="google-oauth-mark" aria-hidden="true">G</span>
+            <span>Continue with Google</span>
+          </a>
+        </div>
+      </div>
 
       <div class="security-notice">
-        <strong>Protected administration area</strong>
-        <span>Failed sign-ins are monitored. Passkeys can be enabled as a second factor, and security notifications activate when the configured email and WhatsApp providers are connected.</span>
+        <strong>Google-protected administration</strong>
+        <span>Authentication is handled by Google and verified by the Amantusi administrator allowlist before the dashboard opens.</span>
       </div>
+
+      <!-- Compatibility nodes for legacy dashboard JavaScript. They are never visible authentication controls. -->
+      <form id="login-form" hidden aria-hidden="true">
+        <input id="admin-email" type="hidden" value="">
+        <input id="admin-password" type="hidden" value="">
+        <p id="login-error" hidden></p>
+      </form>
+      <button id="forgot-toggle" type="button" hidden aria-hidden="true"></button>
+      <form id="reset-request-form" class="hidden" hidden aria-hidden="true">
+        <input id="reset-email" type="hidden" value="">
+        <p id="reset-request-status" hidden></p>
+      </form>
     </div>
   </section>
 
@@ -63,6 +70,7 @@
         <button type="button" data-panel-target="profile-panel">Company Profile</button>
         <button type="button" data-panel-target="integrations-panel">SEO & Integrations</button>
         <button type="button" data-panel-target="backup-panel">Backup / Security</button>
+        <a href="/admin-settings.html" class="admin-settings-link">Settings Control Centre</a>
         <a href="/catering-menu.html" target="_blank" rel="noopener">Preview Menu ↗</a>
         <a href="/company-profile.html" target="_blank" rel="noopener">Preview Profile ↗</a>
         <button type="button" id="logout-btn">Logout</button>
@@ -154,7 +162,7 @@
       <section id="backup-panel" class="admin-section hidden">
         <div class="ops-grid two">
           <div class="admin-panel"><h2>Backup & Restore</h2><p class="panel-copy">Export the catering/profile content as JSON before major changes. Import the same file later to restore content.</p><div class="admin-toolbar"><button class="admin-button gold" id="export-json" type="button">Export JSON Backup</button><label class="admin-button secondary" style="cursor:pointer">Import JSON<input id="import-json" type="file" accept="application/json" hidden></label></div></div>
-          <div class="admin-panel"><h2>Administrator Security</h2><p class="panel-copy">Register a device passkey and optionally require it after a valid password. Passkeys use WebAuthn and remain bound to the administrator account.</p><div class="admin-toolbar"><button class="admin-button gold" id="register-passkey" type="button">Register Passkey</button><button class="admin-button secondary" id="dashboard-reset-password" type="button">Reset My Password by Email</button></div><label class="mfa-toggle"><input type="checkbox" id="require-passkey-mfa"><span>Require passkey after password login</span></label><div id="passkey-list" class="passkey-list"></div><p class="reset-status" id="passkey-status" aria-live="polite"></p><p class="reset-status" id="dashboard-reset-status" aria-live="polite"></p></div>
+          <div class="admin-panel"><h2>Administrator Security</h2><p class="panel-copy">Google is the only administration sign-in method. Register passkeys after Google sign-in for supported protected actions, and manage security policy from the Settings Control Centre.</p><div class="admin-toolbar"><button class="admin-button gold" id="register-passkey" type="button">Register Passkey</button><a class="admin-button secondary" href="/admin-settings.html">Open Security Settings</a><button id="dashboard-reset-password" type="button" hidden aria-hidden="true"></button></div><label class="mfa-toggle" hidden aria-hidden="true"><input type="checkbox" id="require-passkey-mfa"><span>Legacy MFA compatibility</span></label><div id="passkey-list" class="passkey-list"></div><p class="reset-status" id="passkey-status" aria-live="polite"></p><p class="reset-status" id="dashboard-reset-status" hidden aria-hidden="true"></p></div>
         </div>
         <div class="admin-panel"><div class="panel-title-row"><h2>Monitoring & Error Log</h2><button class="admin-button secondary" id="refresh-system" type="button">Refresh</button></div><div id="system-status" class="health-grid"></div><div id="system-events" class="ops-events"></div></div>
       </section>
@@ -162,5 +170,6 @@
   </section>
   <script src="/admin-ops.js" defer></script>
   <script src="/admin.js" defer></script>
+  <script src="/admin-global-interactions.js" defer></script>
 </body>
 </html>
