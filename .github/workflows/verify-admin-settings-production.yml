@@ -17,7 +17,7 @@ jobs:
       PRODUCTION_URL: https://amantusi-trading-pty-ltd-website.dolomite-computer.workers.dev
       DEPLOYED_SHA: ${{ github.event.workflow_run.head_sha }}
     steps:
-      - name: Verify deployed build, protected route and help assets
+      - name: Verify deployed build, protected route, help and 3D assets
         shell: bash
         run: |
           set -euo pipefail
@@ -27,6 +27,8 @@ jobs:
             guard_ok=0
             help_js_ok=0
             help_css_ok=0
+            interactions_ok=0
+            three_d_css_ok=0
 
             if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/deployment.json?verify=$attempt" -o /tmp/deployment.json; then
               if DEPLOYED_SHA="$DEPLOYED_SHA" node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/deployment.json","utf8"));if(x.sha!==process.env.DEPLOYED_SHA)process.exit(1);'; then
@@ -51,8 +53,20 @@ jobs:
               fi
             fi
 
-            echo "Admin Settings production check $attempt/12: build=$build_ok routeGuard=$guard_ok helpJS=$help_js_ok helpCSS=$help_css_ok"
-            if [ "$build_ok" -eq 1 ] && [ "$guard_ok" -eq 1 ] && [ "$help_js_ok" -eq 1 ] && [ "$help_css_ok" -eq 1 ]; then
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/admin-settings-interactions-v2.js?verify=$attempt" -o /tmp/admin-settings-interactions-v2.js; then
+              if grep -q "document.addEventListener('dblclick'" /tmp/admin-settings-interactions-v2.js && grep -q 'event.isTrusted' /tmp/admin-settings-interactions-v2.js && grep -q -- '--admin-rotate-x' /tmp/admin-settings-interactions-v2.js; then
+                interactions_ok=1
+              fi
+            fi
+
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/admin-settings-3d.css?verify=$attempt" -o /tmp/admin-settings-3d.css; then
+              if grep -q '.admin-3d-object' /tmp/admin-settings-3d.css && grep -q 'perspective:1400px' /tmp/admin-settings-3d.css && grep -q 'prefers-reduced-motion:reduce' /tmp/admin-settings-3d.css; then
+                three_d_css_ok=1
+              fi
+            fi
+
+            echo "Admin Settings production check $attempt/12: build=$build_ok routeGuard=$guard_ok helpJS=$help_js_ok helpCSS=$help_css_ok interactions=$interactions_ok threeD=$three_d_css_ok"
+            if [ "$build_ok" -eq 1 ] && [ "$guard_ok" -eq 1 ] && [ "$help_js_ok" -eq 1 ] && [ "$help_css_ok" -eq 1 ] && [ "$interactions_ok" -eq 1 ] && [ "$three_d_css_ok" -eq 1 ]; then
               success=1
               break
             fi
@@ -66,4 +80,4 @@ jobs:
             exit 1
           fi
 
-          echo "Admin Settings is protected and the interactive help assets are live for $DEPLOYED_SHA."
+          echo "Admin Settings is protected and universal help + 3D interaction assets are live for $DEPLOYED_SHA."
