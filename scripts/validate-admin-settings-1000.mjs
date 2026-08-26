@@ -24,8 +24,8 @@ const security = read('src/security-v3.js');
 const oidc = read('src/google-oidc-fragment.js');
 const control = read('src/admin-settings-control.js');
 const workerV5 = read('src/worker-v5.js');
-const workerV4 = read('src/worker-v4.js');
 const wrangler = read('wrangler.jsonc');
+const dashboard = read('public/admin-dashboard.html');
 const page = read('public/admin-settings.html');
 const client = read('public/admin-settings.js');
 const css = read('public/admin-settings.css');
@@ -44,8 +44,10 @@ expect(control.includes('safe.security.googleOnly = true') && control.includes('
 expect(control.includes('getAdminSession') && control.includes("'/api/admin/settings-control'"), 'authenticated settings API is not wired');
 expect(workerV5.includes("path === '/admin-settings.html'") && workerV5.includes('getAdminSession') && workerV5.includes('adminSettingsRoute'), 'Worker v5 does not protect the settings page/API');
 expect(workerV5.includes("path === '/api/admin/session'") && workerV5.includes('GOOGLE_ONLY_AUTH') && workerV5.includes('status: 410'), 'legacy password endpoint is not blocked by the Google-only Worker');
+expect(workerV5.includes("path === '/api/admin/passkeys/authentication/options'") && workerV5.includes("path === '/api/admin/passkeys/authentication/verify'"), 'direct passkey sign-in endpoints are not retired by the Google-only Worker');
 expect(wrangler.includes('"/admin-settings.html"'), 'Cloudflare Assets can bypass the Worker because /admin-settings.html is missing from run_worker_first');
-expect(workerV4.includes('/admin-settings.html') && workerV4.includes('Settings Control Centre'), 'dashboard navigation does not expose Settings Control Centre');
+expect(dashboard.includes('/admin-settings.html') && dashboard.includes('Settings Control Centre'), 'dashboard source navigation does not expose Settings Control Centre');
+expect(dashboard.includes('Continue with Google') && !dashboard.includes('type="password"'), 'dashboard source is not Google-only');
 expect(page.includes('Permanent Superadmin Access') && page.includes('Administration Capabilities'), 'settings page core UI is incomplete');
 expect(page.includes('/admin-settings-registry.js') && page.includes('/admin-settings.js'), 'settings assets are not linked');
 expect(page.includes('/admin-settings-help.js') && page.includes('/admin-settings-help.css'), 'interactive settings help assets are not linked');
@@ -71,4 +73,4 @@ expect(threeDCss.includes('perspective:1400px') && threeDCss.includes('.admin-3d
 expect(threeDCss.includes('prefers-reduced-motion:reduce') && threeDCss.includes('pointer:coarse'), '3D settings effects do not disable safely for reduced-motion/touch environments');
 expect(headers.includes('/admin-settings-interactions-v2.js') && headers.includes('/admin-settings-3d.css'), 'new Admin Settings interaction assets are not protected from stale caching');
 
-console.log('Admin Settings 1000 validated: 50 categories, 1,000 capabilities, Worker-first route protection, Google-only legacy-auth guard, universal double-click guidance, animated 3D interactions, touch/reduced-motion safety, explicit staged-save control, authenticated KV control plane, responsive UI, audit/export/reset controls and permanent superadmin protection are wired.');
+console.log('Admin Settings 1000 validated: 50 categories, 1,000 capabilities, Worker-first route protection, Google-only legacy-auth and direct-passkey guards, source-level Settings navigation, universal double-click guidance, animated 3D interactions, touch/reduced-motion safety, explicit staged-save control, authenticated KV control plane, responsive UI, audit/export/reset controls and permanent superadmin protection are wired.');
