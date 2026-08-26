@@ -25,19 +25,21 @@ const oidc = read('src/google-oidc-fragment.js');
 const control = read('src/admin-settings-control.js');
 const workerV5 = read('src/worker-v5.js');
 const workerV4 = read('src/worker-v4.js');
+const wrangler = read('wrangler.jsonc');
 const page = read('public/admin-settings.html');
 const client = read('public/admin-settings.js');
 const css = read('public/admin-settings.css');
 const helpClient = read('public/admin-settings-help.js');
 const helpCss = read('public/admin-settings-help.css');
 
-expect(security.includes(`"${permanentEmail}"`) || security.includes(`'${permanentEmail}'`), 'permanent admin missing from core session allowlist');
-expect(oidc.includes(`'${permanentEmail}'`) || oidc.includes(`"${permanentEmail}"`), 'permanent admin missing from active Google OIDC allowlist');
+expect(security.includes(`\"${permanentEmail}\"`) || security.includes(`'${permanentEmail}'`), 'permanent admin missing from core session allowlist');
+expect(oidc.includes(`'${permanentEmail}'`) || oidc.includes(`\"${permanentEmail}\"`), 'permanent admin missing from active Google OIDC allowlist');
 expect(control.includes(`const PERMANENT_ADMIN = '${permanentEmail}'`), 'permanent admin constant missing from settings control plane');
 expect(control.includes('cannotRemove: true') && control.includes('cannotSuspend: true') && control.includes('cannotDemote: true') && control.includes('cannotExpire: true'), 'permanent access invariants are incomplete');
 expect(control.includes('safe.security.googleOnly = true') && control.includes('safe.security.bruteForceProtection = true') && control.includes('safe.security.suspiciousLoginBlocking = true'), 'mandatory security invariants are incomplete');
 expect(control.includes('getAdminSession') && control.includes("'/api/admin/settings-control'"), 'authenticated settings API is not wired');
 expect(workerV5.includes("path === '/admin-settings.html'") && workerV5.includes('getAdminSession') && workerV5.includes('adminSettingsRoute'), 'Worker v5 does not protect the settings page/API');
+expect(wrangler.includes('"/admin-settings.html"'), 'Cloudflare Assets can bypass the Worker because /admin-settings.html is missing from run_worker_first');
 expect(workerV4.includes('/admin-settings.html') && workerV4.includes('Settings Control Centre'), 'dashboard navigation does not expose Settings Control Centre');
 expect(page.includes('Permanent Superadmin Access') && page.includes('Administration Capabilities'), 'settings page core UI is incomplete');
 expect(page.includes('/admin-settings-registry.js') && page.includes('/admin-settings.js'), 'settings assets are not linked');
@@ -58,4 +60,4 @@ expect(helpClient.includes('What it does') && helpClient.includes('Impact') && h
 expect(helpCss.includes('.admin-help-tooltip') && helpCss.includes('.admin-help-dialog'), 'animated help presentation styles are missing');
 expect(helpCss.includes('prefers-reduced-motion:reduce'), 'interactive help does not respect reduced-motion preference');
 
-console.log('Admin Settings 1000 validated: 50 categories, 1,000 capabilities, interactive tooltip guidance, double-click/touch help, explicit staged-save control, authenticated KV control plane, responsive UI, audit/export/reset controls and permanent superadmin protection are wired.');
+console.log('Admin Settings 1000 validated: 50 categories, 1,000 capabilities, Worker-first route protection, interactive tooltip guidance, double-click/touch help, explicit staged-save control, authenticated KV control plane, responsive UI, audit/export/reset controls and permanent superadmin protection are wired.');
