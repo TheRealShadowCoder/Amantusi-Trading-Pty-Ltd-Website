@@ -1,0 +1,30 @@
+.admin-body{perspective:1400px;perspective-origin:50% 18%}
+.admin-global-3d{--global-rx:0deg;--global-ry:0deg;--global-z:0px;--global-shine-x:50%;--global-shine-y:50%;position:relative;transform-style:preserve-3d;backface-visibility:hidden;transform:perspective(900px) rotateX(var(--global-rx)) rotateY(var(--global-ry)) translateZ(var(--global-z));transition:transform .2s ease,box-shadow .2s ease,filter .2s ease;will-change:transform}
+.admin-global-3d::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;background:radial-gradient(circle at var(--global-shine-x) var(--global-shine-y),rgba(255,255,255,.18),transparent 42%);transition:opacity .18s ease;z-index:3}
+.admin-global-3d.admin-global-3d-active::after{opacity:1}
+.admin-global-3d.admin-global-3d-active{filter:drop-shadow(0 14px 24px rgba(0,0,0,.12))}
+.admin-global-3d.admin-global-3d-pressed{transform:perspective(900px) rotateX(calc(var(--global-rx) * .45)) rotateY(calc(var(--global-ry) * .45)) translateZ(1px) scale(.992)}
+.admin-global-tooltip{position:fixed;z-index:2147483000;max-width:320px;padding:9px 12px;border:1px solid rgba(196,164,88,.32);border-radius:10px;background:rgba(7,25,35,.96);box-shadow:0 14px 34px rgba(0,0,0,.25);color:#f7f2e7;font:600 12px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;opacity:0;transform:translateY(4px) scale(.98);transition:opacity .12s ease,transform .12s ease;pointer-events:none}
+.admin-global-tooltip.show{opacity:1;transform:translateY(0) scale(1)}
+.admin-global-dialog-shell{position:fixed;inset:0;z-index:2147483100;display:grid;place-items:center;padding:20px}
+.admin-global-dialog-shell[hidden]{display:none}
+.admin-global-backdrop{position:absolute;inset:0;background:rgba(3,14,20,.62);backdrop-filter:blur(12px);opacity:0;transition:opacity .18s ease}
+.admin-global-dialog{position:relative;width:min(560px,94vw);max-height:min(760px,88vh);overflow:auto;border:1px solid rgba(196,164,88,.28);border-radius:24px;padding:24px;background:linear-gradient(155deg,#fff,#f7f4eb);box-shadow:0 30px 90px rgba(0,0,0,.28);color:#071923;opacity:0;transform:perspective(900px) translateY(16px) rotateX(-4deg) scale(.98);transition:opacity .18s ease,transform .18s ease}
+.admin-global-dialog-shell.open .admin-global-backdrop{opacity:1}
+.admin-global-dialog-shell.open .admin-global-dialog{opacity:1;transform:perspective(900px) translateY(0) rotateX(0) scale(1)}
+.admin-global-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:14px}
+.admin-global-dialog-head span{display:block;margin-bottom:6px;color:#8a6d28;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.admin-global-dialog-head h2{margin:0;font-size:28px;line-height:1.05}
+.admin-global-dialog-head button{width:38px;height:38px;border:0;border-radius:12px;background:#edf1f3;color:#071923;font-size:24px;cursor:pointer}
+.admin-global-dialog>p{margin:0 0 18px;color:#42515a;line-height:1.65}
+.admin-global-usage{padding:16px;border:1px solid rgba(7,25,35,.09);border-radius:16px;background:rgba(7,25,35,.035)}
+.admin-global-usage strong{display:block;margin-bottom:7px}
+.admin-global-usage p{margin:0;color:#42515a;line-height:1.6}
+.admin-global-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.admin-global-actions button{border:0;border-radius:12px;padding:11px 15px;background:#e9eef0;color:#071923;font-weight:800;cursor:pointer}
+.admin-global-actions button:last-child{background:#c4a458}
+.admin-global-located{animation:admin-global-locate 1.2s ease}
+@keyframes admin-global-locate{0%,100%{box-shadow:inherit}35%{box-shadow:0 0 0 4px rgba(196,164,88,.32),0 18px 45px rgba(0,0,0,.18)}}
+@media (hover:none),(pointer:coarse){.admin-global-3d{transform:none!important;filter:none!important}.admin-global-3d::after{display:none}}
+@media (prefers-reduced-motion:reduce){.admin-global-3d,.admin-global-tooltip,.admin-global-backdrop,.admin-global-dialog{transition:none!important;animation:none!important;transform:none!important}.admin-global-3d::after{display:none}}
+@media(max-width:560px){.admin-global-dialog-shell{align-items:end;padding:0}.admin-global-dialog{width:100%;max-height:86vh;border-radius:24px 24px 0 0;padding:20px}.admin-global-actions{position:sticky;bottom:0;padding-top:12px;background:linear-gradient(transparent,#f7f4eb 24%)}}

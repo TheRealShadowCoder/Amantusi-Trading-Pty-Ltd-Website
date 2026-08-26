@@ -52,6 +52,7 @@ function googleLoginPage() {
   <link rel="stylesheet" href="/catering.css">
   <link rel="stylesheet" href="/admin-security.css">
   <link rel="stylesheet" href="/admin-google-login.css">
+  <link rel="stylesheet" href="/admin-global-interactions.css">
 </head>
 <body class="admin-body">
   <section class="login-wrap" id="login-view">
@@ -79,6 +80,7 @@ function googleLoginPage() {
       </div>
     </div>
   </section>
+  <script src="/admin-global-interactions.js" defer></script>
 </body>
 </html>`;
   return noStoreAdmin(new Response(html, {
@@ -98,14 +100,9 @@ function injectAuthenticatedAdminControls(response) {
         element.append('<link rel="stylesheet" href="/admin-cost.css"><style>body:has(#admin-view) #login-view{display:none!important}</style>', { html: true });
       }
     })
-    .on('.admin-nav', {
-      element(element) {
-        element.append('<a href="/admin-settings.html" class="admin-settings-link">Settings Control Centre</a>', { html: true });
-      }
-    })
     .on('body', {
       element(element) {
-        element.append('<script src="/admin-cost.js" defer></script><script>window.__AMANTUSI_GOOGLE_ONLY__=true;</script>', { html: true });
+        element.append('<script src="/admin-cost.js" defer></script><script>window.__AMANTUSI_GOOGLE_ONLY__=true;window.__AMANTUSI_ADMIN_INTERACTIONS__=true;</script>', { html: true });
       }
     })
     .transform(response);
