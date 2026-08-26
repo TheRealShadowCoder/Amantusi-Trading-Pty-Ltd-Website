@@ -17,18 +17,24 @@ jobs:
       PRODUCTION_URL: https://amantusi-trading-pty-ltd-website.dolomite-computer.workers.dev
       DEPLOYED_SHA: ${{ github.event.workflow_run.head_sha }}
     steps:
-      - name: Verify deployed build, protected route, help and 3D assets
+      - name: Verify all admin surfaces, Google-only auth, help and 3D assets
         shell: bash
         run: |
           set -euo pipefail
           success=0
           for attempt in $(seq 1 12); do
             build_ok=0
-            guard_ok=0
+            settings_guard_ok=0
+            dashboard_guard_ok=0
+            reset_guard_ok=0
+            google_entry_ok=0
+            legacy_auth_blocked_ok=0
             help_js_ok=0
             help_css_ok=0
             interactions_ok=0
             three_d_css_ok=0
+            global_js_ok=0
+            global_css_ok=0
 
             if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/deployment.json?verify=$attempt" -o /tmp/deployment.json; then
               if DEPLOYED_SHA="$DEPLOYED_SHA" node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/deployment.json","utf8"));if(x.sha!==process.env.DEPLOYED_SHA)process.exit(1);'; then
@@ -38,7 +44,31 @@ jobs:
 
             code=$(curl --silent --show-error --max-time 20 -o /dev/null -D /tmp/settings.headers -w '%{http_code}' "$PRODUCTION_URL/admin-settings.html?verify=$attempt" || true)
             if [ "$code" = "302" ] && grep -qi '^location: /admin.html' /tmp/settings.headers; then
-              guard_ok=1
+              settings_guard_ok=1
+            fi
+
+            code=$(curl --silent --show-error --max-time 20 -o /dev/null -D /tmp/dashboard.headers -w '%{http_code}' "$PRODUCTION_URL/admin-dashboard.html?verify=$attempt" || true)
+            if [ "$code" = "302" ] && grep -qi '^location: /admin.html' /tmp/dashboard.headers; then
+              dashboard_guard_ok=1
+            fi
+
+            code=$(curl --silent --show-error --max-time 20 -o /dev/null -D /tmp/reset.headers -w '%{http_code}' "$PRODUCTION_URL/admin-reset.html?verify=$attempt" || true)
+            if [ "$code" = "302" ] && grep -qi '^location: /admin.html?reason=password-reset-retired' /tmp/reset.headers; then
+              reset_guard_ok=1
+            fi
+
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/admin.html?verify=$attempt" -o /tmp/admin.html; then
+              if grep -q 'Continue with Google' /tmp/admin.html && grep -q '/api/admin/google/oauth/start' /tmp/admin.html && grep -q '/admin-global-interactions.css' /tmp/admin.html && grep -q '/admin-global-interactions.js' /tmp/admin.html && ! grep -q 'type="password"' /tmp/admin.html; then
+                google_entry_ok=1
+              fi
+            fi
+
+            session_code=$(curl --silent --show-error --max-time 20 -o /tmp/session.json -w '%{http_code}' -X POST -H 'content-type: application/json' --data '{}' "$PRODUCTION_URL/api/admin/session" || true)
+            reset_code=$(curl --silent --show-error --max-time 20 -o /tmp/reset-api.json -w '%{http_code}' -X POST -H 'content-type: application/json' --data '{}' "$PRODUCTION_URL/api/admin/password-reset/request" || true)
+            passkey_options_code=$(curl --silent --show-error --max-time 20 -o /tmp/passkey-options.json -w '%{http_code}' -X POST -H 'content-type: application/json' --data '{}' "$PRODUCTION_URL/api/admin/passkeys/authentication/options" || true)
+            passkey_verify_code=$(curl --silent --show-error --max-time 20 -o /tmp/passkey-verify.json -w '%{http_code}' -X POST -H 'content-type: application/json' --data '{}' "$PRODUCTION_URL/api/admin/passkeys/authentication/verify" || true)
+            if [ "$session_code" = "410" ] && [ "$reset_code" = "410" ] && [ "$passkey_options_code" = "410" ] && [ "$passkey_verify_code" = "410" ] && grep -q 'GOOGLE_ONLY_AUTH' /tmp/session.json && grep -q 'GOOGLE_ONLY_AUTH' /tmp/reset-api.json && grep -q 'GOOGLE_ONLY_AUTH' /tmp/passkey-options.json && grep -q 'GOOGLE_ONLY_AUTH' /tmp/passkey-verify.json; then
+              legacy_auth_blocked_ok=1
             fi
 
             if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/admin-settings-help.js?verify=$attempt" -o /tmp/admin-settings-help.js; then
@@ -65,8 +95,20 @@ jobs:
               fi
             fi
 
-            echo "Admin Settings production check $attempt/12: build=$build_ok routeGuard=$guard_ok helpJS=$help_js_ok helpCSS=$help_css_ok interactions=$interactions_ok threeD=$three_d_css_ok"
-            if [ "$build_ok" -eq 1 ] && [ "$guard_ok" -eq 1 ] && [ "$help_js_ok" -eq 1 ] && [ "$help_css_ok" -eq 1 ] && [ "$interactions_ok" -eq 1 ] && [ "$three_d_css_ok" -eq 1 ]; then
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/admin-global-interactions.js?verify=$attempt" -o /tmp/admin-global-interactions.js; then
+              if grep -q "document.addEventListener('dblclick'" /tmp/admin-global-interactions.js && grep -q "event.key === 'F1'" /tmp/admin-global-interactions.js && grep -q 'MutationObserver' /tmp/admin-global-interactions.js && grep -q -- '--global-rx' /tmp/admin-global-interactions.js; then
+                global_js_ok=1
+              fi
+            fi
+
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/admin-global-interactions.css?verify=$attempt" -o /tmp/admin-global-interactions.css; then
+              if grep -q '.admin-global-3d' /tmp/admin-global-interactions.css && grep -q 'perspective:1400px' /tmp/admin-global-interactions.css && grep -q 'prefers-reduced-motion:reduce' /tmp/admin-global-interactions.css; then
+                global_css_ok=1
+              fi
+            fi
+
+            echo "Admin production check $attempt/12: build=$build_ok settings=$settings_guard_ok dashboard=$dashboard_guard_ok reset=$reset_guard_ok google=$google_entry_ok legacyAuth=$legacy_auth_blocked_ok settingsHelp=$help_js_ok/$help_css_ok settings3D=$interactions_ok/$three_d_css_ok global=$global_js_ok/$global_css_ok"
+            if [ "$build_ok" -eq 1 ] && [ "$settings_guard_ok" -eq 1 ] && [ "$dashboard_guard_ok" -eq 1 ] && [ "$reset_guard_ok" -eq 1 ] && [ "$google_entry_ok" -eq 1 ] && [ "$legacy_auth_blocked_ok" -eq 1 ] && [ "$help_js_ok" -eq 1 ] && [ "$help_css_ok" -eq 1 ] && [ "$interactions_ok" -eq 1 ] && [ "$three_d_css_ok" -eq 1 ] && [ "$global_js_ok" -eq 1 ] && [ "$global_css_ok" -eq 1 ]; then
               success=1
               break
             fi
@@ -74,10 +116,14 @@ jobs:
           done
 
           if [ "$success" -ne 1 ]; then
-            echo "::error::Admin Settings production verification failed."
+            echo "::error::Repo-wide Admin production verification failed."
             [ -f /tmp/settings.headers ] && cat /tmp/settings.headers || true
+            [ -f /tmp/dashboard.headers ] && cat /tmp/dashboard.headers || true
+            [ -f /tmp/reset.headers ] && cat /tmp/reset.headers || true
             [ -f /tmp/deployment.json ] && cat /tmp/deployment.json || true
+            [ -f /tmp/session.json ] && cat /tmp/session.json || true
+            [ -f /tmp/passkey-options.json ] && cat /tmp/passkey-options.json || true
             exit 1
           fi
 
-          echo "Admin Settings is protected and universal help + 3D interaction assets are live for $DEPLOYED_SHA."
+          echo "All Amantusi admin surfaces are aligned: Google-only entry, retired legacy password/direct-passkey routes, protected dashboard/settings, double-click help and 3D interaction assets are live for $DEPLOYED_SHA."
