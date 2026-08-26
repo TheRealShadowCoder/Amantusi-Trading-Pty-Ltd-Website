@@ -1,0 +1,15 @@
+.settings-body{perspective:1400px;perspective-origin:50% 20%}
+.admin-3d-object{--admin-rotate-x:0deg;--admin-rotate-y:0deg;--admin-depth:0px;--admin-shine-x:50%;--admin-shine-y:50%;position:relative;transform-style:preserve-3d;backface-visibility:hidden;transform:perspective(900px) rotateX(var(--admin-rotate-x)) rotateY(var(--admin-rotate-y)) translateZ(var(--admin-depth));transition:transform 180ms cubic-bezier(.2,.7,.2,1),box-shadow 180ms ease,filter 180ms ease;will-change:transform}
+.admin-3d-object::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;background:radial-gradient(circle at var(--admin-shine-x) var(--admin-shine-y),rgba(255,255,255,.22),rgba(255,255,255,0) 36%);mix-blend-mode:soft-light;transition:opacity 180ms ease;transform:translateZ(12px)}
+.admin-3d-object.admin-3d-active{filter:saturate(1.03);box-shadow:0 18px 38px rgba(5,20,28,.14)}
+.admin-3d-object.admin-3d-active::after{opacity:1}
+.admin-3d-object.admin-3d-pressed{--admin-depth:2px!important;transform:perspective(900px) rotateX(calc(var(--admin-rotate-x) * .55)) rotateY(calc(var(--admin-rotate-y) * .55)) translateZ(var(--admin-depth)) scale(.992)}
+.setting-card.admin-3d-object .setting-number,.setting-card.admin-3d-object .setting-copy,.setting-card.admin-3d-object .setting-help-button,.setting-card.admin-3d-object .setting-toggle{position:relative;transform:translateZ(16px)}
+.settings-metrics article.admin-3d-object>*,.identity-card.admin-3d-object>*,.diagnostic-card.admin-3d-object>*,.permanent-access-card.admin-3d-object>*{position:relative;transform:translateZ(12px)}
+.admin-3d-control{transform:translateZ(0);transition:transform 150ms cubic-bezier(.2,.7,.2,1),box-shadow 150ms ease;will-change:transform}
+@media (hover:hover) and (pointer:fine){.admin-3d-control:hover{transform:perspective(700px) translateY(-2px) translateZ(8px)}.admin-3d-control:active{transform:perspective(700px) translateY(0) translateZ(1px) scale(.985)}}
+.admin-3d-ready .setting-card{animation:admin3dEnter 360ms cubic-bezier(.2,.7,.2,1) both}
+@keyframes admin3dEnter{from{opacity:.72;transform:perspective(900px) rotateX(4deg) translateY(8px) translateZ(-12px)}to{opacity:1;transform:perspective(900px) rotateX(0) translateY(0) translateZ(0)}}
+html.admin-3d-reduced .admin-3d-object,html.admin-3d-reduced .admin-3d-control{transform:none!important;animation:none!important;transition:none!important;filter:none!important}
+html.admin-3d-reduced .admin-3d-object::after{display:none!important}
+@media (prefers-reduced-motion:reduce),(hover:none),(pointer:coarse){.admin-3d-object,.admin-3d-control{transform:none!important;animation:none!important;transition:none!important;filter:none!important}.admin-3d-object::after{display:none!important}}
