@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#071923">
   <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>Amantusi Admin | Google Sign-In Required</title>
+  <title>Amantusi Admin | Recovery Upgraded</title>
   <link rel="icon" href="/assets/amantusi-logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/catering.css">
@@ -18,28 +18,28 @@
     <div class="login-card secure-login-card">
       <img src="/assets/amantusi-logo.svg" alt="Amantusi Trading">
       <p class="menu-kicker">Administrator security</p>
-      <h1>Password Reset Retired</h1>
-      <p>Amantusi Admin now uses Google-only authentication. Website passwords and direct passkey sign-in are no longer used to enter the administration workspace.</p>
+      <h1>Password Recovery Upgraded</h1>
+      <p>The old reset-link system has been replaced by protected backup recovery. Google remains the primary sign-in method, while emergency recovery uses a preconfigured backup password plus a one-time code sent to the authorized administrator email.</p>
 
       <div class="google-auth-shell">
         <div class="google-auth-title">
-          <strong>Continue with Google</strong>
-          <span>Choose an authorized administrator Google account. Passkeys may still be used after sign-in for protected critical actions where enabled.</span>
+          <strong>Secure backup recovery</strong>
+          <span>If you forgot the backup password, verify the authorized administrator email and choose a new password through the recovery centre.</span>
         </div>
-        <div aria-label="Continue with Google">
-          <a class="google-oauth-button" href="/api/admin/google/oauth/start">
-            <span class="google-oauth-mark" aria-hidden="true">G</span>
-            <span>Continue with Google</span>
+        <div aria-label="Open secure recovery">
+          <a class="google-oauth-button" href="/admin-recovery.html?mode=reset">
+            <span class="google-oauth-mark" aria-hidden="true">↻</span>
+            <span>Open Password Recovery</span>
           </a>
         </div>
       </div>
 
       <div class="security-notice">
-        <strong>Google-protected administration</strong>
-        <span>The active Worker redirects this retired URL to the canonical Google sign-in page. This static message exists only as a safe fallback if an asset is ever served outside the normal Worker route.</span>
+        <strong>One-time email verification required</strong>
+        <span>The active Worker redirects this legacy URL to the protected recovery centre. The old password-reset API remains disabled so it cannot bypass the new two-factor recovery policy.</span>
       </div>
 
-      <p style="margin-top:20px"><a href="/admin.html" class="forgot-link">Return to Amantusi Admin</a></p>
+      <p style="margin-top:20px"><a href="/admin.html" class="forgot-link">Return to Google sign-in</a></p>
     </div>
   </section>
   <script src="/admin-global-interactions.js" defer></script>
