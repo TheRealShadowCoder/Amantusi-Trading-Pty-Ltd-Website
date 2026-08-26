@@ -15,15 +15,26 @@ function noStore(response, mode = 'settings') {
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
+function redirect(location, mode = 'google-only') {
+  return noStore(new Response(null, { status: 302, headers: { location } }), mode);
+}
+
 function googleOnlyAuthResponse() {
   return noStore(new Response(JSON.stringify({
-    error: 'Password sign-in is disabled for Amantusi Admin. Use Continue with Google.',
+    error: 'Direct password/passkey sign-in is disabled for Amantusi Admin. Use Continue with Google.',
     code: 'GOOGLE_ONLY_AUTH',
     login: '/admin.html'
   }), {
     status: 410,
     headers: { 'content-type': 'application/json; charset=utf-8' }
   }), 'google-only');
+}
+
+function isRetiredDirectAuthPath(path) {
+  return path === '/api/admin/session' ||
+    path.startsWith('/api/admin/password-reset') ||
+    path === '/api/admin/passkeys/authentication/options' ||
+    path === '/api/admin/passkeys/authentication/verify';
 }
 
 export default {
@@ -43,14 +54,15 @@ export default {
       if (response) return response;
     }
 
-    // Google-only mode is authoritative. Do not allow legacy password endpoints to
-    // reach the older PBKDF2 implementation (Cloudflare Workers caps PBKDF2 at
-    // 100,000 iterations, while historical credentials used a higher count).
-    if (request.method === 'POST' && (
-      path === '/api/admin/session' ||
-      path.startsWith('/api/admin/password-reset')
-    )) {
+    // Google-only mode is authoritative on every deployed admin surface.
+    // Retire legacy password reset and direct passkey sign-in before older Worker
+    // layers can reach historical credential code.
+    if (request.method === 'POST' && isRetiredDirectAuthPath(path)) {
       return googleOnlyAuthResponse();
+    }
+
+    if (path === '/admin-reset.html' && request.method === 'GET') {
+      return redirect('/admin.html?reason=password-reset-retired', 'google-only-retired-reset');
     }
 
     const settingsApi = await adminSettingsRoute(request, env);
@@ -58,7 +70,7 @@ export default {
 
     if (path === '/admin-settings.html' && request.method === 'GET') {
       const admin = await getAdminSession(request, env);
-      if (!admin) return noStore(new Response(null, { status: 302, headers: { location: '/admin.html' } }), 'settings-auth');
+      if (!admin) return redirect('/admin.html', 'settings-auth');
       const response = await workerV4.fetch(request, env, ctx);
       return noStore(response, 'settings');
     }
