@@ -9,6 +9,7 @@
   <link rel="icon" href="/assets/amantusi-logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/admin-settings.css">
+  <link rel="stylesheet" href="/admin-settings-help.css">
 </head>
 <body class="settings-body">
   <div class="settings-app" id="settings-app">
@@ -37,6 +38,7 @@
           <strong>Control Centre</strong>
         </div>
         <div class="settings-topbar-meta">
+          <span class="settings-help-hint" aria-label="Settings help instructions">ⓘ Hover for tips · double-click for full guide · F1</span>
           <span id="settings-save-state" class="settings-save-state">Loading…</span>
           <a href="/admin-dashboard.html" class="settings-dashboard-link">Dashboard</a>
         </div>
@@ -134,5 +136,6 @@
   <div class="settings-toast" id="settings-toast" role="status" aria-live="polite"></div>
   <script src="/admin-settings-registry.js"></script>
   <script src="/admin-settings.js" defer></script>
+  <script src="/admin-settings-help.js" defer></script>
 </body>
 </html>
