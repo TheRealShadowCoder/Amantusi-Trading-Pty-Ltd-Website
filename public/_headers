@@ -20,9 +20,64 @@
   Cache-Control: public, max-age=300, stale-while-revalidate=3600
 
 /admin.html
-  Cache-Control: no-store
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/admin-dashboard.html
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/admin-settings.html
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
   X-Robots-Tag: noindex, nofollow, noarchive
 
 /admin-reset.html
-  Cache-Control: no-store
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
   X-Robots-Tag: noindex, nofollow, noarchive
+
+/admin.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/admin-ops.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/admin-cost.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/admin-google-login.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/admin-settings.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/admin-settings-registry.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/admin-settings-help.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/admin-security.css
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/admin-ops.css
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/admin-cost.css
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/admin-google-login.css
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/admin-settings.css
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/admin-settings-help.css
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
