@@ -34,3 +34,7 @@ Settings are persisted in Cloudflare KV under `admin:control-centre:v1`. Changes
 - keyboard shortcuts and unsaved-change protection
 
 The dashboard links directly to the Settings Control Centre.
+
+## Release validation
+
+The platform CI must verify the exact 50 × 20 registry, protected superadmin presence in core session and active Google OIDC allowlists, server-side immutable access policy, authenticated settings routing, responsive layouts, persistence actions, audit/export/reset controls and Wrangler Worker bundling before merge.
