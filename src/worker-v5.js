@@ -39,6 +39,17 @@ function isRetiredDirectAuthPath(path) {
     path === '/api/admin/passkeys/authentication/verify';
 }
 
+async function recoveryPage(request, env) {
+  // Cloudflare Static Assets canonicalizes .html routes to extensionless paths.
+  // Fetch the canonical asset internally so the public protected URL returns the
+  // page body directly instead of leaking through a redirect/caching path.
+  const assetUrl = new URL(request.url);
+  assetUrl.pathname = '/admin-recovery';
+  const assetRequest = new Request(assetUrl.toString(), request);
+  const response = await env.ASSETS.fetch(assetRequest);
+  return noStore(response, 'backup-recovery');
+}
+
 export default {
   async fetch(request, env, ctx) {
     const path = new URL(request.url).pathname;
@@ -70,9 +81,8 @@ export default {
       return redirect('/admin-recovery.html?mode=reset&reason=legacy-reset-upgraded', 'backup-recovery');
     }
 
-    if (path === '/admin-recovery.html' && request.method === 'GET') {
-      const response = await env.ASSETS.fetch(request);
-      return noStore(response, 'backup-recovery');
+    if ((path === '/admin-recovery.html' || path === '/admin-recovery') && request.method === 'GET') {
+      return recoveryPage(request, env);
     }
 
     const settingsApi = await adminSettingsRoute(request, env);
