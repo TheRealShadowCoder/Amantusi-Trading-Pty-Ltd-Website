@@ -1,0 +1,69 @@
+name: Verify Admin Settings Production Guard
+
+on:
+  workflow_run:
+    workflows: ["Deploy Amantusi Platform to Permanent Cloudflare Worker"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-admin-settings:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PRODUCTION_URL: https://amantusi-trading-pty-ltd-website.dolomite-computer.workers.dev
+      DEPLOYED_SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: Verify deployed build, protected route and help assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          success=0
+          for attempt in $(seq 1 12); do
+            build_ok=0
+            guard_ok=0
+            help_js_ok=0
+            help_css_ok=0
+
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/deployment.json?verify=$attempt" -o /tmp/deployment.json; then
+              if DEPLOYED_SHA="$DEPLOYED_SHA" node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/deployment.json","utf8"));if(x.sha!==process.env.DEPLOYED_SHA)process.exit(1);'; then
+                build_ok=1
+              fi
+            fi
+
+            code=$(curl --silent --show-error --max-time 20 -o /dev/null -D /tmp/settings.headers -w '%{http_code}' "$PRODUCTION_URL/admin-settings.html?verify=$attempt" || true)
+            if [ "$code" = "302" ] && grep -qi '^location: /admin.html' /tmp/settings.headers; then
+              guard_ok=1
+            fi
+
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/admin-settings-help.js?verify=$attempt" -o /tmp/admin-settings-help.js; then
+              if grep -q 'MutationObserver' /tmp/admin-settings-help.js && grep -q 'admin-help-dialog' /tmp/admin-settings-help.js && grep -q "event.key === 'F1'" /tmp/admin-settings-help.js; then
+                help_js_ok=1
+              fi
+            fi
+
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/admin-settings-help.css?verify=$attempt" -o /tmp/admin-settings-help.css; then
+              if grep -q '.admin-help-tooltip' /tmp/admin-settings-help.css && grep -q '.admin-help-dialog' /tmp/admin-settings-help.css && grep -q 'prefers-reduced-motion:reduce' /tmp/admin-settings-help.css; then
+                help_css_ok=1
+              fi
+            fi
+
+            echo "Admin Settings production check $attempt/12: build=$build_ok routeGuard=$guard_ok helpJS=$help_js_ok helpCSS=$help_css_ok"
+            if [ "$build_ok" -eq 1 ] && [ "$guard_ok" -eq 1 ] && [ "$help_js_ok" -eq 1 ] && [ "$help_css_ok" -eq 1 ]; then
+              success=1
+              break
+            fi
+            sleep 5
+          done
+
+          if [ "$success" -ne 1 ]; then
+            echo "::error::Admin Settings production verification failed."
+            [ -f /tmp/settings.headers ] && cat /tmp/settings.headers || true
+            [ -f /tmp/deployment.json ] && cat /tmp/deployment.json || true
+            exit 1
+          fi
+
+          echo "Admin Settings is protected and the interactive help assets are live for $DEPLOYED_SHA."
