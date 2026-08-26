@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071923">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Amantusi Admin | Backup Recovery</title>
+  <link rel="icon" href="/assets/amantusi-logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/admin-security.css">
+  <link rel="stylesheet" href="/admin-google-login.css">
+  <link rel="stylesheet" href="/admin-global-interactions.css">
+  <link rel="stylesheet" href="/admin-recovery.css">
+</head>
+<body class="admin-body recovery-body">
+  <main class="recovery-wrap">
+    <header class="recovery-header">
+      <a class="recovery-brand" href="/admin.html" aria-label="Return to Amantusi Admin">
+        <img src="/assets/amantusi-logo.svg" alt="">
+        <span><strong>AMANTUSI</strong><small>ADMIN BACKUP RECOVERY</small></span>
+      </a>
+      <a class="recovery-back" href="/admin.html">← Google sign-in</a>
+    </header>
+
+    <section class="recovery-hero">
+      <article class="recovery-card">
+        <span class="recovery-kicker">Emergency access</span>
+        <h1>Backup administrator recovery</h1>
+        <p>Google remains the primary admin sign-in. This protected fallback exists only for an authorized administrator who cannot use Google or has forgotten the backup password.</p>
+      </article>
+      <aside class="recovery-summary">
+        <h2>Two-factor by design</h2>
+        <p>A backup password alone can never open the dashboard.</p>
+        <div class="recovery-points">
+          <div class="recovery-point"><b>1.</b><span>Use the authorized administrator email and backup password.</span></div>
+          <div class="recovery-point"><b>2.</b><span>Enter the one-time code sent to that same administrator email.</span></div>
+          <div class="recovery-point"><b>3.</b><span>Codes expire after 10 minutes and lock after repeated incorrect attempts.</span></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="recovery-grid">
+      <article class="recovery-panel" data-admin-help="Emergency backup sign-in uses a backup password plus a one-time email code. Google remains the primary sign-in method.">
+        <span class="recovery-kicker">Emergency sign-in</span>
+        <h2>Use backup access</h2>
+        <p>Use this only if Google sign-in is unavailable to you.</p>
+
+        <form id="backup-login-start" class="recovery-form recovery-step active" autocomplete="on">
+          <label>Administrator email
+            <input id="backup-login-email" type="email" autocomplete="username" required placeholder="Authorized admin email">
+          </label>
+          <label>Backup password
+            <input id="backup-login-password" type="password" autocomplete="current-password" minlength="14" maxlength="128" required placeholder="Your backup password">
+          </label>
+          <button class="recovery-button gold" type="submit">Continue with Backup Access</button>
+          <p class="recovery-status" id="backup-login-status" aria-live="polite"></p>
+        </form>
+
+        <form id="backup-login-verify" class="recovery-form recovery-step" autocomplete="one-time-code">
+          <input id="backup-login-flow" type="hidden">
+          <label>One-time email code
+            <input id="backup-login-code" class="recovery-code" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" autocomplete="one-time-code" required placeholder="00000000">
+          </label>
+          <button class="recovery-button gold" type="submit">Verify & Open Dashboard</button>
+          <button class="recovery-button secondary" id="backup-login-restart" type="button">Start again</button>
+          <p class="recovery-status" id="backup-login-verify-status" aria-live="polite"></p>
+        </form>
+      </article>
+
+      <article class="recovery-panel" data-admin-help="Forgotten backup passwords can be reset only after a one-time code is delivered to the authorized administrator email. The backup method must have been initialized previously from a Google-authenticated session.">
+        <span class="recovery-kicker">Forgotten password</span>
+        <h2>Reset backup password</h2>
+        <p>If you forgot the backup password, verify the authorized email and choose a new one.</p>
+
+        <form id="backup-reset-start" class="recovery-form recovery-step active">
+          <label>Administrator email
+            <input id="backup-reset-email" type="email" autocomplete="email" required placeholder="Authorized admin email">
+          </label>
+          <button class="recovery-button" type="submit">Send Recovery Code</button>
+          <p class="recovery-status" id="backup-reset-status" aria-live="polite"></p>
+        </form>
+
+        <form id="backup-reset-confirm" class="recovery-form recovery-step">
+          <input id="backup-reset-flow" type="hidden">
+          <label>One-time email code
+            <input id="backup-reset-code" class="recovery-code" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" autocomplete="one-time-code" required placeholder="00000000">
+          </label>
+          <label>New backup password
+            <input id="backup-reset-password" type="password" autocomplete="new-password" minlength="14" maxlength="128" required placeholder="Choose a strong backup password">
+            <span class="recovery-password-help">14+ characters. Use letters and numbers, plus a symbol unless the password is at least 20 characters long.</span>
+          </label>
+          <label>Confirm new password
+            <input id="backup-reset-confirm-password" type="password" autocomplete="new-password" minlength="14" maxlength="128" required placeholder="Repeat the new password">
+          </label>
+          <button class="recovery-button gold" type="submit">Reset Password & Sign In</button>
+          <button class="recovery-button secondary" id="backup-reset-restart" type="button">Request another code</button>
+          <p class="recovery-status" id="backup-reset-confirm-status" aria-live="polite"></p>
+        </form>
+      </article>
+
+      <article class="recovery-panel" id="backup-setup-panel" hidden data-admin-help="Backup recovery must first be initialized from an authenticated Google administrator session. Setup itself requires an emailed one-time code before the password is stored.">
+        <span class="recovery-kicker">Authenticated setup</span>
+        <h2>Set or change backup password</h2>
+        <p id="backup-setup-copy">Sign in with Google first to initialize the backup recovery method.</p>
+        <span class="recovery-setup-badge off" id="backup-setup-badge">Checking…</span>
+
+        <form id="backup-setup-start" class="recovery-form recovery-step active" style="margin-top:16px">
+          <button class="recovery-button" type="submit">Email Setup Verification Code</button>
+          <p class="recovery-status" id="backup-setup-status" aria-live="polite"></p>
+        </form>
+
+        <form id="backup-setup-confirm" class="recovery-form recovery-step">
+          <input id="backup-setup-flow" type="hidden">
+          <label>One-time email code
+            <input id="backup-setup-code" class="recovery-code" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" autocomplete="one-time-code" required placeholder="00000000">
+          </label>
+          <label>Backup password
+            <input id="backup-setup-password" type="password" autocomplete="new-password" minlength="14" maxlength="128" required placeholder="Choose your emergency backup password">
+            <span class="recovery-password-help">Do not reuse your Google password. Use a separate password stored in your password manager.</span>
+          </label>
+          <label>Confirm backup password
+            <input id="backup-setup-confirm-password" type="password" autocomplete="new-password" minlength="14" maxlength="128" required placeholder="Repeat the backup password">
+          </label>
+          <button class="recovery-button gold" type="submit">Save Backup Recovery</button>
+          <button class="recovery-button secondary" id="backup-setup-restart" type="button">Start again</button>
+          <p class="recovery-status" id="backup-setup-confirm-status" aria-live="polite"></p>
+        </form>
+
+        <div class="recovery-note"><strong>Important:</strong> backup recovery cannot be created anonymously. The first setup or any normal change requires an active Google administrator session plus an emailed code.</div>
+      </article>
+    </section>
+
+    <div class="recovery-google">
+      <a href="/api/admin/google/oauth/start"><span aria-hidden="true">G</span><span>Return to Continue with Google</span></a>
+    </div>
+  </main>
+  <script src="/admin-recovery.js" defer></script>
+  <script src="/admin-global-interactions.js" defer></script>
+</body>
+</html>

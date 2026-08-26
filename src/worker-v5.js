@@ -4,13 +4,14 @@ import { googleAuthRoute } from './google-auth-canonical.js';
 import { googleOauthStartFixed } from './google-oidc-startfix.js';
 import { googleOauthDiagnostics } from './google-auth-diagnostics.js';
 import { adminSettingsRoute } from './admin-settings-control.js';
+import { adminRecoveryRoute } from './admin-recovery.js';
 
 function noStore(response, mode = 'settings') {
   const headers = new Headers(response.headers);
   headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
   headers.set('Pragma', 'no-cache');
   headers.set('Expires', '0');
-  headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+  headers.set('X-Robots-Tag', 'noindex, nofollow,noarchive');
   headers.set('X-Amantusi-Admin-Mode', mode);
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
@@ -21,13 +22,14 @@ function redirect(location, mode = 'google-only') {
 
 function googleOnlyAuthResponse() {
   return noStore(new Response(JSON.stringify({
-    error: 'Direct password/passkey sign-in is disabled for Amantusi Admin. Use Continue with Google.',
-    code: 'GOOGLE_ONLY_AUTH',
-    login: '/admin.html'
+    error: 'Legacy direct password/passkey sign-in is disabled. Use Google or the protected backup recovery flow.',
+    code: 'LEGACY_AUTH_RETIRED',
+    login: '/admin.html',
+    recovery: '/admin-recovery.html'
   }), {
     status: 410,
     headers: { 'content-type': 'application/json; charset=utf-8' }
-  }), 'google-only');
+  }), 'google-primary-recovery-enabled');
 }
 
 function isRetiredDirectAuthPath(path) {
@@ -54,15 +56,23 @@ export default {
       if (response) return response;
     }
 
-    // Google-only mode is authoritative on every deployed admin surface.
-    // Retire legacy password reset and direct passkey sign-in before older Worker
-    // layers can reach historical credential code.
+    const recoveryApi = await adminRecoveryRoute(request, env);
+    if (recoveryApi) return noStore(recoveryApi, 'backup-recovery-api');
+
+    // Historical password/reset/direct-passkey endpoints remain retired. The only
+    // supported backup access path is /api/admin/recovery/*, which requires both a
+    // preconfigured backup password and a one-time code sent to the allowlisted email.
     if (request.method === 'POST' && isRetiredDirectAuthPath(path)) {
       return googleOnlyAuthResponse();
     }
 
     if (path === '/admin-reset.html' && request.method === 'GET') {
-      return redirect('/admin.html?reason=password-reset-retired', 'google-only-retired-reset');
+      return redirect('/admin-recovery.html?mode=reset&reason=legacy-reset-upgraded', 'backup-recovery');
+    }
+
+    if (path === '/admin-recovery.html' && request.method === 'GET') {
+      const response = await env.ASSETS.fetch(request);
+      return noStore(response, 'backup-recovery');
     }
 
     const settingsApi = await adminSettingsRoute(request, env);

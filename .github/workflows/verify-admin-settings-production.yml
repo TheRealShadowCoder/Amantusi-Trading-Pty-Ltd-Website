@@ -17,7 +17,7 @@ jobs:
       PRODUCTION_URL: https://amantusi-trading-pty-ltd-website.dolomite-computer.workers.dev
       DEPLOYED_SHA: ${{ github.event.workflow_run.head_sha }}
     steps:
-      - name: Verify all admin surfaces, Google-only auth, help and 3D assets
+      - name: Verify all admin surfaces, Google-primary auth, help and 3D assets
         shell: bash
         run: |
           set -euo pipefail
@@ -53,12 +53,12 @@ jobs:
             fi
 
             code=$(curl --silent --show-error --max-time 20 -o /dev/null -D /tmp/reset.headers -w '%{http_code}' "$PRODUCTION_URL/admin-reset.html?verify=$attempt" || true)
-            if [ "$code" = "302" ] && grep -qi '^location: /admin.html?reason=password-reset-retired' /tmp/reset.headers; then
+            if [ "$code" = "302" ] && grep -qi '^location: /admin-recovery.html?mode=reset&reason=legacy-reset-upgraded' /tmp/reset.headers; then
               reset_guard_ok=1
             fi
 
             if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/admin.html?verify=$attempt" -o /tmp/admin.html; then
-              if grep -q 'Continue with Google' /tmp/admin.html && grep -q '/api/admin/google/oauth/start' /tmp/admin.html && grep -q '/admin-global-interactions.css' /tmp/admin.html && grep -q '/admin-global-interactions.js' /tmp/admin.html && ! grep -q 'type="password"' /tmp/admin.html; then
+              if grep -q 'Continue with Google' /tmp/admin.html && grep -q '/api/admin/google/oauth/start' /tmp/admin.html && grep -q '/admin-recovery.html' /tmp/admin.html && grep -q '/admin-global-interactions.css' /tmp/admin.html && grep -q '/admin-global-interactions.js' /tmp/admin.html && ! grep -q 'type="password"' /tmp/admin.html; then
                 google_entry_ok=1
               fi
             fi
@@ -67,7 +67,7 @@ jobs:
             reset_code=$(curl --silent --show-error --max-time 20 -o /tmp/reset-api.json -w '%{http_code}' -X POST -H 'content-type: application/json' --data '{}' "$PRODUCTION_URL/api/admin/password-reset/request" || true)
             passkey_options_code=$(curl --silent --show-error --max-time 20 -o /tmp/passkey-options.json -w '%{http_code}' -X POST -H 'content-type: application/json' --data '{}' "$PRODUCTION_URL/api/admin/passkeys/authentication/options" || true)
             passkey_verify_code=$(curl --silent --show-error --max-time 20 -o /tmp/passkey-verify.json -w '%{http_code}' -X POST -H 'content-type: application/json' --data '{}' "$PRODUCTION_URL/api/admin/passkeys/authentication/verify" || true)
-            if [ "$session_code" = "410" ] && [ "$reset_code" = "410" ] && [ "$passkey_options_code" = "410" ] && [ "$passkey_verify_code" = "410" ] && grep -q 'GOOGLE_ONLY_AUTH' /tmp/session.json && grep -q 'GOOGLE_ONLY_AUTH' /tmp/reset-api.json && grep -q 'GOOGLE_ONLY_AUTH' /tmp/passkey-options.json && grep -q 'GOOGLE_ONLY_AUTH' /tmp/passkey-verify.json; then
+            if [ "$session_code" = "410" ] && [ "$reset_code" = "410" ] && [ "$passkey_options_code" = "410" ] && [ "$passkey_verify_code" = "410" ] && grep -q 'LEGACY_AUTH_RETIRED' /tmp/session.json && grep -q 'LEGACY_AUTH_RETIRED' /tmp/reset-api.json && grep -q 'LEGACY_AUTH_RETIRED' /tmp/passkey-options.json && grep -q 'LEGACY_AUTH_RETIRED' /tmp/passkey-verify.json; then
               legacy_auth_blocked_ok=1
             fi
 
@@ -126,4 +126,4 @@ jobs:
             exit 1
           fi
 
-          echo "All Amantusi admin surfaces are aligned: Google-only entry, retired legacy password/direct-passkey routes, protected dashboard/settings, double-click help and 3D interaction assets are live for $DEPLOYED_SHA."
+          echo "All Amantusi admin surfaces are aligned: Google-primary entry, protected backup recovery link, retired legacy password/direct-passkey routes, protected dashboard/settings, double-click help and 3D interaction assets are live for $DEPLOYED_SHA."

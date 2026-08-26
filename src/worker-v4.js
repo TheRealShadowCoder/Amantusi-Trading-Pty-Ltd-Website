@@ -35,7 +35,7 @@ function redirect(location) {
   return noStoreAdmin(new Response(null, {
     status: 302,
     headers: { location }
-  }), 'google-only');
+  }), 'google-primary');
 }
 
 function googleLoginPage() {
@@ -64,7 +64,7 @@ function googleLoginPage() {
       <div class="google-auth-shell" id="google-auth-shell">
         <div class="google-auth-title">
           <strong>Continue with Google</strong>
-          <span>Sign in on Google's secure website, then return automatically to Amantusi Admin. No website password is required.</span>
+          <span>Google is the primary administrator sign-in. Use your authorized Google account whenever it is available.</span>
         </div>
         <div id="google-signin-button" aria-label="Continue with Google">
           <a id="google-oauth-start" class="google-oauth-button" href="/api/admin/google/oauth/start">
@@ -74,9 +74,10 @@ function googleLoginPage() {
         </div>
         <p id="google-login-status">You will be redirected securely to Google to choose your authorized administrator account.</p>
       </div>
+      <p style="margin:16px 0 0;text-align:center"><a href="/admin-recovery.html" class="forgot-link">Can’t use Google or forgot backup password? Open secure recovery</a></p>
       <div class="security-notice">
-        <strong>Google-protected administration</strong>
-        <span>Google authenticates your account on its own domain. Amantusi verifies the signed ID token, one-time state, nonce, PKCE challenge and administrator allowlist before opening the operations workspace.</span>
+        <strong>Google primary · protected backup recovery</strong>
+        <span>Backup recovery is available only after it has been initialized from a Google-authenticated admin session. Emergency access requires both the backup password and a one-time code sent to the authorized administrator email.</span>
       </div>
     </div>
   </section>
@@ -89,7 +90,7 @@ function googleLoginPage() {
       'content-type': 'text/html; charset=utf-8',
       'content-security-policy': "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
     }
-  }), 'google-only');
+  }), 'google-primary-recovery');
 }
 
 function injectAuthenticatedAdminControls(response) {
@@ -102,7 +103,7 @@ function injectAuthenticatedAdminControls(response) {
     })
     .on('body', {
       element(element) {
-        element.append('<script src="/admin-cost.js" defer></script><script>window.__AMANTUSI_GOOGLE_ONLY__=true;window.__AMANTUSI_ADMIN_INTERACTIONS__=true;</script>', { html: true });
+        element.append('<script src="/admin-cost.js" defer></script><script>window.__AMANTUSI_GOOGLE_ONLY__=false;window.__AMANTUSI_GOOGLE_PRIMARY__=true;window.__AMANTUSI_BACKUP_RECOVERY__=true;window.__AMANTUSI_ADMIN_INTERACTIONS__=true;</script>', { html: true });
       }
     })
     .transform(response);

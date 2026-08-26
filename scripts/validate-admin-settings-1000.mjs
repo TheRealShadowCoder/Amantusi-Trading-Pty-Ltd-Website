@@ -40,14 +40,15 @@ expect(security.includes(`\"${permanentEmail}\"`) || security.includes(`'${perma
 expect(oidc.includes(`'${permanentEmail}'`) || oidc.includes(`\"${permanentEmail}\"`), 'permanent admin missing from active Google OIDC allowlist');
 expect(control.includes(`const PERMANENT_ADMIN = '${permanentEmail}'`), 'permanent admin constant missing from settings control plane');
 expect(control.includes('cannotRemove: true') && control.includes('cannotSuspend: true') && control.includes('cannotDemote: true') && control.includes('cannotExpire: true'), 'permanent access invariants are incomplete');
-expect(control.includes('safe.security.googleOnly = true') && control.includes('safe.security.bruteForceProtection = true') && control.includes('safe.security.suspiciousLoginBlocking = true'), 'mandatory security invariants are incomplete');
+expect(control.includes('safe.security.googleOnly = true') && control.includes('safe.security.bruteForceProtection = true') && control.includes('safe.security.suspiciousLoginBlocking = true'), 'mandatory standard-sign-in security invariants are incomplete');
 expect(control.includes('getAdminSession') && control.includes("'/api/admin/settings-control'"), 'authenticated settings API is not wired');
 expect(workerV5.includes("path === '/admin-settings.html'") && workerV5.includes('getAdminSession') && workerV5.includes('adminSettingsRoute'), 'Worker v5 does not protect the settings page/API');
-expect(workerV5.includes("path === '/api/admin/session'") && workerV5.includes('GOOGLE_ONLY_AUTH') && workerV5.includes('status: 410'), 'legacy password endpoint is not blocked by the Google-only Worker');
-expect(workerV5.includes("path === '/api/admin/passkeys/authentication/options'") && workerV5.includes("path === '/api/admin/passkeys/authentication/verify'"), 'direct passkey sign-in endpoints are not retired by the Google-only Worker');
+expect(workerV5.includes("path === '/api/admin/session'") && workerV5.includes('LEGACY_AUTH_RETIRED') && workerV5.includes('status: 410'), 'legacy direct password endpoint is not retired by the active Worker');
+expect(workerV5.includes("path === '/api/admin/passkeys/authentication/options'") && workerV5.includes("path === '/api/admin/passkeys/authentication/verify'"), 'direct passkey sign-in endpoints are not retired by the active Worker');
+expect(workerV5.includes('adminRecoveryRoute'), 'protected backup recovery route is missing from the active Worker');
 expect(wrangler.includes('"/admin-settings.html"'), 'Cloudflare Assets can bypass the Worker because /admin-settings.html is missing from run_worker_first');
 expect(dashboard.includes('/admin-settings.html') && dashboard.includes('Settings Control Centre'), 'dashboard source navigation does not expose Settings Control Centre');
-expect(dashboard.includes('Continue with Google') && !dashboard.includes('type="password"'), 'dashboard source is not Google-only');
+expect(dashboard.includes('Continue with Google') && !dashboard.includes('type="password"'), 'dashboard source must preserve Google as the primary standard sign-in');
 expect(page.includes('Permanent Superadmin Access') && page.includes('Administration Capabilities'), 'settings page core UI is incomplete');
 expect(page.includes('/admin-settings-registry.js') && page.includes('/admin-settings.js'), 'settings assets are not linked');
 expect(page.includes('/admin-settings-help.js') && page.includes('/admin-settings-help.css'), 'interactive settings help assets are not linked');
@@ -73,4 +74,4 @@ expect(threeDCss.includes('perspective:1400px') && threeDCss.includes('.admin-3d
 expect(threeDCss.includes('prefers-reduced-motion:reduce') && threeDCss.includes('pointer:coarse'), '3D settings effects do not disable safely for reduced-motion/touch environments');
 expect(headers.includes('/admin-settings-interactions-v2.js') && headers.includes('/admin-settings-3d.css'), 'new Admin Settings interaction assets are not protected from stale caching');
 
-console.log('Admin Settings 1000 validated: 50 categories, 1,000 capabilities, Worker-first route protection, Google-only legacy-auth and direct-passkey guards, source-level Settings navigation, universal double-click guidance, animated 3D interactions, touch/reduced-motion safety, explicit staged-save control, authenticated KV control plane, responsive UI, audit/export/reset controls and permanent superadmin protection are wired.');
+console.log('Admin Settings 1000 validated: 50 categories, 1,000 capabilities, Worker-first route protection, Google-primary standard sign-in with retired legacy/direct-passkey bypasses, protected backup recovery routing, source-level Settings navigation, universal double-click guidance, animated 3D interactions, touch/reduced-motion safety, explicit staged-save control, authenticated KV control plane, responsive UI, audit/export/reset controls and permanent superadmin protection are wired.');
