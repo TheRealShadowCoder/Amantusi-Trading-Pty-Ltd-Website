@@ -94,6 +94,7 @@
             <div class="capability-actions">
               <button id="bulk-enable-visible" type="button">Enable visible</button>
               <button id="bulk-disable-visible" type="button">Disable visible</button>
+              <button id="save-capability-settings" class="settings-primary" type="button" disabled>All capability changes saved</button>
             </div>
           </div>
           <div class="settings-searchbar">
@@ -101,7 +102,7 @@
             <select id="settings-category-filter"><option value="">All 50 categories</option></select>
             <select id="settings-status-filter"><option value="">All states</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option><option value="attention">Attention</option></select>
           </div>
-          <div class="capability-summary"><span id="settings-result-count">1,000 settings</span><span>Changes are staged locally until saved.</span></div>
+          <div class="capability-summary"><span id="settings-result-count">1,000 settings</span><span>Changes are staged locally until you press Save.</span></div>
           <div id="settings-grid" class="settings-grid" aria-live="polite"></div>
           <div class="settings-load-more"><button id="settings-load-more" type="button">Show more settings</button></div>
         </section>
