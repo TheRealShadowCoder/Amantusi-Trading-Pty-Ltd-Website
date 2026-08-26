@@ -35,6 +35,8 @@ Settings are persisted in Cloudflare KV under `admin:control-centre:v1`. Changes
 
 The dashboard links directly to the Settings Control Centre.
 
+Provider-dependent capabilities such as SMS, WhatsApp, external accounting, payments and AI integrations are represented and governed in the control plane, but become operational only when their corresponding provider credentials and services are configured.
+
 ## Release validation
 
 The platform CI must verify the exact 50 × 20 registry, protected superadmin presence in core session and active Google OIDC allowlists, server-side immutable access policy, authenticated settings routing, responsive layouts, persistence actions, audit/export/reset controls and Wrangler Worker bundling before merge.
