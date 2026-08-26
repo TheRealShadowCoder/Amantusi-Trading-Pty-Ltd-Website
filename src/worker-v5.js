@@ -15,6 +15,17 @@ function noStore(response, mode = 'settings') {
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
+function googleOnlyAuthResponse() {
+  return noStore(new Response(JSON.stringify({
+    error: 'Password sign-in is disabled for Amantusi Admin. Use Continue with Google.',
+    code: 'GOOGLE_ONLY_AUTH',
+    login: '/admin.html'
+  }), {
+    status: 410,
+    headers: { 'content-type': 'application/json; charset=utf-8' }
+  }), 'google-only');
+}
+
 export default {
   async fetch(request, env, ctx) {
     const path = new URL(request.url).pathname;
@@ -30,6 +41,16 @@ export default {
     if (path === '/api/admin/google/oauth/callback') {
       const response = await googleAuthRoute(request, env);
       if (response) return response;
+    }
+
+    // Google-only mode is authoritative. Do not allow legacy password endpoints to
+    // reach the older PBKDF2 implementation (Cloudflare Workers caps PBKDF2 at
+    // 100,000 iterations, while historical credentials used a higher count).
+    if (request.method === 'POST' && (
+      path === '/api/admin/session' ||
+      path.startsWith('/api/admin/password-reset')
+    )) {
+      return googleOnlyAuthResponse();
     }
 
     const settingsApi = await adminSettingsRoute(request, env);

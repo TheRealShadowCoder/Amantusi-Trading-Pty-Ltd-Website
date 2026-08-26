@@ -31,6 +31,10 @@ const client = read('public/admin-settings.js');
 const css = read('public/admin-settings.css');
 const helpClient = read('public/admin-settings-help.js');
 const helpCss = read('public/admin-settings-help.css');
+const interactions = read('public/admin-settings-interactions-v2.js');
+const threeDCss = read('public/admin-settings-3d.css');
+const headers = read('public/_headers');
+new vm.Script(interactions);
 
 expect(security.includes(`\"${permanentEmail}\"`) || security.includes(`'${permanentEmail}'`), 'permanent admin missing from core session allowlist');
 expect(oidc.includes(`'${permanentEmail}'`) || oidc.includes(`\"${permanentEmail}\"`), 'permanent admin missing from active Google OIDC allowlist');
@@ -39,12 +43,14 @@ expect(control.includes('cannotRemove: true') && control.includes('cannotSuspend
 expect(control.includes('safe.security.googleOnly = true') && control.includes('safe.security.bruteForceProtection = true') && control.includes('safe.security.suspiciousLoginBlocking = true'), 'mandatory security invariants are incomplete');
 expect(control.includes('getAdminSession') && control.includes("'/api/admin/settings-control'"), 'authenticated settings API is not wired');
 expect(workerV5.includes("path === '/admin-settings.html'") && workerV5.includes('getAdminSession') && workerV5.includes('adminSettingsRoute'), 'Worker v5 does not protect the settings page/API');
+expect(workerV5.includes("path === '/api/admin/session'") && workerV5.includes('GOOGLE_ONLY_AUTH') && workerV5.includes('status: 410'), 'legacy password endpoint is not blocked by the Google-only Worker');
 expect(wrangler.includes('"/admin-settings.html"'), 'Cloudflare Assets can bypass the Worker because /admin-settings.html is missing from run_worker_first');
 expect(workerV4.includes('/admin-settings.html') && workerV4.includes('Settings Control Centre'), 'dashboard navigation does not expose Settings Control Centre');
 expect(page.includes('Permanent Superadmin Access') && page.includes('Administration Capabilities'), 'settings page core UI is incomplete');
 expect(page.includes('/admin-settings-registry.js') && page.includes('/admin-settings.js'), 'settings assets are not linked');
 expect(page.includes('/admin-settings-help.js') && page.includes('/admin-settings-help.css'), 'interactive settings help assets are not linked');
-expect(page.includes('double-click for full guide') && page.includes('F1'), 'visible settings help instructions are missing');
+expect(page.includes('/admin-settings-interactions-v2.js') && page.includes('/admin-settings-3d.css'), 'universal double-click or 3D settings assets are not linked');
+expect(page.includes('double-click any setting') && page.includes('F1'), 'visible universal settings help instructions are missing');
 expect(page.includes('id="save-capability-settings"'), 'visible capability-save control is missing');
 expect(!page.includes('type="password"'), 'settings page must not contain password inputs');
 expect(client.includes('settings.length !== 1000') && client.includes('catalog.length !== 50'), 'client does not guard complete registry loading');
@@ -59,5 +65,10 @@ expect(helpClient.includes("matchMedia('(hover: none)')"), 'touch-device help be
 expect(helpClient.includes('What it does') && helpClient.includes('Impact') && helpClient.includes('How to use'), 'interactive help tabs are incomplete');
 expect(helpCss.includes('.admin-help-tooltip') && helpCss.includes('.admin-help-dialog'), 'animated help presentation styles are missing');
 expect(helpCss.includes('prefers-reduced-motion:reduce'), 'interactive help does not respect reduced-motion preference');
+expect(interactions.includes("document.addEventListener('dblclick'") && interactions.includes('event.isTrusted') && interactions.includes('.core-settings-grid label'), 'double-clicking any setting is not delegated to the detailed help guide');
+expect(interactions.includes('MutationObserver') && interactions.includes('pointermove') && interactions.includes('--admin-rotate-x'), 'dynamic 3D interaction engine is incomplete');
+expect(threeDCss.includes('perspective:1400px') && threeDCss.includes('.admin-3d-object') && threeDCss.includes('@keyframes admin3dEnter'), '3D settings presentation styles are incomplete');
+expect(threeDCss.includes('prefers-reduced-motion:reduce') && threeDCss.includes('pointer:coarse'), '3D settings effects do not disable safely for reduced-motion/touch environments');
+expect(headers.includes('/admin-settings-interactions-v2.js') && headers.includes('/admin-settings-3d.css'), 'new Admin Settings interaction assets are not protected from stale caching');
 
-console.log('Admin Settings 1000 validated: 50 categories, 1,000 capabilities, Worker-first route protection, interactive tooltip guidance, double-click/touch help, explicit staged-save control, authenticated KV control plane, responsive UI, audit/export/reset controls and permanent superadmin protection are wired.');
+console.log('Admin Settings 1000 validated: 50 categories, 1,000 capabilities, Worker-first route protection, Google-only legacy-auth guard, universal double-click guidance, animated 3D interactions, touch/reduced-motion safety, explicit staged-save control, authenticated KV control plane, responsive UI, audit/export/reset controls and permanent superadmin protection are wired.');

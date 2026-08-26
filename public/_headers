@@ -64,6 +64,9 @@
 /admin-settings-help.js
   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 
+/admin-settings-interactions-v2.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
 /admin-security.css
   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 
@@ -80,4 +83,7 @@
   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 
 /admin-settings-help.css
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/admin-settings-3d.css
   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
