@@ -33,7 +33,9 @@ expect(recovery.includes("recoveryEngine: 'break-glass-v1'") && recovery.include
 
 expect(worker.includes("import { adminRecoveryRoute } from './admin-recovery.js'"), 'active Worker does not import the recovery engine');
 expect(worker.includes('const recoveryApi = await adminRecoveryRoute(request, env)'), 'active Worker does not route recovery APIs');
-expect(worker.indexOf('const recoveryApi = await adminRecoveryRoute(request, env)') < worker.indexOf('isRetiredDirectAuthPath(path)'), 'recovery APIs must be evaluated before legacy-auth retirement guard');
+const recoveryRouteIndex = worker.indexOf('const recoveryApi = await adminRecoveryRoute(request, env)');
+const retiredGuardIndex = worker.indexOf("if (request.method === 'POST' && isRetiredDirectAuthPath(path))");
+expect(recoveryRouteIndex >= 0 && retiredGuardIndex >= 0 && recoveryRouteIndex < retiredGuardIndex, 'recovery APIs must be evaluated before legacy-auth retirement guard');
 expect(worker.includes("path === '/admin-recovery.html'") && worker.includes("'backup-recovery'"), 'recovery page is not served Worker-first/no-store');
 expect(worker.includes("path === '/admin-reset.html'") && worker.includes('/admin-recovery.html?mode=reset'), 'legacy reset page does not upgrade to the new recovery centre');
 expect(worker.includes("path === '/api/admin/session'") && worker.includes("path.startsWith('/api/admin/password-reset')"), 'legacy direct password/reset endpoints must remain retired');
