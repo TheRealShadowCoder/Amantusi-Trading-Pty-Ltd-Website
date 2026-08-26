@@ -41,14 +41,17 @@ jobs:
           set -euo pipefail
           test -f public/admin.html
           test -f public/admin-dashboard.html
+          test -f public/admin-recovery.html
           grep -q 'Continue with Google' public/admin.html
           grep -q 'google-signin-button' public/admin.html
           grep -q 'href="/api/admin/google/oauth/start"' public/admin.html
+          grep -q 'href="/admin-recovery.html"' public/admin.html
+          grep -q 'Backup administrator recovery' public/admin-recovery.html
           if grep -q 'admin-google-login.js' public/admin.html || grep -q 'accounts.google.com/gsi/client' public/admin.html || grep -q 'id="admin-password"' public/admin.html || grep -q 'id="login-form"' public/admin.html || grep -q 'Login as Administrator' public/admin.html; then
-            echo "::error::public/admin.html contains obsolete GIS or password-login markup."
+            echo "::error::public/admin.html contains obsolete GIS or direct password-login markup."
             exit 1
           fi
-          printf '%s\n' "{\"sha\":\"${GITHUB_SHA}\",\"runId\":\"${GITHUB_RUN_ID}\",\"runNumber\":\"${GITHUB_RUN_NUMBER}\",\"deployedAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"adminMode\":\"google-oauth-redirect\"}" > public/deployment.json
+          printf '%s\n' "{\"sha\":\"${GITHUB_SHA}\",\"runId\":\"${GITHUB_RUN_ID}\",\"runNumber\":\"${GITHUB_RUN_NUMBER}\",\"deployedAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"adminMode\":\"google-oauth-redirect\",\"backupRecovery\":\"password-email-code\"}" > public/deployment.json
           cat public/deployment.json
 
       - name: Sync Google OAuth credentials
@@ -108,18 +111,19 @@ jobs:
             google_ok=0
             oauth_ok=0
             guard_ok=0
+            recovery_ok=0
 
             if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/deployment.json?sha=$GITHUB_SHA&t=$attempt" -o /tmp/deployment.json; then
-              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/deployment.json","utf8"));if(x.sha!==process.env.GITHUB_SHA||x.adminMode!=="google-oauth-redirect")process.exit(1);'; then
+              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/deployment.json","utf8"));if(x.sha!==process.env.GITHUB_SHA||x.adminMode!=="google-oauth-redirect"||x.backupRecovery!=="password-email-code")process.exit(1);'; then
                 build_ok=1
               fi
             fi
 
             if curl --fail --silent --show-error --max-time 20 -D /tmp/admin.headers "$PRODUCTION_URL/admin.html?sha=$GITHUB_SHA&t=$attempt" -o /tmp/admin.html; then
-              if grep -q 'Continue with Google' /tmp/admin.html && grep -q 'href="/api/admin/google/oauth/start"' /tmp/admin.html && ! grep -q 'admin-google-login.js' /tmp/admin.html && ! grep -q 'accounts.google.com/gsi/client' /tmp/admin.html && ! grep -q 'id="admin-password"' /tmp/admin.html; then
+              if grep -q 'Continue with Google' /tmp/admin.html && grep -q 'href="/api/admin/google/oauth/start"' /tmp/admin.html && grep -q 'href="/admin-recovery.html"' /tmp/admin.html && ! grep -q 'admin-google-login.js' /tmp/admin.html && ! grep -q 'accounts.google.com/gsi/client' /tmp/admin.html && ! grep -q 'id="admin-password"' /tmp/admin.html; then
                 ui_ok=1
               fi
-              if grep -qi '^x-amantusi-admin-mode: google-only' /tmp/admin.headers && grep -qi '^cache-control: .*no-store' /tmp/admin.headers; then
+              if grep -qi '^x-amantusi-admin-mode: google-primary-recovery' /tmp/admin.headers && grep -qi '^cache-control: .*no-store' /tmp/admin.headers; then
                 header_ok=1
               fi
             fi
@@ -144,8 +148,14 @@ jobs:
               guard_ok=1
             fi
 
-            echo "Live check $attempt/15: build=$build_ok ui=$ui_ok headers=$header_ok google=$google_ok oauthRedirect=$oauth_ok dashboardGuard=$guard_ok"
-            if [ "$build_ok" -eq 1 ] && [ "$ui_ok" -eq 1 ] && [ "$header_ok" -eq 1 ] && [ "$google_ok" -eq 1 ] && [ "$oauth_ok" -eq 1 ] && [ "$guard_ok" -eq 1 ]; then
+            if curl --fail --silent --show-error --max-time 20 "$PRODUCTION_URL/api/admin/recovery/config?t=$attempt" -o /tmp/recovery.json; then
+              if node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync("/tmp/recovery.json","utf8"));if(x.recoveryEngine!=="break-glass-v1"||x.backup!=="password+email-code")process.exit(1);'; then
+                recovery_ok=1
+              fi
+            fi
+
+            echo "Live check $attempt/15: build=$build_ok ui=$ui_ok headers=$header_ok google=$google_ok oauthRedirect=$oauth_ok dashboardGuard=$guard_ok recovery=$recovery_ok"
+            if [ "$build_ok" -eq 1 ] && [ "$ui_ok" -eq 1 ] && [ "$header_ok" -eq 1 ] && [ "$google_ok" -eq 1 ] && [ "$oauth_ok" -eq 1 ] && [ "$guard_ok" -eq 1 ] && [ "$recovery_ok" -eq 1 ]; then
               success=1
               break
             fi
@@ -153,7 +163,7 @@ jobs:
           done
 
           if [ "$success" -eq 1 ]; then
-            echo "Exact Google OAuth redirect admin build is live."
+            echo "Exact Google-primary OAuth admin build with protected backup recovery is live."
             cat /tmp/deployment.json
             exit 0
           fi
@@ -163,6 +173,7 @@ jobs:
           [ -f /tmp/admin.headers ] && cat /tmp/admin.headers || true
           [ -f /tmp/admin.html ] && head -100 /tmp/admin.html || true
           [ -f /tmp/oauth.headers ] && cat /tmp/oauth.headers || true
+          [ -f /tmp/recovery.json ] && cat /tmp/recovery.json || true
           exit 1
 
       - name: Dependency security audit
