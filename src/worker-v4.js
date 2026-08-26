@@ -97,17 +97,12 @@ function injectAuthenticatedAdminControls(response) {
   const transformed = new HTMLRewriter()
     .on('head', {
       element(element) {
-        element.append('<link rel="stylesheet" href="/admin-cost.css"><link rel="stylesheet" href="/admin-global-interactions.css"><style>body:has(#admin-view) #login-view{display:none!important}</style>', { html: true });
-      }
-    })
-    .on('.admin-nav', {
-      element(element) {
-        element.append('<a href="/admin-settings.html" class="admin-settings-link">Settings Control Centre</a>', { html: true });
+        element.append('<link rel="stylesheet" href="/admin-cost.css"><style>body:has(#admin-view) #login-view{display:none!important}</style>', { html: true });
       }
     })
     .on('body', {
       element(element) {
-        element.append('<script src="/admin-cost.js" defer></script><script src="/admin-global-interactions.js" defer></script><script>window.__AMANTUSI_GOOGLE_ONLY__=true;window.__AMANTUSI_ADMIN_INTERACTIONS__=true;</script>', { html: true });
+        element.append('<script src="/admin-cost.js" defer></script><script>window.__AMANTUSI_GOOGLE_ONLY__=true;window.__AMANTUSI_ADMIN_INTERACTIONS__=true;</script>', { html: true });
       }
     })
     .transform(response);
