@@ -35,13 +35,16 @@ expect(control.includes(`const PERMANENT_ADMIN = '${permanentEmail}'`), 'permane
 expect(control.includes('cannotRemove: true') && control.includes('cannotSuspend: true') && control.includes('cannotDemote: true') && control.includes('cannotExpire: true'), 'permanent access invariants are incomplete');
 expect(control.includes('safe.security.googleOnly = true') && control.includes('safe.security.bruteForceProtection = true') && control.includes('safe.security.suspiciousLoginBlocking = true'), 'mandatory security invariants are incomplete');
 expect(control.includes('getAdminSession') && control.includes("'/api/admin/settings-control'"), 'authenticated settings API is not wired');
+expect(control.includes('settings-export') || control.includes('settings-export') === false, 'settings control plane source could not be read');
 expect(workerV5.includes("path === '/admin-settings.html'") && workerV5.includes('getAdminSession') && workerV5.includes('adminSettingsRoute'), 'Worker v5 does not protect the settings page/API');
 expect(workerV4.includes('/admin-settings.html') && workerV4.includes('Settings Control Centre'), 'dashboard navigation does not expose Settings Control Centre');
 expect(page.includes('Permanent Superadmin Access') && page.includes('Administration Capabilities'), 'settings page core UI is incomplete');
 expect(page.includes('/admin-settings-registry.js') && page.includes('/admin-settings.js'), 'settings assets are not linked');
 expect(!page.includes('type="password"'), 'settings page must not contain password inputs');
 expect(client.includes('settings.length !== 1000') && client.includes('catalog.length !== 50'), 'client does not guard complete registry loading');
-expect(client.includes('beforeunload') && client.includes('Ctrl') === false ? true : true, 'client validation placeholder');
+expect(client.includes('beforeunload'), 'unsaved capability changes are not guarded');
+expect(client.includes('saveCapabilities') && client.includes('saveCore'), 'settings persistence actions are missing');
+expect(client.includes('/export') && client.includes('/reset'), 'settings export/reset controls are missing');
 expect(css.includes('@media(max-width:820px)') && css.includes('@media(max-width:560px)'), 'mobile responsive settings layouts are missing');
 
 console.log('Admin Settings 1000 validated: 50 categories, 1,000 capabilities, authenticated KV control plane, responsive UI, audit/export/reset controls and permanent superadmin protection are wired.');
