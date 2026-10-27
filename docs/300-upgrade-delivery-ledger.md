@@ -1,25 +1,25 @@
-# 300-Upgrade Delivery Ledger
+# 300 Upgrade Delivery Ledger
 
-This ledger tracks all 300 proposals in [the upgrade backlog](./300-visual-and-functional-upgrades.md). **Integrated** = supporting code exists in this pull-request branch; not a production guarantee. **Pending** = not implemented or not yet evidenced. Existing platform features are counted only when grounded in inspected code.
+This checklist is the source-of-truth implementation status for [the 300-item backlog](./300-visual-and-functional-upgrades.md). **Integrated** means the repository contains a relevant working implementation or pre-existing corresponding capability; this does **not** certify production behavior or full acceptance testing. **Pending** includes unimplemented, partial, or unverified ideas. Classifications are conservative.
 
-Branch: `fix/website-smoke-accessibility-20261027` · Draft PR #59
+**Branch:** `fix/website-smoke-accessibility-20261027` · **Review:** PR #59 · **Live production:** unchanged.
 
-**Integrated:** 91/300 · **Pending:** 209/300.
+**Integrated:** 63/300 · **Pending / not yet verified:** 237/300.
 
-| # | Proposed upgrade | Status | Evidence |
-|--:|---|---|---|
-| 1 | Create a primary corporate design-token palette. | Integrated | navy/gold palette tokens |
+| # | Upgrade | Status | Evidence |
+|---:|---|---|---|
+| 1 | Create a primary corporate design-token palette. | Integrated | shared colors in sector.css |
 | 2 | Establish dark-navy and warm-gold contrast variants. | Pending |  |
-| 3 | Set typography scale for all heading levels. | Integrated | responsive typography in sector.css |
+| 3 | Set typography scale for all heading levels. | Integrated | fluid headings and typography hierarchy |
 | 4 | Add a compact company credentials lockup. | Pending |  |
 | 5 | Create a monochrome logo variant. | Pending |  |
 | 6 | Standardize icon stroke widths. | Pending |  |
-| 7 | Define border-radius tokens by component. | Integrated | shared sector CSS corner radius |
+| 7 | Define border-radius tokens by component. | Pending |  |
 | 8 | Replace decorative glyphs with coherent iconography. | Pending |  |
 | 9 | Add light and dark logo usage rules. | Pending |  |
 | 10 | Create a hero wordmark composition. | Pending |  |
 | 11 | Add tasteful gold accent dividers. | Pending |  |
-| 12 | Use a consistent 12-column grid. | Integrated | shared layout width |
+| 12 | Use a consistent 12-column grid. | Pending |  |
 | 13 | Establish content maximum widths. | Pending |  |
 | 14 | Design a consistent photography color grade. | Pending |  |
 | 15 | Produce branded document thumbnail treatments. | Pending |  |
@@ -28,10 +28,10 @@ Branch: `fix/website-smoke-accessibility-20261027` · Draft PR #59
 | 18 | Define brand-safe animation durations. | Pending |  |
 | 19 | Design a signature procurement motif. | Pending |  |
 | 20 | Document accessible color combinations. | Pending |  |
-| 21 | Add a succinct value proposition above the fold. | Integrated | homepage value proposition |
-| 22 | Show prominent government and private-sector buyer paths. | Integrated | six category landing pages |
-| 23 | Add a service-category visual navigator. | Integrated | sector directory |
-| 24 | Introduce a compact procurement journey diagram. | Integrated | process steps per sector |
+| 21 | Add a succinct value proposition above the fold. | Integrated | clear public procurement proposition |
+| 22 | Show prominent government and private-sector buyer paths. | Integrated | public and private-sector service links |
+| 23 | Add a service-category visual navigator. | Integrated | six-section capability directory |
+| 24 | Introduce a compact procurement journey diagram. | Integrated | four-step service process display |
 | 25 | Add an RFQ request example. | Pending |  |
 | 26 | Feature operational sectors served. | Pending |  |
 | 27 | Include relevant procurement document previews. | Pending |  |
@@ -50,114 +50,114 @@ Branch: `fix/website-smoke-accessibility-20261027` · Draft PR #59
 | 40 | Add related service discovery links. | Pending |  |
 | 41 | Add breadcrumbs to secondary pages. | Pending |  |
 | 42 | Highlight active navigation destinations. | Pending |  |
-| 43 | Add keyboard-operable mobile menu dismissal. | Integrated | homepage service links |
-| 44 | Close mobile nav on outside interaction. | Pending |  |
-| 45 | Restore menu focus after Escape. | Integrated | Escape key dismissal |
-| 46 | Add a skip-to-content link. | Integrated | click-outside menu close |
-| 47 | Use consistent mobile menu button labels. | Integrated | menu focus restoration |
-| 48 | Add footer links to all public destinations. | Integrated | skip to content |
+| 43 | Add keyboard-operable mobile menu dismissal. | Integrated | app-fast.js Escape handling |
+| 44 | Close mobile nav on outside interaction. | Integrated | app-fast.js outside click dismissal |
+| 45 | Restore menu focus after Escape. | Integrated | focus returned to menu on Escape |
+| 46 | Add a skip-to-content link. | Integrated | home and sector skip links |
+| 47 | Use consistent mobile menu button labels. | Integrated | expanded/collapsed labels |
+| 48 | Add footer links to all public destinations. | Pending |  |
 | 49 | Group catering pages under a clear parent label. | Pending |  |
 | 50 | Add service-specific jump links. | Pending |  |
 | 51 | Implement anchor offset for sticky header. | Pending |  |
 | 52 | Prevent hidden-menu keyboard focus. | Pending |  |
 | 53 | Add a sitemap link in the footer. | Pending |  |
-| 54 | Provide a back-to-top control with clear label. | Integrated | RFQ checklist navigation |
-| 55 | Add keyboard-visible focus styles. | Integrated | focus-visible styles |
+| 54 | Provide a back-to-top control with clear label. | Pending |  |
+| 55 | Add keyboard-visible focus styles. | Integrated | shared focus-visible styles |
 | 56 | Use descriptive link text instead of generic labels. | Pending |  |
 | 57 | Add mobile sticky quote CTA where unobtrusive. | Pending |  |
-| 58 | Ensure focus remains visible after route navigation. | Integrated | menu expanded status and label |
+| 58 | Ensure focus remains visible after route navigation. | Pending |  |
 | 59 | Add navigation checks to CI. | Pending |  |
-| 60 | Provide clear 404 navigation recovery. | Integrated | Playwright nav regression tests |
+| 60 | Provide clear 404 navigation recovery. | Pending |  |
 | 61 | Use a 320px narrow-screen regression baseline. | Pending |  |
 | 62 | Test 375px common phone layout. | Pending |  |
 | 63 | Test 768px tablet portrait layout. | Pending |  |
 | 64 | Test 1024px tablet landscape layout. | Pending |  |
-| 65 | Tune hero typography with CSS clamp. | Pending |  |
-| 66 | Reduce large orb visuals on compact screens. | Integrated | CSS fluid type scale |
+| 65 | Tune hero typography with CSS clamp. | Integrated | responsive sector grids use minmax(0,1fr) |
+| 66 | Reduce large orb visuals on compact screens. | Pending |  |
 | 67 | Prevent card grid horizontal overflow. | Pending |  |
-| 68 | Guarantee touch targets of at least 44px. | Integrated | responsive service card grids |
+| 68 | Guarantee touch targets of at least 44px. | Integrated | new controls at least 44px |
 | 69 | Refine mobile quotation form spacing. | Pending |  |
-| 70 | Preserve readable mobile legal credentials. | Integrated | RFQ form mobile layout |
+| 70 | Preserve readable mobile legal credentials. | Integrated | mobile company credentials wrap |
 | 71 | Adapt catering filters to horizontal swiping. | Pending |  |
 | 72 | Optimize brochure typography for small screens. | Pending |  |
 | 73 | Respect viewport safe-area insets. | Pending |  |
-| 74 | Improve portrait and landscape navigation. | Integrated | button touch targets |
+| 74 | Improve portrait and landscape navigation. | Integrated | profile and catering navigation respond to viewport |
 | 75 | Use native date and telephone keyboards. | Pending |  |
 | 76 | Reduce parallax on touch devices. | Pending |  |
 | 77 | Disable hover-only affordances on mobile. | Pending |  |
 | 78 | Test dynamic text enlargement. | Pending |  |
 | 79 | Optimize section stacking and whitespace. | Pending |  |
-| 80 | Verify no offscreen modal content. | Integrated | desktop/mobile playwright suite |
-| 81 | Audit keyboard navigation on every public page. | Integrated | keyboard route tests |
+| 80 | Verify no offscreen modal content. | Pending |  |
+| 81 | Audit keyboard navigation on every public page. | Pending |  |
 | 82 | Ensure one primary h1 per page. | Pending |  |
-| 83 | Create proper labels for uploaded files. | Integrated | single page h1 |
-| 84 | Add visible focus rings to all controls. | Integrated | file input description |
-| 85 | Add ARIA-expanded state to mobile toggles. | Integrated | focus-visible styles |
-| 86 | Validate landmark hierarchy. | Integrated | nav aria-expanded state |
+| 83 | Create proper labels for uploaded files. | Integrated | RFQ file label and description |
+| 84 | Add visible focus rings to all controls. | Integrated | focus rings for links and inputs |
+| 85 | Add ARIA-expanded state to mobile toggles. | Integrated | ARIA-expanded menu state |
+| 86 | Validate landmark hierarchy. | Pending |  |
 | 87 | Confirm meaningful alt text on information images. | Pending |  |
 | 88 | Mark decorative images with empty alt text. | Pending |  |
 | 89 | Add screen reader descriptions for loading states. | Pending |  |
-| 90 | Use aria-atomic on form status. | Integrated | RFQ live status |
+| 90 | Use aria-atomic on form status. | Integrated | RFQ status aria-atomic |
 | 91 | Validate WCAG AA color contrast. | Pending |  |
-| 92 | Respect reduced-motion settings. | Integrated | reduced motion in new styles |
+| 92 | Respect reduced-motion settings. | Integrated | reduced-motion CSS handling |
 | 93 | Avoid animation-triggered focus changes. | Pending |  |
 | 94 | Provide clear errors linked to form fields. | Pending |  |
 | 95 | Verify labels survive placeholder disappearance. | Pending |  |
 | 96 | Make accordion components keyboard operable. | Pending |  |
 | 97 | Test zoom up to 200 percent. | Pending |  |
 | 98 | Avoid color-only success/error indication. | Pending |  |
-| 99 | Add accessible names to icon-only buttons. | Integrated | accessibility/browser checks |
+| 99 | Add accessible names to icon-only buttons. | Integrated | buttons include accessible names |
 | 100 | Add automated accessibility tests. | Pending |  |
-| 101 | Make direct secure RFQ submission default. | Integrated | secure server form action |
-| 102 | Show server-generated reference on success. | Integrated | reference text on success |
-| 103 | Allow up to five attached documents within limits. | Integrated | five attachment input |
-| 104 | Validate per-file and aggregate size in browser. | Integrated | client 10MB/30MB limit |
-| 105 | Explain accepted RFQ file formats. | Integrated | file extension validation |
+| 101 | Make direct secure RFQ submission default. | Integrated | RFQ /api/quote POST |
+| 102 | Show server-generated reference on success. | Integrated | server reference displayed |
+| 103 | Allow up to five attached documents within limits. | Integrated | five attachment limit |
+| 104 | Validate per-file and aggregate size in browser. | Integrated | 10MB each and 30MB total validation |
+| 105 | Explain accepted RFQ file formats. | Integrated | accepted files explained |
 | 106 | Highlight required fields consistently. | Pending |  |
 | 107 | Add optional line-item quantity capture. | Pending |  |
-| 108 | Add delivery address guidance. | Integrated | RFQ reference field |
+| 108 | Add delivery address guidance. | Integrated | delivery location placeholder |
 | 109 | Add required-by date help text. | Pending |  |
 | 110 | Add conditional tender reference fields. | Pending |  |
 | 111 | Add catering guest-count input. | Pending |  |
 | 112 | Add event date and venue fields. | Pending |  |
-| 113 | Preserve form draft locally with consent. | Integrated | guest count field |
-| 114 | Warn before discarding an unfinished request. | Integrated | event date and location |
-| 115 | Display descriptive network error recovery. | Integrated | draft storage opt-in |
-| 116 | Prevent accidental duplicate submission. | Integrated | local-only draft and clear |
-| 117 | Show upload progress for large attachments. | Integrated | error remains recoverable |
-| 118 | Add post-submit next steps. | Integrated | duplicate submit guard |
+| 113 | Preserve form draft locally with consent. | Integrated | opt-in saved RFQ draft |
+| 114 | Warn before discarding an unfinished request. | Pending |  |
+| 115 | Display descriptive network error recovery. | Integrated | network failure message and recovery |
+| 116 | Prevent accidental duplicate submission. | Integrated | duplicate-submit guard |
+| 117 | Show upload progress for large attachments. | Pending |  |
+| 118 | Add post-submit next steps. | Pending |  |
 | 119 | Offer an enquiry confirmation email when configured. | Pending |  |
-| 120 | Add privacy notice beside submit. | Integrated | RFQ data handling note |
-| 121 | Add category filter count chips. | Integrated | text search in catering menu |
-| 122 | Support menu keyword search. | Pending |  |
-| 123 | Add dietary tag filtering. | Integrated | existing dietary tag search data |
+| 120 | Add privacy notice beside submit. | Integrated | browser-draft privacy explanation |
+| 121 | Add category filter count chips. | Pending |  |
+| 122 | Support menu keyword search. | Integrated | catering text search and result totals |
+| 123 | Add dietary tag filtering. | Pending |  |
 | 124 | Display allergen information where verified. | Pending |  |
 | 125 | Show portion or guest-count guidance. | Pending |  |
-| 126 | Allow multi-item catering quote selection. | Integrated | multi-item selection |
-| 127 | Add a sticky selected-items summary. | Integrated | selected options counter |
+| 126 | Allow multi-item catering quote selection. | Integrated | multi-item quote basket |
+| 127 | Add a sticky selected-items summary. | Pending |  |
 | 128 | Offer gallery image keyboard controls. | Pending |  |
-| 129 | Make gallery captions informative. | Integrated | keyboard portfolio navigation |
-| 130 | Add image placeholders while loading. | Integrated | lazy image loading present |
+| 129 | Make gallery captions informative. | Integrated | captioned gallery cards |
+| 130 | Add image placeholders while loading. | Pending |  |
 | 131 | Use compressed responsive image variants. | Pending |  |
 | 132 | Explain customization availability. | Pending |  |
 | 133 | Add print-friendly menu version. | Pending |  |
-| 134 | Feature corporate catering packages. | Integrated | guest count/date/venue handoff |
-| 135 | Add event-type selector. | Integrated | event-type select |
-| 136 | Add mobile-friendly photo zoom. | Integrated | mobile catering forms |
+| 134 | Feature corporate catering packages. | Integrated | corporate menu custom package |
+| 135 | Add event-type selector. | Integrated | catering event type selector |
+| 136 | Add mobile-friendly photo zoom. | Pending |  |
 | 137 | Include platter ingredient examples where accurate. | Pending |  |
 | 138 | Add catering enquiry hand-off confirmation. | Pending |  |
 | 139 | Improve empty category messaging. | Pending |  |
-| 140 | Add transparent indicative price policy. | Integrated | price-on-quotation guidance |
-| 141 | Create a downloadable capability statement. | Integrated | profile print button |
-| 142 | Show registration number consistently. | Integrated | company registration displayed |
-| 143 | Show CSD number consistently. | Integrated | CSD displayed |
+| 140 | Add transparent indicative price policy. | Integrated | explicit request-pricing note |
+| 141 | Create a downloadable capability statement. | Pending |  |
+| 142 | Show registration number consistently. | Integrated | registration shown on public pages |
+| 143 | Show CSD number consistently. | Integrated | CSD number shown on public pages |
 | 144 | Create a supplier onboarding overview. | Pending |  |
 | 145 | Explain scope of goods and services. | Pending |  |
-| 146 | Add procurement service-area map. | Integrated | detailed sector content |
-| 147 | Highlight document and specification handling. | Integrated | published company address |
+| 146 | Add procurement service-area map. | Pending |  |
+| 147 | Highlight document and specification handling. | Integrated | sector checklist specification requirements |
 | 148 | Provide a formal contact-person pathway. | Pending |  |
 | 149 | Offer a printable one-page company profile. | Pending |  |
-| 150 | Include company address consistently. | Integrated | printable RFQ checklist |
+| 150 | Include company address consistently. | Integrated | company address published consistently |
 | 151 | Add verified certifications when available. | Pending |  |
 | 152 | Avoid unverified accreditation claims. | Pending |  |
 | 153 | Add service delivery process diagram. | Pending |  |
@@ -176,27 +176,27 @@ Branch: `fix/website-smoke-accessibility-20261027` · Draft PR #59
 | 166 | Add product record validation indicators. | Pending |  |
 | 167 | Add quote lifecycle timeline. | Pending |  |
 | 168 | Add sort controls to operations tables. | Pending |  |
-| 169 | Add bulk selection only where authorized. | Integrated | admin form label binding |
+| 169 | Add bulk selection only where authorized. | Pending |  |
 | 170 | Add safe confirmation dialogs for destructive actions. | Pending |  |
 | 171 | Expose last synchronization timestamp. | Pending |  |
 | 172 | Add audit-log viewer with role checks. | Pending |  |
 | 173 | Add admin loading skeletons. | Pending |  |
-| 174 | Support constrained table layouts on mobile. | Integrated | authenticated CSV export |
+| 174 | Support constrained table layouts on mobile. | Integrated | admin mobile overflow CSS |
 | 175 | Add accessible toast announcements. | Pending |  |
-| 176 | Add failed-operation retry UI. | Integrated | formula safe CSV values |
+| 176 | Add failed-operation retry UI. | Pending |  |
 | 177 | Add content preview before publishing. | Pending |  |
 | 178 | Add media library search. | Pending |  |
 | 179 | Add admin help linked to current section. | Pending |  |
 | 180 | Add protected export history. | Pending |  |
 | 181 | Keep Google OAuth as primary admin entry. | Pending |  |
-| 182 | Display recovery path prominently. | Integrated | Google OAuth remains primary |
+| 182 | Display recovery path prominently. | Integrated | admin recovery link in Google login |
 | 183 | Verify recovery page no-store headers. | Pending |  |
 | 184 | Handle expired sessions with clear messaging. | Pending |  |
 | 185 | Add explicit session-expired reauthentication. | Pending |  |
-| 186 | Prevent admin routes from indexing. | Integrated | admin robots noindex |
+| 186 | Prevent admin routes from indexing. | Integrated | noindex in admin headers |
 | 187 | Mask sensitive administrator fields. | Pending |  |
 | 188 | Add accessible backup recovery instructions. | Pending |  |
-| 189 | Rate-limit credential recovery attempts. | Integrated | focus-visible in admin |
+| 189 | Rate-limit credential recovery attempts. | Pending |  |
 | 190 | Avoid exposing account existence in recovery errors. | Pending |  |
 | 191 | Show authentication method context. | Pending |  |
 | 192 | Confirm OAuth callback error handling. | Pending |  |
@@ -208,11 +208,11 @@ Branch: `fix/website-smoke-accessibility-20261027` · Draft PR #59
 | 198 | Document privilege boundaries. | Pending |  |
 | 199 | Add clear logout confirmation. | Pending |  |
 | 200 | Add security regression tests. | Pending |  |
-| 201 | Keep static-first homepage rendering. | Integrated | static-first home |
-| 202 | Lazily load optional animation modules. | Integrated | lazy runtime already present |
+| 201 | Keep static-first homepage rendering. | Integrated | static-first index.html |
+| 202 | Lazily load optional animation modules. | Integrated | lazy runtime-gate.js |
 | 203 | Set device-specific animation budgets. | Pending |  |
-| 204 | Disable complex effects under reduced motion. | Integrated | new CSS reduces motion |
-| 205 | Respect data saver preference. | Integrated | existing low-resource preferences |
+| 204 | Disable complex effects under reduced motion. | Integrated | optional effects respect reduced motion |
+| 205 | Respect data saver preference. | Integrated | runtime-gate Save-Data preference |
 | 206 | Keep large canvas effects off low-end phones. | Pending |  |
 | 207 | Replace decorative video with static poster when idle. | Pending |  |
 | 208 | Use CSS containment for large sections. | Pending |  |
@@ -225,40 +225,40 @@ Branch: `fix/website-smoke-accessibility-20261027` · Draft PR #59
 | 215 | Optimize SVG logo rendering. | Pending |  |
 | 216 | Specify image width and height. | Pending |  |
 | 217 | Minimize layout shifts. | Pending |  |
-| 218 | Add performance budget CI checks. | Integrated | public browser tests |
+| 218 | Add performance budget CI checks. | Pending |  |
 | 219 | Track Long Tasks in development. | Pending |  |
 | 220 | Run Lighthouse desktop and mobile. | Pending |  |
-| 221 | Set canonical URLs for public pages. | Integrated | unique sector titles |
-| 222 | Ensure one descriptive title per page. | Integrated | unique sector meta description |
-| 223 | Write unique descriptions for catering pages. | Pending |  |
-| 224 | Add appropriate organization JSON-LD. | Integrated | business identity displayed |
+| 221 | Set canonical URLs for public pages. | Pending |  |
+| 222 | Ensure one descriptive title per page. | Integrated | unique page titles |
+| 223 | Write unique descriptions for catering pages. | Integrated | sector-specific descriptions |
+| 224 | Add appropriate organization JSON-LD. | Pending |  |
 | 225 | Avoid duplicate structured-data injections. | Pending |  |
 | 226 | Add FAQ schema only for visible verified FAQs. | Pending |  |
 | 227 | Maintain a current sitemap. | Pending |  |
-| 228 | Keep admin routes disallowed and noindexed. | Integrated | sitemap includes sectors |
+| 228 | Keep admin routes disallowed and noindexed. | Integrated | admin robots restriction |
 | 229 | Add Open Graph image artwork. | Pending |  |
 | 230 | Set social share descriptions per page. | Pending |  |
 | 231 | Create consistent heading hierarchy. | Pending |  |
 | 232 | Avoid thin duplicate fast-page indexing. | Pending |  |
 | 233 | Add descriptive image alt text for SEO. | Pending |  |
 | 234 | Use meaningful internal links. | Pending |  |
-| 235 | Verify sitemap page response codes. | Integrated | descriptive imagery alts |
+| 235 | Verify sitemap page response codes. | Pending |  |
 | 236 | Add structured postal address consistency checks. | Pending |  |
 | 237 | Add breadcrumb structured data when appropriate. | Pending |  |
 | 238 | Test social link previews. | Pending |  |
-| 239 | Add language locale metadata. | Integrated | sitemap expanded |
+| 239 | Add language locale metadata. | Integrated | en-ZA language on new service pages |
 | 240 | Monitor broken internal links. | Pending |  |
-| 241 | Run syntax checks on all public JavaScript. | Integrated | new script syntax checks |
-| 242 | Test every documented public route. | Integrated | route rendering tests |
-| 243 | Add local homepage smoke checks. | Integrated | CI source smoke |
-| 244 | Add desktop browser regression suite. | Integrated | desktop Playwright |
-| 245 | Add mobile browser regression suite. | Integrated | mobile Playwright |
+| 241 | Run syntax checks on all public JavaScript. | Pending |  |
+| 242 | Test every documented public route. | Pending |  |
+| 243 | Add local homepage smoke checks. | Integrated | public homepage smoke checks |
+| 244 | Add desktop browser regression suite. | Integrated | desktop Playwright public tests |
+| 245 | Add mobile browser regression suite. | Integrated | mobile Playwright public tests |
 | 246 | Validate RFQ happy path against test storage. | Pending |  |
 | 247 | Validate failed RFQ payload handling. | Pending |  |
 | 248 | Test attachment size rejection. | Pending |  |
 | 249 | Verify admin unauthorized redirects. | Pending |  |
 | 250 | Test Google OAuth failure state. | Pending |  |
-| 251 | Test backup recovery negative cases. | Integrated | menu fallback message |
+| 251 | Test backup recovery negative cases. | Pending |  |
 | 252 | Test quote deduplication policy. | Pending |  |
 | 253 | Check all referenced local assets exist. | Pending |  |
 | 254 | Run catering menu data integrity checks. | Pending |  |
@@ -267,7 +267,7 @@ Branch: `fix/website-smoke-accessibility-20261027` · Draft PR #59
 | 257 | Assert critical security response headers. | Pending |  |
 | 258 | Verify sitemap and robots endpoints. | Pending |  |
 | 259 | Check Cloudflare Worker dry-run build. | Pending |  |
-| 260 | Make deployment verification a blocking gate. | Integrated | CI gates |
+| 260 | Make deployment verification a blocking gate. | Pending |  |
 | 261 | Add structured request IDs to backend logs. | Pending |  |
 | 262 | Define availability service level metrics. | Pending |  |
 | 263 | Record quotation submission error rates. | Pending |  |
@@ -288,20 +288,20 @@ Branch: `fix/website-smoke-accessibility-20261027` · Draft PR #59
 | 278 | Audit log retention policy. | Pending |  |
 | 279 | Provide incident contact escalation rules. | Pending |  |
 | 280 | Add rollback runbook. | Pending |  |
-| 281 | Add tailored government buyer landing page. | Integrated | government procurement page |
-| 282 | Add institutional catering landing page. | Integrated | corporate catering page |
-| 283 | Add office supply landing page. | Integrated | office supply page |
-| 284 | Add cleaning and hygiene landing page. | Integrated | hygiene page |
-| 285 | Add FMCG supply landing page. | Integrated | FMCG page |
-| 286 | Create request-for-quotation templates. | Integrated | printable RFQ resource |
-| 287 | Add downloadable tender response checklist. | Integrated | RFQ checklist |
+| 281 | Add tailored government buyer landing page. | Integrated | government procurement landing page |
+| 282 | Add institutional catering landing page. | Integrated | corporate catering landing page |
+| 283 | Add office supply landing page. | Integrated | office supply landing page |
+| 284 | Add cleaning and hygiene landing page. | Integrated | cleaning/hygiene landing page |
+| 285 | Add FMCG supply landing page. | Integrated | FMCG supply landing page |
+| 286 | Create request-for-quotation templates. | Pending |  |
+| 287 | Add downloadable tender response checklist. | Integrated | print/save RFQ checklist |
 | 288 | Offer repeat-order enquiry for returning buyers. | Pending |  |
 | 289 | Add case studies once real projects are verified. | Pending |  |
 | 290 | Add verified testimonial collection workflow. | Pending |  |
 | 291 | Add referral enquiry field. | Pending |  |
 | 292 | Build service-area coverage visualization. | Pending |  |
 | 293 | Add multilingual landing-page option if supported. | Pending |  |
-| 294 | Add accessible interactive service selector. | Integrated | catering brief transfer to RFQ |
+| 294 | Add accessible interactive service selector. | Integrated | interactive service navigation |
 | 295 | Add optional WhatsApp contact link when approved. | Pending |  |
 | 296 | Add calendar-assisted catering date selection. | Pending |  |
 | 297 | Build quote request progress steps. | Pending |  |
@@ -309,11 +309,10 @@ Branch: `fix/website-smoke-accessibility-20261027` · Draft PR #59
 | 299 | Add user feedback collection after enquiries. | Pending |  |
 | 300 | Add procurement knowledge-base articles. | Pending |  |
 
-## Production acceptance gates
+## Remaining work requiring special approval or testing
 
-- Final CI run must pass including Playwright desktop and mobile.
-- Perform a real RFQ submission against configured Cloudflare test bindings, then verify admin lead and attachment.
-- Manually test Google OAuth login, recovery and settings as an authorized admin, without exposing credentials.
-- Validate company claims, certifications, customer stories, privacy obligations and warranties before publishing.
-- Review accessibility, mobile layout, link integrity, Core Web Vitals and runtime costs.
-- Merge PR and deploy only after review.
+- Verified business credentials, delivery regions, service commitments, real customer reviews, supplier certifications and official quotes.
+- Secure customer-facing quote status access, notification integration, privacy policies and reporting governance.
+- Authorized end-to-end production/staging verification of RFQ uploads, D1/R2/KV, admin OAuth, MFA and recovery.
+- Completion of remaining accessibility, design, animation and content tasks, with screenshots and manual acceptance.
+- Deployment only after final CI passes and this draft PR is reviewed.
