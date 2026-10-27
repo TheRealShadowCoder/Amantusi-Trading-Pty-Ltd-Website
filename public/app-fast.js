@@ -92,6 +92,9 @@
   const status=document.getElementById('form-status');
   quoteForm?.addEventListener('submit',async event=>{
     event.preventDefault();
+    if(quoteForm.dataset.submitting==='1')return;
+    if(window.AmantusiQuoteEnhancements?.validate()===false)return;
+    quoteForm.dataset.submitting='1';
     const submit=quoteForm.querySelector('button[type="submit"]');if(submit)submit.disabled=true;
     if(status){status.className='form-status';status.textContent='Sending your quotation request securely…'}
     try{
@@ -99,10 +102,11 @@
       let payload={};try{payload=await response.json()}catch(_){}
       if(!response.ok)throw new Error(payload.error||'Could not submit your quotation request.');
       quoteForm.reset();
+      window.AmantusiQuoteEnhancements?.onSuccess(payload);
       if(status){status.className='form-status success';status.textContent=`Request received successfully. Reference: ${String(payload.reference||'')}`}
       window.amantusiTrack?.('generate_lead',{files:payload.files||0});
     }catch(error){
       if(status){status.className='form-status error';status.textContent=`${error.message||'Submission failed.'} You can also email zodwangema37@gmail.com or call 073 247 6716.`}
-    }finally{if(submit)submit.disabled=false}
+    }finally{quoteForm.dataset.submitting='0';if(submit)submit.disabled=false}
   });
 })();
