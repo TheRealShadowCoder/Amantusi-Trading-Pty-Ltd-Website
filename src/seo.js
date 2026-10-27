@@ -1,6 +1,13 @@
 import { getSiteSettings } from './platform.js';
 
 const PAGES = {
+  '/government-procurement.html': {title: 'Government Procurement RFQs | Amantusi Trading', description: 'Send government procurement RFQs and detailed specifications to Amantusi Trading Pty Ltd in Durban.', type: 'website'},
+  '/fmcg-supply.html': {title: 'FMCG & Institutional Supply | Amantusi Trading', description: 'Specification-based FMCG sourcing for institutional and private-sector buyers.', type: 'website'},
+  '/cleaning-hygiene.html': {title: 'Cleaning and Hygiene Supply | Amantusi Trading', description: 'Structured sourcing and RFQ enquiries for cleaning products and hygiene consumables.', type: 'website'},
+  '/office-institutional.html': {title: 'Office and Institutional Supply | Amantusi Trading', description: 'Request stationery, equipment and office supplies from Amantusi Trading.', type: 'website'},
+  '/general-trading.html': {title: 'General Trading and Sourcing | Amantusi Trading', description: 'Submit mixed-category sourcing briefs and general procurement enquiries.', type: 'website'},
+  '/corporate-catering.html': {title: 'Corporate and Institutional Catering | Amantusi Trading', description: 'Plan meeting and institutional catering with guest counts, venues and custom menu briefs.', type: 'website'},
+  '/procurement-checklist.html': {title: 'RFQ Preparation Checklist | Amantusi Trading', description: 'Printable procurement RFQ checklist covering quantity, specifications and delivery information.', type: 'website'},
   '/': {
     title: 'Amantusi Trading Pty Ltd | Procurement, Supply & Catering Solutions',
     description: 'Amantusi Trading Pty Ltd provides procurement, government supply, FMCG, catering, hygiene, office and general trading solutions in Durban, South Africa.',
@@ -170,7 +177,14 @@ export async function sitemapResponse(request, env) {
     ['/', '1.0', 'weekly'],
     ['/catering-menu.html', '0.9', 'weekly'],
     ['/catering-brochure.html', '0.8', 'monthly'],
-    ['/company-profile.html', '0.8', 'monthly']
+    ['/company-profile.html', '0.8', 'monthly'],
+    ['/government-procurement.html', '0.9', 'monthly'],
+    ['/fmcg-supply.html', '0.8', 'monthly'],
+    ['/cleaning-hygiene.html', '0.8', 'monthly'],
+    ['/office-institutional.html', '0.8', 'monthly'],
+    ['/general-trading.html', '0.8', 'monthly'],
+    ['/corporate-catering.html', '0.8', 'monthly'],
+    ['/procurement-checklist.html', '0.7', 'monthly']
   ];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pages.map(([path, priority, changefreq]) => `  <url><loc>${base}${path}</loc><lastmod>${lastmod}</lastmod><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`).join('\n')}\n</urlset>`;
   return new Response(xml, { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'public, max-age=3600' } });
