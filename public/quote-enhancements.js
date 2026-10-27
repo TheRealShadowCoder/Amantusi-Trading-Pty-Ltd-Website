@@ -102,6 +102,7 @@
   upload?.addEventListener('change',fileSummary);
   form.addEventListener('input',schedule);
   form.addEventListener('change',schedule);
+  addEventListener('pagehide',()=>{if(save.checked){clearTimeout(timer);write();}});
   const prefillService=new URLSearchParams(location.search).get('service');
   if(prefillService){
     const select=form.elements.namedItem('type');
