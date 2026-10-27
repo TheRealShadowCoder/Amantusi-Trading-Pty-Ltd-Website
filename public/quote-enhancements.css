@@ -1,0 +1,19 @@
+/* Public RFQ controls, attachment information and quality-of-life upgrades */
+.rfq-enhanced .quote-form{scroll-margin-top:100px}
+.rfq-progress{position:relative;display:grid;grid-template-columns:1fr auto;gap:.5rem 1rem;align-items:center;margin:0 0 1.5rem;padding:1rem 1.15rem;border-radius:13px;background:#eef4f3;border:1px solid #cbdad8}
+.rfq-progress-title{font-weight:750;color:#133342;font-size:.9rem}
+.rfq-progress small{font-size:.75rem;color:#4c676a}
+.rfq-progress-meter{grid-column:1/-1;grid-row:2;height:7px;border-radius:99px;background:#d0dfe0;overflow:hidden}
+.rfq-progress-meter span{display:block;height:100%;width:0;background:linear-gradient(90deg,#b89e56,#416e67);transition:width .2s ease}
+.rfq-notice{position:relative;padding:1rem 1.15rem;border-radius:12px;background:#f6f0dd;color:#293a3a;border-left:3px solid #b89e56;margin:1.1rem 0 1rem}
+.rfq-notice strong{font-size:.85rem}
+.rfq-notice p{margin:.3rem 0 0;font-size:.82rem;line-height:1.55}
+.rfq-control{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:.1rem 1rem;margin:1rem 0;color:#17313e}
+.rfq-save-label{display:flex!important;flex-direction:row!important;align-items:center;gap:.6rem!important;cursor:pointer;letter-spacing:0!important;text-transform:none!important;font-size:.84rem!important}
+.rfq-save-label input{width:18px!important;height:18px;flex-shrink:0}
+.rfq-control-note{font-size:.76rem;flex-basis:100%;margin:.3rem 0;color:#5c717b;line-height:1.5}
+.rfq-clear{border:0;background:transparent;color:#174f5d;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:.25rem 0;font-size:.8rem}
+.rfq-file-summary{font-size:.8rem!important;line-height:1.5;overflow-wrap:anywhere;color:#526676;margin:.35rem 0 0!important;text-transform:none;letter-spacing:0;font-weight:400}
+.rfq-enhanced .quote-form :focus-visible{outline:3px solid #b89e56;outline-offset:3px}
+@media(max-width:550px){.rfq-progress{grid-template-columns:1fr}.rfq-progress small{grid-row:3}.rfq-progress-meter{grid-row:2}}
+@media(prefers-reduced-motion:reduce){.rfq-progress-meter span{transition:none}}
