@@ -26,6 +26,21 @@ jobs:
         run: npm install
       - name: Public experience regression smoke tests
         run: node scripts/validate-site-smoke.mjs
+      - name: Install Chromium for public-site browser tests
+        run: npx playwright install --with-deps chromium
+      - name: Desktop and mobile public-site browser tests
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory public >/tmp/amantusi-static.log 2>&1 &
+          echo $! >/tmp/amantusi-static.pid
+          trap 'kill "$(cat /tmp/amantusi-static.pid)" || true' EXIT
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then break; fi
+            sleep 1
+          done
+          npx playwright test tests/public-static.spec.mjs
       - name: Syntax and Wrangler validation
         run: |
           set -euo pipefail
