@@ -1,0 +1,16 @@
+/* Admin accessibility, mobile table safety and productivity upgrades */
+.admin-body :where(a,button,input,select,textarea):focus-visible,.settings-body :where(a,button,input,select,textarea):focus-visible{outline:3px solid #d4b261;outline-offset:3px}
+.admin-side nav button,.admin-side nav a{min-height:42px}
+.admin-body .admin-panel{min-width:0}
+.admin-body .lead-workspace,.admin-body .ops-grid,.admin-body .admin-grid{min-width:0}
+.admin-body :where(.database-list,.lead-list,.lead-detail-panel,.admin-panel,.ops-events){overflow-wrap:anywhere}
+.admin-body :where(.lead-filters,.admin-toolbar){display:flex;flex-wrap:wrap;gap:.7rem}
+.admin-body .lead-filters input{min-width:min(100%,230px);flex:1 1 230px}
+.admin-body .lead-filters select{min-width:170px}
+.admin-body .admin-enhancement-status{font-size:.8rem;color:#496670;align-self:center}
+.admin-body button:disabled,.settings-body button:disabled{opacity:.55;cursor:not-allowed}
+.admin-body .db-row .db-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.admin-body :where(.admin-grid,.lead-workspace,.ops-grid) > *{min-width:0}
+@media(max-width:760px){.admin-body .admin-main{padding-inline:14px}.admin-body .lead-filters > *{flex:1 1 100%}.admin-body .lead-workspace{display:grid;grid-template-columns:minmax(0,1fr)}.admin-body .admin-panel{padding:1rem}.admin-body .admin-nav{max-height:50vh;overflow:auto}}
+@media(prefers-reduced-motion:reduce){.admin-body *, .settings-body *{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+@media print{.admin-side,.admin-top button,.settings-sidebar,.settings-topbar{display:none!important}.admin-main{margin:0!important;padding:0!important}}
