@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 const read = file => readFileSync(file,'utf8');
 const home=read('public/index.html');
 const app=read('public/app-fast.js');
@@ -20,6 +21,7 @@ const checks=[
  ['Quote enhancements have syntax-safe implementation',existsSync('public/quote-enhancements.js')],
  ['Catering menu exposes selection form',read('public/catering-menu.html').includes('id="catering-brief-form"')&&read('public/catering-menu.html').includes('data-catering-search')],
  ['Catering quotation bridge remains active',read('public/catering-quote-bridge.js').includes('amantusi-catering-brief')],
+ ['Catering portfolio gallery gets keyboard controls',read('public/catering-upgrades.js').includes("track.addEventListener('keydown'")],
  ['Catering graceful failure fallback',read('public/catering.js').includes('Menu is temporarily unavailable')],
  ['Quote form posts to real API',app.includes("fetch('/api/quote'")],
  ['Quote submission reports error states',app.includes("form-status error")],
@@ -30,6 +32,10 @@ const checks=[
  ['Admin stays separate from public homepage',!home.includes('src="/admin.js"')],
  ['Deployment configuration exists',existsSync('wrangler.jsonc')],
 ];
+for(const filename of ['public/quote-enhancements.js','public/catering-upgrades.js','public/app-fast.js','public/catering.js']){
+  execFileSync(process.execPath,['--check',filename],{stdio:'pipe'});
+  console.log('PASS Syntax '+filename);
+}
 let errors=0;
 for(const [name,pass] of checks){console.log((pass?'PASS':'FAIL')+' '+name);if(!pass)errors++}
 assert.equal(errors,0,errors+' static smoke check(s) failed');
