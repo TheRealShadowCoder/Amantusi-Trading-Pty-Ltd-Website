@@ -53,8 +53,10 @@ test('RFQ submission validates attachments and handles success without real back
   await page.locator('#quote-form [name="rfqFiles"]').setInputFiles({name:'too-large.pdf',mimeType:'application/pdf',buffer:Buffer.alloc(10_000_001)});
   await page.locator('#quote-form button[type="submit"]').click();
   await expect(page.locator('#form-status')).toContainText('10 MB or smaller');
+  await expect(page.locator('#quote-form [name="rfqFiles"]')).toHaveAttribute('aria-invalid','true');
   expect(submitted).toBe(0);
   await page.locator('#quote-form [name="rfqFiles"]').setInputFiles([]);
+  await expect(page.locator('#quote-form [name="rfqFiles"]')).toHaveAttribute('aria-invalid','false');
   await page.locator('#quote-form button[type="submit"]').click();
   await expect(page.locator('#form-status')).toContainText('AMT-TEST-0001');
   expect(submitted).toBe(1);
@@ -207,4 +209,12 @@ test('mobile quotation shortcut remains keyboard-accessible',async({page})=>{
  await page.goto('/');
  await expect(page.locator('[data-mobile-quote-cta]')).toBeVisible();
  await expect(page.locator('[data-mobile-quote-cta]')).toHaveAttribute('href','#quote');
+});
+
+test('required RFQ fields have persistent visible badges and accessible state',async({page})=>{
+ await page.goto('/');
+ const field=page.locator('#quote-form [name="organisation"]');
+ await expect(field).toHaveAttribute('aria-required','true');
+ await expect(page.locator('#quote-form label.rfq-required-field, #quote-form .rfq-required-marker').first()).toBeVisible();
+ await expect(page.locator('#quote-form .rfq-required-marker')).toHaveCount(4);
 });

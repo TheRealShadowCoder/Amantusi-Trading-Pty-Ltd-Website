@@ -39,6 +39,23 @@
   upload?.setAttribute('aria-describedby',((upload.getAttribute('aria-describedby')||'')+' rfq-upload-summary').trim());
   upload?.parentElement?.appendChild(uploadSummary);
   const required=['organisation','contact','email','requirements'];
+  for(const name of required){
+    const field=form.elements.namedItem(name);
+    if(!field)continue;
+    field.setAttribute('aria-required','true');
+    const label=field.closest('label');
+    if(label&&!label.querySelector('.rfq-required-marker')){
+      const mark=document.createElement('small');
+      mark.className='rfq-required-marker';
+      mark.textContent='Required';mark.setAttribute('aria-hidden','true');
+      label.append(mark);
+    }
+  }
+  if(upload){
+    upload.setAttribute('aria-invalid','false');
+    upload.setAttribute('aria-errormessage','form-status');
+  }
+
   const meter=flag.querySelector('[role="progressbar"]');
   const bar=flag.querySelector('.rfq-progress-meter span');
   const count=flag.querySelector('[data-rfq-complete]');
@@ -50,6 +67,7 @@
     if(count)count.textContent=complete+' of '+required.length+' required fields complete';
   };
   const fail=(message)=>{
+    if(upload)upload.setAttribute('aria-invalid','true');
     if(status){status.className='form-status error';status.textContent=message;status.scrollIntoView({block:'nearest',behavior:'auto'});}
   };
   const validate=()=>{
@@ -64,6 +82,7 @@
       if(file.size>MAX_FILE){fail('Each attachment must be 10 MB or smaller.');upload.focus();return false;}
     }
     if(total>MAX_TOTAL){fail('Combined attachments must be 30 MB or smaller.');upload.focus();return false;}
+    upload.setAttribute('aria-invalid','false');
     return true;
   };
   const fileSummary=()=>{
