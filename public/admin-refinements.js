@@ -1,7 +1,48 @@
 /* Authenticated admin UX helpers; never bypasses server-side access checks. */
 (() => {
 'use strict';
+
+function addLocalFilter(listSelector,label){
+ const list=document.querySelector(listSelector);
+ if(!list||list.dataset.refinement==='1')return;
+ list.dataset.refinement='1';
+ const bar=document.createElement('div');bar.className='admin-list-refinement';
+ const input=document.createElement('input');input.type='search';input.placeholder='Filter by name, category or details';input.setAttribute('aria-label',label);
+ const select=document.createElement('select');select.setAttribute('aria-label','Sort displayed records');
+ select.innerHTML='<option value="default">Original order</option><option value="asc">Name A–Z</option><option value="desc">Name Z–A</option>';
+ const count=document.createElement('span');count.setAttribute('role','status');count.className='admin-refinement-count';
+ bar.append(input,select,count);list.before(bar);
+ let previous=[];
+ const apply=()=>{
+  const rows=[...list.querySelectorAll(':scope > .db-row')];
+  if(!rows.length){count.textContent='No records to filter';return;}
+  const q=input.value.toLocaleLowerCase().trim();
+  if(select.value==='default'){
+   if(previous.length){for(const row of previous)if(row.isConnected)list.append(row);}
+  }else{
+   if(!previous.length||previous.some(row=>!row.isConnected)||previous.length!==rows.length)previous=[...rows];
+   [...rows].sort((a,b)=>(a.querySelector('strong')?.textContent||'').localeCompare(b.querySelector('strong')?.textContent||'')*(select.value==='asc'?1:-1)).forEach(row=>list.append(row));
+  }
+  let visible=0;
+  for(const row of rows){const ok=!q||row.textContent.toLocaleLowerCase().includes(q);row.hidden=!ok;if(ok)visible++;}
+  count.textContent=visible+' of '+rows.length+' records';
+ };
+ let frame=0;
+ const schedule=()=>{if(!frame)frame=requestAnimationFrame(()=>{frame=0;apply();});};
+ const observer=new MutationObserver(mutations=>{
+   if(mutations.some(m=>[...m.addedNodes,...m.removedNodes].some(node=>node.nodeType===1&&!node.classList?.contains('db-row')?false:true))){
+     // Child reordering is also observed; defer and avoid recursive sorting churn.
+     if(select.value==='default')schedule(); else {previous=[];select.value='default';schedule();}
+   }
+ });
+ observer.observe(list,{childList:true});
+ input.addEventListener('input',schedule);select.addEventListener('change',schedule);
+ apply();
+}
+
 function init(){
+ addLocalFilter('#supplier-list','Filter displayed suppliers');
+ addLocalFilter('#product-list','Filter displayed products');
  const dashboard=document.querySelector('#admin-view');if(!dashboard)return;
  document.querySelectorAll('.admin-field').forEach(group=>{
   const label=group.querySelector('label'),field=group.querySelector('input[id],textarea[id],select[id]');
