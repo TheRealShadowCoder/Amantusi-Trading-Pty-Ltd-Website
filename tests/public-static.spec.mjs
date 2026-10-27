@@ -8,7 +8,7 @@ test('homepage is accessible, fast-first, and links to sector detail pages', asy
   await expect(page.locator('.skip-link')).toHaveAttribute('href','#main-content');
   await expect(page.locator('#quote-form [name="rfqFiles"]')).toHaveCount(1);
   await expect(page.locator('#rfq-save-draft')).toHaveCount(1);
-  await expect(page.locator('[role="progressbar"]')).toHaveAttribute('aria-valuenow','0');
+  await expect(page.getByRole('progressbar',{name:'Required fields completed'})).toHaveAttribute('aria-valuenow','0');
   await expect(page.locator('#experience-loader')).toHaveCount(0);
   for(const route of ['government-procurement','fmcg-supply','corporate-catering','cleaning-hygiene','office-institutional','general-trading'])
     await expect(page.locator('a[href="/'+route+'.html"]').first()).toHaveCount(1);
@@ -121,4 +121,70 @@ test('shared site directory, back-to-top and 404 recovery work',async ({page})=>
   await page.goto('/404.html');
   await expect(page.getByRole('heading',{name:/page has moved/i})).toBeVisible();
   await expect(page.getByRole('link',{name:'Return to homepage'})).toHaveAttribute('href','/');
+});
+
+test('resource centre, information notice, and FAQ pages are usable',async ({page})=>{
+ for(const path of ['procurement-guides','supplier-onboarding','procurement-templates','capability-statement','procurement-faq','information-handling']){
+   const resp=await page.goto('/'+path+'.html');
+   expect(resp?.ok(),path).toBeTruthy();
+   await expect(page.locator('h1')).toHaveCount(1);
+   await expect(page.locator('[data-public-site-directory]')).toBeVisible();
+ }
+ await page.goto('/procurement-faq.html');
+ await page.locator('.resource-faq summary').first().click();
+ await expect(page.locator('.resource-faq details').first()).toHaveAttribute('open','');
+});
+
+test('structured RFQ line items are submitted through the real form interface',async({page})=>{
+ let raw='';
+ await page.route('**/api/quote',async route=>{
+   raw=route.request().postData()||'';
+   await route.fulfill({status:201,contentType:'application/json',body:JSON.stringify({ok:true,reference:'AMT-TEST-ROWS'})});
+ });
+ await page.goto('/');
+ await page.locator('#quote-form [name="organisation"]').fill('Client Org');
+ await page.locator('#quote-form [name="contact"]').fill('Client Test');
+ await page.locator('#quote-form [name="email"]').fill('client@example.com');
+ await page.locator('#quote-form [name="requirements"]').fill('Supply materials for project');
+ await page.locator('[data-rfq-add]').click();
+ await page.locator('[data-rfq-name]').fill('A4 printing paper 80 gsm');
+ await page.locator('[data-rfq-qty]').fill('10');
+ await page.locator('[data-rfq-unit]').selectOption({label:'Pack'});
+ await page.locator('#quote-form button[type="submit"]').click();
+ await expect(page.locator('#form-status')).toContainText('AMT-TEST-ROWS');
+ expect(raw).toContain('A4 printing paper 80 gsm');
+ expect(raw).toContain('10 Pack');
+});
+
+test('catering and tender RFQs display relevant conditional fields',async({page})=>{
+ await page.goto('/?service=Catering#quote');
+ await expect(page.locator('fieldset[data-context="Catering"]')).toBeVisible();
+ await expect(page.locator('[name="eventGuests"]')).toBeEnabled();
+ await page.locator('#quote-form select[name="type"]').selectOption('Government RFQ / Tender');
+ await expect(page.locator('fieldset[data-context="Government RFQ / Tender"]')).toBeVisible();
+ await expect(page.locator('[name="eventGuests"]')).toBeDisabled();
+ await expect(page.locator('[name="tenderClosingTime"]')).toBeEnabled();
+});
+
+test('public pages fit baseline responsive viewports',async({page})=>{
+ const paths=['/','/government-procurement.html','/procurement-guides.html','/procurement-faq.html','/capability-statement.html','/catering-menu.html'];
+ for(const size of [{width:320,height:720},{width:375,height:800},{width:768,height:1024},{width:1024,height:768}]){
+   await page.setViewportSize(size);
+   for(const path of paths){
+     await page.goto(path);
+     await expect(page.locator('h1').first()).toBeVisible();
+     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+     expect(overflow, path+' at '+size.width+'px').toBeLessThanOrEqual(2);
+   }
+ }
+});
+
+test('public interfaces do not generate uncaught script errors at first load',async({page})=>{
+ const errors=[];
+ page.on('pageerror',error=>errors.push(error.message));
+ for(const path of ['/','/procurement-guides.html','/procurement-faq.html','/catering-menu.html']){
+   await page.goto(path);
+   await page.waitForTimeout(400);
+ }
+ expect(errors).toEqual([]);
 });

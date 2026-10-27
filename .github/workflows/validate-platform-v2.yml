@@ -30,6 +30,8 @@ jobs:
         run: npm install
       - name: Public experience regression smoke tests
         run: node scripts/validate-site-smoke.mjs
+      - name: Validate public HTML asset references
+        run: node scripts/validate-public-routes.mjs
       - name: Install Chromium for public-site browser tests
         run: npx playwright install --with-deps chromium
       - name: Desktop and mobile public-site browser tests

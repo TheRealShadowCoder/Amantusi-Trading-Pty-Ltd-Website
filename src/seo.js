@@ -42,8 +42,14 @@ const PAGES = {
 };
 
 function cleanBase(settings, request) {
-  const configured = String(settings?.publicSiteUrl || '').trim().replace(/\/$/, '');
-  return configured || new URL(request.url).origin;
+  const origin=new URL(request.url).origin;
+  const configured=String(settings?.publicSiteUrl||'').trim();
+  if(!configured)return origin;
+  try{
+    const url=new URL(configured);
+    if(url.protocol!=='https:' || url.username || url.password || url.search || url.hash)return origin;
+    return url.origin;
+  }catch(_){return origin;}
 }
 
 function pageData(pathname) {
@@ -92,6 +98,24 @@ function pageSchema(base, pathname) {
     isPartOf: { '@type': 'WebSite', name: 'Amantusi Trading Pty Ltd', url: `${base}/` },
     about: { '@id': `${base}/#organization` }
   };
+  if (pathname === '/procurement-faq.html') {
+    return {
+      '@context':'https://schema.org',
+      '@type':'FAQPage',
+      name:page.title,
+      url:common.url,
+      mainEntity:[
+        {q:'How do I submit a quotation request?',a:'Open Request a Quote from the homepage, enter your organization and contact details, describe the products or service and submit. A reference appears only after the server confirms receipt.'},
+        {q:'Can I attach an RFQ or tender schedule?',a:'Yes. The website form supports up to five PDF, Office, CSV, text or supported image files, each up to 10 MB, with a maximum combined total of 30 MB.'},
+        {q:'Are prices confirmed on the catering menu?',a:'No. Catering prices depend on guest count, menu selections, venue, staffing and delivery requirements. Request a tailored quotation.'},
+        {q:'Can I send a mixed-category sourcing enquiry?',a:'Yes. Choose General Procurement and give quantities, specifications and delivery location for each requested item.'},
+        {q:'Does a quotation request guarantee stock or an order?',a:'No. A submitted enquiry starts a review. Availability, lead time, final price and accepted purchase terms must be confirmed separately.'},
+        {q:'How can I contact the company?',a:'Use the email or phone number on the company profile. For a complete procurement brief, the secure website enquiry form is preferred.'},
+        {q:'How do I prepare an accurate RFQ?',a:'State item specifications, units, quantities, brands or permissible alternatives, delivery requirements and deadline. See the printable RFQ checklist.'},
+        {q:'Can I submit a catering brief without choosing a listed menu item?',a:'Yes. Describe your custom catering needs, guest count, event date, location and service format when building the catering brief.'}
+      ].map(item=>({'@type':'Question',name:item.q,acceptedAnswer:{'@type':'Answer',text:item.a}}))
+    };
+  }
   if (pathname === '/catering-menu.html' || pathname === '/catering-brochure.html') {
     return {
       '@context': 'https://schema.org',
