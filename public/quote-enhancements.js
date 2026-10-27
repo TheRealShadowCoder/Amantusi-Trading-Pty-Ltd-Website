@@ -6,7 +6,7 @@
   const DRAFT_KEY='amantusi-rfq-draft-v1';
   const MAX_AGE=7*24*60*60*1000;
   const ALLOWED=new Set(['pdf','doc','docx','xls','xlsx','csv','txt','jpg','jpeg','png','webp']);
-  const MAX_FILE=10*1024*1024, MAX_TOTAL=30*1024*1024;
+  const MAX_FILE=10_000_000, MAX_TOTAL=30_000_000;
   const upload=form.querySelector('input[name="rfqFiles"]');
   const status=form.querySelector('#form-status');
   const submit=form.querySelector('button[type="submit"]');
@@ -121,6 +121,7 @@
     validate,
     onSuccess(data){
       remove();save.checked=false;
+      try{localStorage.removeItem('amantusi-catering-brief');}catch(_){}
       note.textContent='Quotation received. This browser’s saved draft has been cleared.';
       progress();
       if(status&&data?.reference){status.dataset.reference=String(data.reference).replace(/[^A-Za-z0-9-]/g,'');}
