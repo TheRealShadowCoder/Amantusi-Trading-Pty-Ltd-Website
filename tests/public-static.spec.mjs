@@ -64,7 +64,10 @@ test('RFQ draft requires opt-in and can be recovered', async ({ page }) => {
   await page.goto('/');
   await page.locator('#rfq-save-draft').check();
   await page.locator('#quote-form [name="organisation"]').fill('Sample company draft');
-  await expect.poll(()=>page.evaluate(()=>Boolean(localStorage.getItem('amantusi-rfq-draft-v1')))).toBeTruthy();
+  await expect.poll(()=>page.evaluate(()=>{
+    const saved=localStorage.getItem('amantusi-rfq-draft-v1');
+    return saved?JSON.parse(saved).values?.organisation:null;
+  })).toBe('Sample company draft');
   await page.reload();
   await expect(page.locator('#quote-form [name="organisation"]')).toHaveValue('Sample company draft');
   await page.locator('.rfq-clear').click();
