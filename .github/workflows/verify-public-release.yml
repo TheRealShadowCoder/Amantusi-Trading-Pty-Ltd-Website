@@ -1,0 +1,22 @@
+name: Read-only Public Release Verification
+on:
+  workflow_dispatch:
+    inputs:
+      public_url:
+        description: 'Authorized deployed public URL (HTTPS)'
+        required: true
+        default: 'https://amantusi-trading-pty-ltd-website.dolomite-computer.workers.dev'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Read-only production probe
+        env:
+          PUBLIC_URL: ${{ inputs.public_url }}
+        run: node scripts/verify-live-site.mjs
