@@ -5,6 +5,7 @@ const q=(s,ctx=document)=>ctx.querySelector(s);
 const grid=q('[data-menu-grid]');
 const search=q('[data-catering-search]');
 const results=q('[data-catering-results]');
+const dietarySelect=q('[data-catering-dietary-filter]');
 const basket=q('[data-catering-basket]');
 const clear=q('[data-catering-clear]');
 const briefForm=q('#catering-brief-form');
@@ -28,7 +29,10 @@ function update(){
  const cards=Array.from(grid.querySelectorAll('.menu-card'));
  let count=0;
  for(const card of cards){
-  const matches=!text||String(card.dataset.search||'').toLocaleLowerCase().includes(text);
+  const matchesText=!text||String(card.dataset.search||'').toLocaleLowerCase().includes(text);
+  const tag=String(dietarySelect?.value||'').toLocaleLowerCase();
+  const matchesDiet=!tag||String(card.dataset.dietary||'').toLocaleLowerCase().split('|').includes(tag);
+  const matches=matchesText&&matchesDiet;
   card.hidden=!matches;
   if(matches)count++;
   let btn=card.querySelector('[data-catering-add]');
@@ -43,6 +47,16 @@ function deferUpdate(){if(frame)return;frame=requestAnimationFrame(()=>{frame=0;
 function initMenu(){
  if(!grid)return;
  search?.addEventListener('input',deferUpdate);
+ dietarySelect?.addEventListener('change',deferUpdate);
+ document.addEventListener('amantusi:catering:data-ready',()=>{
+  if(!dietarySelect)return;
+  const items=window.AmantusiCateringData?.activeItems||[];
+  const options=[...new Set(items.flatMap(item=>Array.isArray(item.dietary)?item.dietary:[]).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const previous=dietarySelect.value;
+  dietarySelect.replaceChildren(new Option('All dietary options',''),...options.map(option=>new Option(option,option.toLowerCase())));
+  if([...dietarySelect.options].some(option=>option.value===previous))dietarySelect.value=previous;
+  deferUpdate();
+ });
  grid.addEventListener('click',event=>{
   const button=event.target.closest('[data-catering-add]');if(!button)return;
   const card=button.closest('.menu-card');if(!card)return;

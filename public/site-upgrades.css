@@ -17,3 +17,35 @@ button,.button,a{-webkit-tap-highlight-color:transparent}
 @media(max-width:530px){.sector-directory-links{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.sector-directory-links a{transition:none}.sector-directory-links a:hover{transform:none}}
 @media print{.sector-directory-links{display:none}.sector-directory-layout{display:block}.sector-directory{padding:1rem 0}}
+
+/* Research library / mission / public FAQ */
+.amantusi-resource-section{background:#f4f5f2;border-block:1px solid #e0e5e3}
+.amantusi-resource-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.amantusi-resource-card{padding:clamp(1.2rem,2.5vw,2rem);background:#fff;border:1px solid #dbe4e0;border-radius:16px;box-shadow:0 16px 42px #09222c0d;min-width:0}
+.amantusi-resource-card .resource-number{color:#846524;font-weight:850;letter-spacing:.12em;font-size:.68rem}
+.amantusi-resource-card h3{color:#092d3c;font:1.6rem/1.2 Georgia,serif;margin:1rem 0}
+.amantusi-resource-card p{color:#52666e;line-height:1.65}
+.amantusi-resource-card a{display:inline-flex;gap:.5rem;color:#0c5362;font-weight:750;text-underline-offset:4px;min-height:44px;align-items:center}
+.amantusi-method-section{background:radial-gradient(circle at 80% -20%,#234856,#071923 65%);color:#f9f9f2}
+.amantusi-method-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:clamp(1.5rem,5vw,5rem);align-items:center}
+.amantusi-method-grid h2{font:clamp(2rem,4vw,3.4rem)/1.13 Georgia,serif;letter-spacing:-.03em;margin:.8rem 0 1.4rem;color:#fff}
+.amantusi-method-grid p{color:#d6e1e4;max-width:560px;line-height:1.7}
+.amantusi-method-grid .amantusi-smallprint{color:#d6c898;font-size:.82rem;margin-bottom:1.6rem}
+.amantusi-method-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+.amantusi-method-steps article{padding:1.4rem;background:#123442b8;border:1px solid #bca0614c;border-radius:13px;min-width:0}
+.amantusi-method-steps article span{color:#e9c77e;font-size:.75rem;letter-spacing:.1em}
+.amantusi-method-steps article h3{font:1.45rem Georgia,serif;color:white;margin:.7rem 0}
+.amantusi-method-steps article p{font-size:.86rem;margin:0;line-height:1.6}
+.amantusi-faq-section{background:#fff}
+.amantusi-faq-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(1.5rem,5vw,5rem);align-items:start}
+.amantusi-faq-grid h2{color:#092b38;font:clamp(2.1rem,3.5vw,3.2rem)/1.1 Georgia,serif;margin:.7rem 0}
+.amantusi-faq-grid p{color:#4b6470}
+.amantusi-faq-list{display:grid;gap:.65rem}
+.amantusi-faq-list details{border:1px solid #d4e0df;background:#f8faf8;border-radius:10px;padding:.85rem 1rem}
+.amantusi-faq-list summary{font-weight:800;cursor:pointer;color:#173743;line-height:1.6}
+.amantusi-faq-list summary:focus-visible{outline:3px solid #b89e56;outline-offset:4px}
+.amantusi-faq-list details p{font-size:.9rem;line-height:1.6;margin:.75rem 0 .2rem}
+.amantusi-faq-list details a{color:#1a5669;font-weight:750}
+@media(max-width:900px){.amantusi-resource-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.amantusi-method-grid,.amantusi-faq-grid{grid-template-columns:1fr}}
+@media(max-width:580px){.amantusi-resource-grid,.amantusi-method-steps{grid-template-columns:1fr}.amantusi-resource-card{padding:1.25rem}}
+@media print{.amantusi-method-section{background:white;color:#071923}.amantusi-method-grid h2,.amantusi-method-grid p{color:#17303b}.amantusi-resource-card{box-shadow:none}}
