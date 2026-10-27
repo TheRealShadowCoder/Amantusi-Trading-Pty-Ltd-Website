@@ -12,31 +12,27 @@ function addLocalFilter(listSelector,label){
  select.innerHTML='<option value="default">Original order</option><option value="asc">Name A–Z</option><option value="desc">Name Z–A</option>';
  const count=document.createElement('span');count.setAttribute('role','status');count.className='admin-refinement-count';
  bar.append(input,select,count);list.before(bar);
- let previous=[];
  const apply=()=>{
   const rows=[...list.querySelectorAll(':scope > .db-row')];
   if(!rows.length){count.textContent='No records to filter';return;}
-  const q=input.value.toLocaleLowerCase().trim();
-  if(select.value==='default'){
-   if(previous.length){for(const row of previous)if(row.isConnected)list.append(row);}
-  }else{
-   if(!previous.length||previous.some(row=>!row.isConnected)||previous.length!==rows.length)previous=[...rows];
-   [...rows].sort((a,b)=>(a.querySelector('strong')?.textContent||'').localeCompare(b.querySelector('strong')?.textContent||'')*(select.value==='asc'?1:-1)).forEach(row=>list.append(row));
+  if(select.value!=='default'){
+   const ordered=[...rows].sort((a,b)=>(a.querySelector('strong')?.textContent||'').localeCompare(b.querySelector('strong')?.textContent||'')*(select.value==='asc'?1:-1));
+   if(ordered.some((row,index)=>row!==rows[index]))ordered.forEach(row=>list.append(row));
   }
-  let visible=0;
-  for(const row of rows){const ok=!q||row.textContent.toLocaleLowerCase().includes(q);row.hidden=!ok;if(ok)visible++;}
-  count.textContent=visible+' of '+rows.length+' records';
+  let shown=0;
+  const term=input.value.toLocaleLowerCase().trim();
+  for(const row of rows){
+   const visible=!term||row.textContent.toLocaleLowerCase().includes(term);
+   row.hidden=!visible;
+   if(visible)shown++;
+  }
+  count.textContent=shown+' of '+rows.length+' records';
  };
  let frame=0;
  const schedule=()=>{if(!frame)frame=requestAnimationFrame(()=>{frame=0;apply();});};
- const observer=new MutationObserver(mutations=>{
-   if(mutations.some(m=>[...m.addedNodes,...m.removedNodes].some(node=>node.nodeType===1&&!node.classList?.contains('db-row')?false:true))){
-     // Child reordering is also observed; defer and avoid recursive sorting churn.
-     if(select.value==='default')schedule(); else {previous=[];select.value='default';schedule();}
-   }
- });
- observer.observe(list,{childList:true});
- input.addEventListener('input',schedule);select.addEventListener('change',schedule);
+ new MutationObserver(schedule).observe(list,{childList:true});
+ input.addEventListener('input',schedule);
+ select.addEventListener('change',schedule);
  apply();
 }
 

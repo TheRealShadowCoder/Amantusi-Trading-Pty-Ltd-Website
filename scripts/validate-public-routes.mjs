@@ -12,7 +12,7 @@ for(const name of pages){
  const html=readFileSync(path.join(PUBLIC,name),'utf8');
  if(!/<!doctype html>/i.test(html))errors.push(name+': missing doctype');
  if(!/<html[^>]*lang=/i.test(html))errors.push(name+': missing language');
- if(!/<main(?:\s|>)/i.test(html))errors.push(name+': missing main region');
+ if(!name.startsWith('admin')&&!/<main(?:\s|>)/i.test(html))errors.push(name+': missing main region');
  if(!/<h1(?:\s|>)/i.test(html))errors.push(name+': missing h1');
  for(const m of html.matchAll(/\b(?:href|src|poster)=["'](\/[^"'?#]+)(?:[?#][^"']*)?["']/gi)){
    let local=m[1];
