@@ -24,6 +24,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install
+      - name: Public experience regression smoke tests
+        run: node scripts/validate-site-smoke.mjs
       - name: Syntax and Wrangler validation
         run: |
           set -euo pipefail
