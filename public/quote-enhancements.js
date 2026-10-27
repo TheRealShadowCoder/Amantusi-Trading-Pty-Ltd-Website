@@ -72,6 +72,9 @@
       ? files.map(f=>f.name+' ('+(f.size/(1024*1024)).toFixed(1)+' MB)').join(' · ')
       : 'No files selected (optional).';
     if(files.length)validate();
+    else if(status?.classList.contains('error')&&/attach|file|MB|format/i.test(status.textContent||'')){
+      status.className='form-status';status.textContent='';
+    }
   };
   const serializable=()=>Object.fromEntries(Array.from(form.elements)
     .filter(el=>el.name&&el.type!=='file'&&el.type!=='submit'&&el.type!=='checkbox'&&(el instanceof HTMLInputElement||el instanceof HTMLSelectElement||el instanceof HTMLTextAreaElement))

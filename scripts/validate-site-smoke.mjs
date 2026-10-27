@@ -14,6 +14,8 @@ const checks=[
  ['RFQ form includes upload',home.includes('name="rfqFiles"')],
  ['RFQ form has required contact fields', ['organisation','contact','email','requirements'].every(n=>new RegExp('name="'+n+'"[^>]*required').test(home))],
  ['RFQ enhancement client exists',existsSync('public/quote-enhancements.js')&&home.includes('/quote-enhancements.js')],
+ ['Shared footer and back to top module is loaded',read('public/index.html').includes('/site-navigation.js')&&existsSync('public/site-navigation.css')],
+ ['Branded 404 contains home recovery',read('public/404.html').includes('Return to homepage')],
  ['Homepage links to six sector pages',["government-procurement","fmcg-supply","corporate-catering","cleaning-hygiene","office-institutional","general-trading"].every(slug=>home.includes('/'+slug+'.html')&&existsSync('public/'+slug+'.html'))],
  ['Printable RFQ checklist is linked',home.includes('/procurement-checklist.html')&&existsSync('public/procurement-checklist.html')],
  ['Sector landing pages use accessible content and structured enquiry',["government-procurement","fmcg-supply","corporate-catering","cleaning-hygiene","office-institutional","general-trading"].every(slug=>{const html=read('public/'+slug+'.html');return html.includes('id="content"')&&html.includes('/?service=')&&html.includes('<h1>')})],

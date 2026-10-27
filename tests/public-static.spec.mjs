@@ -109,3 +109,16 @@ test('company profile and catering brochure are reachable and print-friendly',as
     await expect(page.locator('[data-catering-nav-toggle]')).toHaveCount(1);
   }
 });
+
+test('shared site directory, back-to-top and 404 recovery work',async ({page})=>{
+  await page.goto('/');
+  await expect(page.locator('[data-public-site-directory]')).toBeVisible();
+  await expect(page.locator('[data-public-site-directory] a[href="/procurement-checklist.html"]')).toHaveCount(1);
+  await page.evaluate(()=>scrollTo(0,1600));
+  await expect(page.locator('.public-back-to-top')).toBeVisible();
+  await page.locator('.public-back-to-top').click();
+  await expect.poll(()=>page.evaluate(()=>scrollY)).toBeLessThan(50);
+  await page.goto('/404.html');
+  await expect(page.getByRole('heading',{name:/page has moved/i})).toBeVisible();
+  await expect(page.getByRole('link',{name:'Return to homepage'})).toHaveAttribute('href','/');
+});
