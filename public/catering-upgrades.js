@@ -11,7 +11,17 @@ const briefForm=q('#catering-brief-form');
 const feedback=q('[data-catering-brief-status]');
 const selected=new Map();
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-function labelCount(){if(basket)basket.textContent=selected.size+' option'+(selected.size===1?'':'s')+' selected';if(clear)clear.disabled=selected.size===0;}
+const floating=document.createElement('a');
+floating.className='catering-floating-basket';floating.href='#build-quote';floating.hidden=true;
+floating.setAttribute('aria-label','Jump to selected catering options and build quotation');
+document.body.append(floating);
+function labelCount(){
+ const text=selected.size+' option'+(selected.size===1?'':'s')+' selected';
+ if(basket)basket.textContent=text;
+ if(clear)clear.disabled=selected.size===0;
+ floating.hidden=selected.size===0;
+ floating.textContent=text+' · Build enquiry ↗';
+}
 function update(){
  if(!grid)return;
  const text=(search?.value||'').trim().toLocaleLowerCase();
@@ -95,6 +105,36 @@ function initGallery(){
   const move=delta=>track.scrollBy({left:delta*(Math.min(track.clientWidth*.8,420)),behavior:reduce?'auto':'smooth'});
   prev.addEventListener('click',()=>move(-1));next.addEventListener('click',()=>move(1));
   track.addEventListener('keydown',event=>{if(event.key==='ArrowLeft'){event.preventDefault();move(-1)}if(event.key==='ArrowRight'){event.preventDefault();move(1)}});
+  /* Enhance portfolio cards as keyboard-accessible enlarged image viewers. */
+  const dialog=document.createElement('dialog');
+  dialog.className='catering-lightbox';
+  dialog.setAttribute('aria-label','Enlarged catering portfolio photo');
+  const image=document.createElement('img');image.alt='';
+  const caption=document.createElement('p');
+  const close=document.createElement('button');close.type='button';close.textContent='Close photograph ×';close.className='catering-lightbox-close';
+  dialog.append(close,image,caption);document.body.append(dialog);
+  close.addEventListener('click',()=>dialog.close());
+  dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close()});
+  const enhanceFigures=()=>{
+    track.querySelectorAll('.cm-gallery-card').forEach(fig=>{
+      if(fig.querySelector('.catering-image-open'))return;
+      const control=document.createElement('button');
+      control.type='button';control.className='catering-image-open';control.textContent='Enlarge photo';
+      const img=fig.querySelector('img');
+      control.setAttribute('aria-label','Enlarge '+(img?.alt||'catering portfolio photo'));
+      control.addEventListener('click',()=>{
+        if(!img)return;
+        image.src=img.currentSrc||img.src;
+        image.alt=img.alt||'Catering portfolio photograph';
+        caption.textContent=fig.querySelector('figcaption')?.textContent||image.alt;
+        if(typeof dialog.showModal==='function')dialog.showModal();
+      });
+      fig.append(control);
+    });
+  };
+  enhanceFigures();
+  new MutationObserver(changes=>{if(changes.some(c=>c.addedNodes.length))enhanceFigures()}).observe(track,{childList:true});
+
  });
 }
 function init(){
