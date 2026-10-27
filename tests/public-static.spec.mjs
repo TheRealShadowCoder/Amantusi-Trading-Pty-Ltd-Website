@@ -79,11 +79,17 @@ test('catering menu search and selected options bridge into RFQ',async ({ page }
   const cards=page.locator('[data-menu-grid] .menu-card');
   await expect(cards.first()).toBeVisible();
   await expect(page.locator('[data-catering-search]')).toBeVisible();
+  await expect(page.locator('.category-count').first()).toBeVisible();
+  await page.locator('[data-catering-gallery-track] .catering-image-open').first().click();
+  await expect(page.locator('.catering-lightbox')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.catering-lightbox')).not.toBeVisible();
   await page.locator('[data-catering-search]').fill('unmatched-test-phrase-zz');
   await expect(page.locator('[data-catering-results]')).toContainText('0 menu options shown');
   await page.locator('[data-catering-search]').fill('');
   await cards.first().locator('[data-catering-add]').click();
   await expect(page.locator('[data-catering-basket]')).toContainText('1 option selected');
+  await expect(page.locator('.catering-floating-basket')).toBeVisible();
   await page.locator('#catering-brief-form [name="eventType"]').selectOption({label:'Business meeting'});
   await page.locator('#catering-brief-form [name="guestCount"]').fill('25');
   await page.locator('#catering-brief-form [name="date"]').fill('2026-12-02');
