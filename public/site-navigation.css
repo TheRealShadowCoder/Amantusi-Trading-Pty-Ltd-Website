@@ -15,3 +15,7 @@ nav a[aria-current="page"]{text-decoration:underline;text-decoration-color:#bf9f
 @media(max-width:620px){.public-site-directory-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem}.public-back-to-top{right:12px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.public-back-to-top{transition:none}}
 @media print{.public-back-to-top,.public-site-directory,.skip-link{display:none!important}}
+
+.sector-breadcrumbs{margin:0 0 1.7rem;color:#e4e0d3;font-size:.8rem;display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+.sector-breadcrumbs a{color:#e4cf93;text-decoration:underline;text-underline-offset:3px}
+.sector-breadcrumbs [aria-current="page"]{color:#f0f3f2}

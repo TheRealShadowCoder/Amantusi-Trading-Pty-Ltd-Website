@@ -98,7 +98,7 @@
     const submit=quoteForm.querySelector('button[type="submit"]');if(submit)submit.disabled=true;
     if(status){status.className='form-status';status.textContent='Sending your quotation request securely…'}
     try{
-      const response=await fetch('/api/quote',{method:'POST',body:new FormData(quoteForm)});
+      const response=await (window.AmantusiQuoteTransport?.send(quoteForm) || fetch('/api/quote',{method:'POST',body:new FormData(quoteForm)}));
       let payload={};try{payload=await response.json()}catch(_){}
       if(!response.ok)throw new Error(payload.error||'Could not submit your quotation request.');
       quoteForm.reset();
