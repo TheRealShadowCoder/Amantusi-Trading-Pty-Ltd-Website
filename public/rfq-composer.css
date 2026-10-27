@@ -1,0 +1,23 @@
+/* Additional RFQ composer and accessible transfer UI */
+.rfq-composer,.rfq-context-group{position:relative;border:1px solid #cddedb;border-radius:14px;padding:1rem;margin:1.1rem 0;background:#f7faf9}
+.rfq-composer legend,.rfq-context-group legend{font-size:.88rem;font-weight:850;color:#143c4b;padding:0 .5rem}
+.rfq-composer>p,.rfq-context-group>p{color:#536974;font-size:.8rem;line-height:1.5;margin:.4rem 0 .9rem}
+.rfq-items{display:grid;gap:.6rem;margin-bottom:.8rem}
+.rfq-item-row{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(72px,.6fr) minmax(90px,.9fr) auto;gap:.55rem;align-items:end;padding:.7rem;background:#fff;border:1px solid #d7e1de;border-radius:10px}
+.rfq-composer :is(label),.rfq-context :is(label){font-size:.75rem!important;letter-spacing:0!important;text-transform:none!important;display:grid;gap:.3rem;color:#32505d;font-weight:700}
+.rfq-composer :is(input,select),.rfq-context :is(input,select,textarea){min-height:40px;padding:.55rem!important;font-size:.9rem!important}
+.rfq-add-row,.rfq-remove-row{border:1px solid #a6b6b8;border-radius:8px;min-height:40px;padding:.5rem .8rem;background:#fff;color:#153a47;cursor:pointer;font-size:.81rem;font-weight:800}
+.rfq-add-row{border-color:#b9a05d;background:#fff9ea}
+.rfq-remove-row{color:#8e3c32}
+.rfq-context-group[hidden]{display:none!important}
+.rfq-context-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin:0 0 .7rem}
+.rfq-privacy{font-size:.76rem;line-height:1.55;color:#47616c;position:relative;margin:.8rem 0}
+.rfq-privacy a{color:#164d65;text-decoration:underline;font-weight:700}
+.rfq-upload-progress{position:relative;margin:.7rem 0;color:#294857}
+.rfq-upload-progress[hidden]{display:none!important}
+.rfq-upload-progress [role="progressbar"]{height:8px;background:#d6e4e4;overflow:hidden;border-radius:999px}
+.rfq-upload-progress [role="progressbar"] span{display:block;height:100%;width:0;background:#2b776d;transition:width .1s}
+.rfq-upload-progress p{font-size:.77rem;margin:.4rem 0}
+.rfq-item-row :focus-visible,.rfq-context :focus-visible,.rfq-add-row:focus-visible,.rfq-remove-row:focus-visible{outline:3px solid #b89e56;outline-offset:2px}
+@media(max-width:560px){.rfq-item-row{grid-template-columns:minmax(0,1fr) minmax(70px,.6fr)}.rfq-item-row>label:first-child{grid-column:1/-1}.rfq-context-grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.rfq-upload-progress span{transition:none}}
