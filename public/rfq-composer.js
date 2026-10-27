@@ -48,6 +48,17 @@ extras.innerHTML=`<fieldset class="rfq-context-group" data-context="Government R
 <fieldset class="rfq-context-group" data-context="Catering" hidden><legend>Catering event detail</legend><div class="rfq-context-grid"><label>Guest count (optional)<input name="eventGuests" type="number" min="1" max="50000" inputmode="numeric" placeholder="Number of guests"></label><label>Event time (optional)<input name="eventTime" type="time"></label><label>Event venue (optional)<input name="eventVenue" autocomplete="street-address" maxlength="220"></label><label>Service format (optional)<select name="eventService"><option value="">Select</option><option>Delivery only</option><option>Buffet</option><option>On-site service</option><option>Platters / refreshments</option><option>To be agreed</option></select></label></div><label>Dietary requirements / allergies (optional)<textarea name="eventDietary" rows="3" placeholder="Describe any restrictions that must be confirmed"></textarea></label><p>Please independently confirm allergy requirements and final menus before placing an order.</p></fieldset>
 <fieldset class="rfq-context-group" data-context="General Procurement" hidden><legend>Other sourcing detail</legend><label>Substitutions <select name="alternatives"><option value="">Please clarify alternatives if needed</option><option>Accept equivalent specifications</option><option>Exact specifications only</option></select></label></fieldset>`;
 panel.after(extras);
+const referral=document.createElement('label');
+referral.className='rfq-referral';
+referral.innerHTML='How did you hear about Amantusi? (optional)<select name="referralSource"><option value="">Select if relevant</option><option>Returning client</option><option>Business referral</option><option>Search engine</option><option>Online directory</option><option>Public procurement communication</option><option>Other</option></select>';
+extras.after(referral);
+const deadline=form.elements.namedItem('deadline');
+if(deadline instanceof HTMLInputElement){
+ const guidance=document.createElement('small');guidance.className='rfq-deadline-hint';guidance.textContent='Target date only. Supply and delivery dates require confirmation.';
+ guidance.id='rfq-deadline-hint';
+ deadline.setAttribute('aria-describedby','rfq-deadline-hint');deadline.after(guidance);
+}
+
 function updateContext(){
  const selected=type.value;
  extras.querySelectorAll('fieldset[data-context]').forEach(field=>{
@@ -80,6 +91,7 @@ function decorateRequirements(){
   });
   if(values.length)lines.push('ADDITIONAL '+safeText(type.value).toUpperCase()+' DETAILS:',...values);
  }
+ if(referral.querySelector('select').value)lines.push('REFERRAL SOURCE: '+safeText(referral.querySelector('select').value));
  generated=lines.length?'\n\n'+lines.join('\n'):'';
  requirements.value=base+generated;
  requirements.dispatchEvent(new Event('input',{bubbles:true}));

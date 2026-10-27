@@ -103,7 +103,16 @@
       if(!response.ok)throw new Error(payload.error||'Could not submit your quotation request.');
       quoteForm.reset();
       window.AmantusiQuoteEnhancements?.onSuccess(payload);
-      if(status){status.className='form-status success';status.textContent=`Request received successfully. Reference: ${String(payload.reference||'')}. Keep this reference for your records. Amantusi will review your request and contact you if clarification is needed.`}
+      if(status){
+        status.className='form-status success';
+        status.textContent=`Request received successfully. Reference: ${String(payload.reference||'')}. Keep this reference for your records. Amantusi will review your request and contact you if clarification is needed. `;
+        const feedback=document.createElement('a');
+        feedback.href='mailto:zodwangema37@gmail.com?subject='+encodeURIComponent('Feedback on Amantusi quotation enquiry');
+        feedback.textContent='Share feedback';
+        feedback.style.textDecoration='underline';
+        feedback.style.fontWeight='700';
+        status.append(feedback);
+      }
       window.amantusiTrack?.('generate_lead',{files:payload.files||0});
     }catch(error){
       if(status){status.className='form-status error';status.textContent=`${error.message||'Submission failed.'} You can also email zodwangema37@gmail.com or call 073 247 6716.`}

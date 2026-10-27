@@ -235,6 +235,9 @@ async function routeRequest(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
 
+  if (request.method === 'GET' && path === '/index-fast.html') {
+    return Response.redirect(new URL('/', request.url).toString(), 308);
+  }
   if (request.method === 'GET' && path === '/sitemap.xml') return sitemapResponse(request, env);
   if (request.method === 'GET' && path === '/robots.txt') return robotsResponse(request, env);
 

@@ -10,7 +10,8 @@ const routes=[
  ['Company Profile','/company-profile.html'],
  ['Capability Statement','/capability-statement.html'],['Procurement Guides','/procurement-guides.html'],
  ['RFQ Examples','/procurement-templates.html'],['Supplier Information','/supplier-onboarding.html'],
- ['Frequently Asked Questions','/procurement-faq.html'],['Information Handling','/information-handling.html']
+ ['Frequently Asked Questions','/procurement-faq.html'],['Information Handling','/information-handling.html'],
+ ['Sitemap','/sitemap.xml']
 ];
 function init(){
  if(document.body.classList.contains('admin-body')||document.body.classList.contains('settings-body'))return;
