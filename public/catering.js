@@ -162,9 +162,10 @@ async function initMenu() {
 
   const renderTabs = () => {
     const buttons = [{id:'all',name:'All'}].concat(categories);
-    tabs.innerHTML = buttons.map(cat =>
-      `<button class="category-tab ${selected === cat.id ? 'active' : ''}" type="button" data-category="${esc(cat.id)}" aria-pressed="${selected === cat.id ? 'true' : 'false'}">${esc(cat.name)}</button>`
-    ).join('');
+    tabs.innerHTML = buttons.map(cat => {
+      const count = cat.id === 'all' ? activeItems.length : activeItems.filter(item => item.category === cat.id).length;
+      return `<button class="category-tab ${selected === cat.id ? 'active' : ''}" type="button" data-category="${esc(cat.id)}" aria-pressed="${selected === cat.id ? 'true' : 'false'}">${esc(cat.name)} <span class="category-count" aria-label="${count} options">(${count})</span></button>`;
+    }).join('');
     tabs.querySelectorAll('[data-category]').forEach(button => {
       button.addEventListener('click', () => {
         window.CateringMotion?.onMenuFilter?.(grid);
