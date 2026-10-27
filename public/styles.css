@@ -94,3 +94,10 @@ footer{background:#071923;color:#8ea0ab;padding:34px 0}.footer-grid{display:flex
 }
 @keyframes menuIn{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1;transform:none;filter:none;transition:none}.button,.cap-card,.panel-line,.process-step,.brand-mark,.footer-brand img{transition:none}.page-glow,.hero:before,.hero:after,.hero-aurora,.orbital-card,.fine-ring,.orbit-track,.logo-plaque,.plaque-shine,.capability-chip,.trust-ribbon:before,.government:after,.government-orbit,.form-glow,.contact-shine,.particle{animation:none!important}.cursor-glow,.particle-layer{display:none}}
+
+/* Accessibility and responsive navigation improvements (2026-10-27). */
+.skip-link{position:fixed;z-index:10000;top:12px;left:12px;padding:12px 18px;border-radius:10px;background:#fff;color:#071923;font-weight:700;box-shadow:0 8px 28px rgba(0,0,0,.25);transform:translateY(-170%);transition:transform .16s ease}
+.skip-link:focus{transform:translateY(0)}
+:where(a,button,input,select,textarea,[tabindex="0"]):focus-visible{outline:3px solid #c9a65a;outline-offset:4px}
+#main-content:focus{outline:none}
+@media (prefers-reduced-motion:reduce){.skip-link{transition:none}}
