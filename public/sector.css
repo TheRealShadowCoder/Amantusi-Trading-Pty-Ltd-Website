@@ -1,0 +1,62 @@
+/* Amantusi sector landing pages. Shared static-first, print-safe design. */
+:root{--sector-navy:#071923;--sector-ink:#183141;--sector-gold:#b89e56;--sector-cream:#f7f2e8;--sector-line:#d9e2e5;--sector-muted:#526676}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:92px}
+body.sector-body{margin:0;background:#f8faf9;color:var(--sector-ink);font:16px/1.65 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+body.sector-body a{color:inherit}
+body.sector-body img{max-width:100%;height:auto}
+body.sector-body :where(a,button):focus-visible{outline:3px solid #b18b39;outline-offset:4px}
+.sector-skip{position:fixed;left:1rem;top:1rem;transform:translateY(-160%);z-index:1000;background:white;color:#071923!important;padding:.75rem 1.2rem;border-radius:.5rem}
+.sector-skip:focus{transform:none}
+.sector-wrap{width:min(1180px,calc(100% - 2.5rem));margin-inline:auto}
+.sector-header{background:#071923;color:#f7f2e8;position:sticky;top:0;z-index:90;border-bottom:1px solid #ffffff23}
+.sector-header-inner{min-height:80px;display:flex;justify-content:space-between;align-items:center;gap:1.2rem;flex-wrap:wrap}
+.sector-logo{display:inline-flex;align-items:center;gap:.75rem;text-decoration:none;line-height:1.1;letter-spacing:.16em;font-weight:800;font-size:.85rem}
+.sector-logo img{width:46px;height:46px;object-fit:contain}
+.sector-logo small{display:block;font-size:.6rem;letter-spacing:.23em;color:#d5bd7d;margin-top:.35rem}
+.sector-header nav{display:flex;gap:1rem 1.5rem;flex-wrap:wrap;align-items:center}
+.sector-header nav a{text-decoration:none;font-size:.85rem;font-weight:650}
+.sector-header nav a:hover,.sector-footer a:hover{text-decoration:underline;text-underline-offset:5px}
+.sector-header .nav-quote{background:var(--sector-gold);color:#071923;padding:.65rem 1rem;border-radius:100px}
+.sector-hero{background:radial-gradient(ellipse at 78% 8%,#2a4a50 0%,transparent 38%),linear-gradient(130deg,#081f2d,#06121c);color:#fff;padding:clamp(3.75rem,8vw,7.5rem) 0;position:relative;overflow:hidden}
+.sector-hero:after{content:"";position:absolute;width:min(600px,75vw);aspect-ratio:1;right:-11%;bottom:-65%;border:1px solid #bd9f594b;border-radius:50%;box-shadow:0 0 0 65px #bd9f590e,0 0 0 155px #bd9f5908;pointer-events:none}
+.sector-eyebrow{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.21em;color:#d4b874;margin:0 0 1rem}
+.sector-hero h1{font:clamp(2.9rem,6.2vw,5.9rem)/1.04 Georgia,"Times New Roman",serif;letter-spacing:-.042em;max-width:850px;margin:0 0 1.35rem;text-wrap:balance}
+.sector-hero p.sector-lede{max-width:670px;color:#d3e0e4;font-size:clamp(1.06rem,2.1vw,1.25rem)}
+.sector-actions{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:2rem}
+.sector-button{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:.78rem 1.45rem;background:#c8a95e;color:#071923!important;border-radius:8px;font-weight:750;text-decoration:none;transition:transform .2s,background .2s}
+.sector-button:hover{transform:translateY(-2px);background:#e0c379}
+.sector-button.secondary{background:transparent;border:1px solid #ffffff7a;color:white!important}
+.sector-meta{display:flex;gap:2rem;flex-wrap:wrap;border-top:1px solid #ffffff2e;padding-top:1.5rem;margin-top:3.5rem;font-size:.9rem;color:#d5ddde}
+.sector-meta strong{color:white;display:block;font-weight:700}
+.sector-section{padding:clamp(3.5rem,6vw,6rem) 0}
+.sector-section.alt{background:#f2f0e8}
+.sector-head{max-width:750px;margin-bottom:2.5rem}
+.sector-head h2{font:clamp(2rem,4vw,3.4rem)/1.15 Georgia,serif;letter-spacing:-.035em;margin:.4rem 0 1rem;color:#102b3a}
+.sector-head p{color:#526676;font-size:1.075rem}
+.sector-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.sector-card{background:white;padding:1.7rem;border:1px solid #dce2e3;border-radius:16px;box-shadow:0 14px 36px #08202f0b;min-width:0}
+.sector-card b.sector-num{font-size:.78rem;letter-spacing:.15em;color:#977635}
+.sector-card h3{font:1.42rem/1.2 Georgia,serif;margin:1.1rem 0 .6rem;color:#112e3a}
+.sector-card p{font-size:.94rem;color:#4c606b;margin:0}
+.sector-steps{counter-reset:step;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1.25rem}
+.sector-step{border-top:2px solid #b89e56;padding:1.1rem .3rem 0}
+.sector-step::before{counter-increment:step;content:"0" counter(step);font-size:.8rem;font-weight:800;color:#9f7c32}
+.sector-step h3{margin:.5rem 0;font-size:1.1rem}
+.sector-step p{font-size:.94rem;color:#526676}
+.sector-panel{background:#091f2a;color:#fff;border-radius:20px;padding:clamp(1.5rem,4vw,3rem);display:grid;grid-template-columns:1.1fr .9fr;gap:3rem;align-items:center}
+.sector-panel h2{font:clamp(2rem,3.5vw,3rem)/1.15 Georgia,serif;margin:.4rem 0 1rem}
+.sector-panel p{color:#d2dbdd}
+.sector-checklist{margin:0;padding-left:1.4rem}
+.sector-checklist li{margin:.5rem 0}
+.sector-related{display:flex;flex-wrap:wrap;gap:.7rem}
+.sector-related a{display:inline-flex;padding:.65rem 1rem;text-decoration:none;border:1px solid #abbabf;border-radius:50px;font-weight:700;font-size:.85rem}
+.sector-related a:hover{background:#e8ebea}
+.sector-footer{background:#071923;color:#fff;padding:2.8rem 0}
+.sector-footer-inner{display:flex;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
+.sector-footer p{color:#c3ced0;font-size:.84rem;margin:.25rem 0}
+.sector-footer a{color:#e0c67e}
+@media(max-width:850px){.sector-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sector-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.sector-panel{grid-template-columns:1fr}.sector-header-inner{padding:.75rem 0}.sector-header nav{gap:.6rem 1rem}}
+@media(max-width:540px){.sector-wrap{width:calc(100% - 2rem)}.sector-grid,.sector-steps{grid-template-columns:1fr}.sector-header{position:relative}.sector-header nav{font-size:.8rem}.sector-hero:after{opacity:.45}.sector-card{padding:1.4rem}.sector-actions .sector-button{width:100%}.sector-meta{gap:1rem}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.sector-button{transition:none}.sector-button:hover{transform:none}}
+@media print{.sector-header nav,.sector-actions,.sector-related,.sector-skip{display:none!important}.sector-hero,.sector-panel{background:white!important;color:#071923!important}.sector-hero p,.sector-panel p{color:#17303d!important}.sector-section{padding:1.4rem 0}.sector-grid{grid-template-columns:repeat(3,1fr)}.sector-card{box-shadow:none;break-inside:avoid}}
