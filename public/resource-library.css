@@ -1,0 +1,37 @@
+/* Resource library and compact procurement document style */
+:root{--amt-radius-sm:8px;--amt-radius-md:14px;--amt-radius-lg:22px;--amt-ink:#071923;--amt-surface:#fff;--amt-gold:#b89e56;--amt-border:#d8e0df;--amt-shadow:0 14px 40px #092a3920;--amt-ease:180ms ease}
+.resource-kicker{font-size:.78rem;text-transform:uppercase;letter-spacing:.16em;color:#866626;font-weight:800}
+.resource-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.1rem}
+.resource-card{background:white;border:1px solid var(--amt-border);border-radius:var(--amt-radius-md);padding:1.5rem;box-shadow:0 12px 32px #0823300c}
+.resource-card h3{font:1.35rem/1.2 Georgia,serif;color:#0a2a3a;margin:0 0 .65rem}
+.resource-card p,.resource-card li{font-size:.92rem;color:#445d68}
+.resource-card a{font-size:.86rem;color:#17495a;font-weight:800;display:inline-flex;margin-top:.5rem;text-decoration:underline;text-underline-offset:4px}
+.resource-list{counter-reset:resource;margin:0;padding:0;list-style:none;display:grid;gap:1rem}
+.resource-list li{border-left:3px solid #b89e56;padding:1rem 1.2rem;background:white;border-radius:0 var(--amt-radius-sm) var(--amt-radius-sm) 0}
+.resource-list li strong{display:block;color:#102c3a}
+.resource-list li p{margin:.25rem 0}
+.resource-checklist{display:grid;gap:.8rem}
+.resource-checklist label{display:flex;align-items:flex-start;gap:.7rem;padding:.8rem 1rem;border:1px solid #d8e0df;background:white;border-radius:9px;cursor:pointer}
+.resource-checklist input{width:19px;height:19px;margin-top:.2rem;accent-color:#1c5260}
+.resource-actions{display:flex;gap:.75rem;flex-wrap:wrap}
+.resource-faq{max-width:850px;display:grid;gap:.7rem}
+.resource-faq details{border:1px solid #d6dfde;background:white;border-radius:10px;padding:.9rem 1.1rem}
+.resource-faq summary{cursor:pointer;color:#123544;font-weight:800;list-style-position:outside}
+.resource-faq details p{color:#536874;line-height:1.7;margin:.8rem 0 .2rem}
+.resource-table{width:100%;border-collapse:collapse;font-size:.9rem}
+.resource-table td,.resource-table th{border:1px solid #d7e1e0;text-align:left;padding:.7rem;vertical-align:top}
+.resource-table th{background:#102d3b;color:white}
+.resource-tip{border:1px solid #e4d5a4;background:#fff9eb;border-radius:10px;padding:1rem 1.3rem}
+.resource-tip strong{color:#705016}
+.resource-document{background:#fff;box-shadow:var(--amt-shadow);border:1px solid var(--amt-border);border-radius:var(--amt-radius-md);padding:clamp(1.2rem,4vw,3rem);max-width:920px;margin:auto}
+.resource-document header{display:flex;align-items:center;justify-content:space-between;gap:1rem;border-bottom:2px solid var(--amt-gold);padding-bottom:1rem;margin-bottom:1.5rem}
+.resource-document header img{width:84px;height:84px}
+.resource-document h2{font:1.8rem/1.2 Georgia,serif}
+.resource-document .document-meta{display:grid;grid-template-columns:1fr 1fr;gap:.3rem 1rem}
+.resource-document section{padding:.8rem 0;border-bottom:1px solid #e3eae8}
+.resource-document section:last-child{border:0}
+.resource-document section h3{margin:.5rem 0;color:#193c49}
+.resource-document p,.resource-document li{color:#4a606b}
+@media(max-width:840px){.resource-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.resource-grid{grid-template-columns:minmax(0,1fr)}.resource-document .document-meta{grid-template-columns:1fr}.resource-document header{flex-direction:column;align-items:start}}
+@media print{@page{size:A4;margin:16mm}.sector-header,.sector-footer,.sector-hero,.resource-actions,.public-back-to-top,.public-site-directory{display:none!important}.sector-section{padding:0!important;background:white!important}.resource-document{box-shadow:none;border:0;padding:0}.resource-card{box-shadow:none}.resource-checklist input{appearance:auto}}
