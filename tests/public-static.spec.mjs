@@ -99,3 +99,13 @@ test('catering menu search and selected options bridge into RFQ',async ({ page }
   await expect(page.locator('#quote-form select[name="type"]')).toHaveValue('Catering');
   await expect(page.locator('#quote-form textarea[name="requirements"]')).toHaveValue(/Guest count: 25/);
 });
+
+test('company profile and catering brochure are reachable and print-friendly',async ({ page })=>{
+  for(const route of ['/company-profile.html','/catering-brochure.html']){
+    const response=await page.goto(route);
+    expect(response?.ok()).toBeTruthy();
+    await expect(page.locator('main h1').first()).toBeVisible();
+    await expect(page.locator('[data-print]')).toHaveCount(1);
+    await expect(page.locator('[data-catering-nav-toggle]')).toHaveCount(1);
+  }
+});
