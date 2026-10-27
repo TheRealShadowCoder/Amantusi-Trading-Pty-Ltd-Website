@@ -142,6 +142,16 @@ export async function enhanceSeo(request, response, env, { home = false, admin =
   const canonical = `${base}${canonicalPath}`;
   const analyticsConfig = JSON.stringify({ gaId: settings.gaMeasurementId || '', firstParty: true });
   const schemas = admin ? [] : [organizationSchema(base), pageSchema(base, canonicalPath)];
+  if (!admin && canonicalPath!=='/' && PAGES[canonicalPath]) {
+    schemas.push({
+      '@context':'https://schema.org',
+      '@type':'BreadcrumbList',
+      itemListElement:[
+        {'@type':'ListItem',position:1,name:'Home',item:base+'/'},
+        {'@type':'ListItem',position:2,name:PAGES[canonicalPath].title.split(' | ')[0],item:canonical}
+      ]
+    });
+  }
 
   let rewriter = new HTMLRewriter()
     .on('title', { element(element) { if (!admin) element.setInnerContent(meta.title); } })

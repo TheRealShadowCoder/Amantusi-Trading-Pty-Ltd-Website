@@ -153,7 +153,8 @@ export async function submitQuotationRequest(request, env) {
     files: storedFiles.length,
     notificationChannels: {
       email: Boolean(notifications.email?.sent),
-      whatsapp: Boolean(notifications.whatsapp?.sent)
+      whatsapp: Boolean(notifications.whatsapp?.sent),
+      receipt: Boolean(notifications.receipt?.sent)
     },
     message: `Your request has been received. Reference ${lead.reference}.`
   }, 201);

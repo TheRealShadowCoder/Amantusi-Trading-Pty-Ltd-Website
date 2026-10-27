@@ -54,3 +54,16 @@ python3 -m http.server 4173 --bind 127.0.0.1 --directory public
 # in a separate terminal
 BASE_URL=http://127.0.0.1:4173 npx playwright test tests/public-static.spec.mjs
 ```
+
+### Optional customer acknowledgement email
+
+This is deliberately disabled unless the deployment explicitly enables
+`SEND_CUSTOMER_RECEIPT_EMAIL=true`, with valid `RESEND_API_KEY`
+and `ALERT_FROM_EMAIL` secrets configured. The acknowledgement contains only a
+request reference and a clear note that a quotation is **not** an accepted
+order, inventory reservation or delivery guarantee. Disabled or unsuccessful
+email delivery is accurately reported as `notificationChannels.receipt=false`
+by the RFQ endpoint.
+
+Enabling customer email requires checking consent, email authentication,
+delivery rate limits and the company's approved data-handling notice.

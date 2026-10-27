@@ -82,11 +82,20 @@ export async function notifyNewLead(env, lead, details) {
     String(details.requirements || '').slice(0, 3000)
   ].join('\n');
 
-  const [email, whatsapp] = await Promise.all([
+  // Client receipt is opt-in at deployment: never claim email delivery
+  // when Resend is disabled, and never include the confidential RFQ content.
+  const receiptEnabled=String(env.SEND_CUSTOMER_RECEIPT_EMAIL||'').toLowerCase()==='true';
+  const tasks=[
     sendEmail(env, adminRecipients(env), `New Amantusi RFQ — ${lead.reference}`, text, `new-lead-${lead.id}`),
-    sendWhatsApp(env, `New RFQ ${lead.reference} from ${details.organisation}. Open the Amantusi admin dashboard to review it.`)
-  ]);
-  return { email, whatsapp };
+    sendWhatsApp(env, `New RFQ ${lead.reference} from ${details.organisation}. Open the Amantusi admin dashboard to review it.`),
+    receiptEnabled&&details.email
+      ? sendEmail(env,[details.email],`Amantusi enquiry received — ${lead.reference}`,
+          `Hello ${details.contactName||'there'},\n\nWe received your quotation enquiry and assigned reference ${lead.reference}.\n\nKeep this reference for your records. A submitted request is not confirmation of inventory, price, delivery or an accepted order.\n\nAmantusi Trading Pty Ltd\n073 247 6716`,
+          `client-receipt-${lead.id}`)
+      : Promise.resolve({sent:false,provider:'resend',reason:'customer-receipt-not-enabled'})
+  ];
+  const [email,whatsapp,receipt]=await Promise.all(tasks);
+  return {email,whatsapp,receipt};
 }
 
 export async function notifyLeadStatus(env, lead, status) {
