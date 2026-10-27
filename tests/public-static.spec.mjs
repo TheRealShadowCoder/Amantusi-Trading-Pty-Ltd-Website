@@ -88,5 +88,5 @@ test('catering menu search and selected options bridge into RFQ',async ({ page }
   await page.locator('#catering-brief-form button[type="submit"]').click();
   await page.waitForURL(/service=Catering.*#quote/);
   await expect(page.locator('#quote-form select[name="type"]')).toHaveValue('Catering');
-  await expect(page.locator('#quote-form textarea[name="requirements"]')).toContainText('Guest count: 25');
+  await expect(page.locator('#quote-form textarea[name="requirements"]')).toHaveValue(/Guest count: 25/);
 });
