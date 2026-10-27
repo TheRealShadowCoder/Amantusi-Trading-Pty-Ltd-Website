@@ -34,6 +34,17 @@ function init(){
    const here=document.createElement('span');here.setAttribute('aria-current','page');here.textContent=document.title.split('|')[0].trim();
    nav.append(home,sep,here);crumbTarget.prepend(nav);
  }
+ if(location.pathname==='/'&&!document.querySelector('[data-mobile-quote-cta]')){
+   const cta=document.createElement('a');cta.className='public-mobile-quote-cta';cta.dataset.mobileQuoteCta='1';
+   cta.href='#quote';cta.textContent='Request a quotation';
+   cta.setAttribute('aria-label','Go to Amantusi quotation form');
+   document.body.append(cta);
+   const section=document.querySelector('#quote');
+   if(section&&'IntersectionObserver' in window){
+     const observer=new IntersectionObserver(entries=>{for(const entry of entries)cta.hidden=entry.isIntersecting},{threshold:.1});
+     observer.observe(section);
+   }
+ }
  const footer=document.querySelector('footer');
  if(footer&&!footer.querySelector('[data-public-site-directory]')){
    const nav=document.createElement('nav');nav.className='public-site-directory';nav.dataset.publicSiteDirectory='1';

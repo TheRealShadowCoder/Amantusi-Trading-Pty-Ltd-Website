@@ -48,6 +48,51 @@ function init(){
  search?.setAttribute('aria-label','Search leads by reference, organisation, contact or email');
  document.querySelector('#lead-status-filter')?.setAttribute('aria-label','Filter leads by status');
  for(const id of ['cms-status','passkey-status'])document.getElementById(id)?.setAttribute('role','status');
+ const content=document.querySelector('.admin-main');
+ if(content&&!content.querySelector('[data-admin-session-message]')){
+   const sessionStatus=document.createElement('div');
+   sessionStatus.className='admin-session-alert';sessionStatus.dataset.adminSessionMessage='1';
+   sessionStatus.setAttribute('role','alert');sessionStatus.hidden=true;
+   sessionStatus.innerHTML='Your administrator session has expired. <a href="/admin.html">Sign in again with Google</a>. No further changes will be saved until you reauthenticate.';
+   content.prepend(sessionStatus);
+   let checking=false;
+   const check=async()=>{
+     if(document.visibilityState!=='visible'||checking||document.querySelector('#admin-view')?.classList.contains('hidden'))return;
+     checking=true;
+     try{
+       const response=await fetch('/api/admin/me',{credentials:'same-origin',cache:'no-store'});
+       const payload=response.ok?await response.json().catch(()=>({})):null;
+       if(response.status===401||response.status===403||payload?.authenticated===false)sessionStatus.hidden=false;
+       else if(response.ok&&payload?.authenticated===true)sessionStatus.hidden=true;
+     }catch(_){}finally{checking=false;}
+   };
+   document.addEventListener('visibilitychange',check);
+   document.addEventListener('focus',check);
+ }
+ const productForm=document.querySelector('#product-form');
+ if(productForm&&!productForm.querySelector('[data-product-quality]')){
+   const feedback=document.createElement('p');
+   feedback.dataset.productQuality='1';feedback.className='admin-product-quality';
+   feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');
+   productForm.querySelector('.admin-toolbar')?.before(feedback);
+   const check=()=>{
+     const name=document.querySelector('#product-name')?.value.trim()||'';
+     const cost=document.querySelector('#product-cost')?.value.trim()||'';
+     const selling=document.querySelector('#product-sell')?.value.trim()||'';
+     const notes=[];
+     if(!name)notes.push('A product name is required');
+     if(cost&&Number(cost)<0)notes.push('Cost must not be negative');
+     if(selling&&Number(selling)<0)notes.push('Selling price must not be negative');
+     if(cost&&selling&&Number(selling)<Number(cost))notes.push('Selling price is below cost; verify that this is intended');
+     if(!document.querySelector('#product-unit')?.value.trim())notes.push('Consider specifying a unit or pack size');
+     feedback.textContent=notes.length?notes.join('. ')+'.':'Product record contains the key pricing and identification details.';
+   };
+   productForm.addEventListener('input',check);
+   productForm.addEventListener('change',check);
+   document.querySelector('#product-clear')?.addEventListener('click',()=>queueMicrotask(check));
+   check();
+ }
+
  const filters=document.querySelector('.lead-filters');
  if(!filters||filters.querySelector('[data-admin-export-csv]'))return;
  const button=document.createElement('button');

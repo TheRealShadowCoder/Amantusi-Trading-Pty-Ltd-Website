@@ -19,3 +19,5 @@ nav a[aria-current="page"]{text-decoration:underline;text-decoration-color:#bf9f
 .sector-breadcrumbs{margin:0 0 1.7rem;color:#e4e0d3;font-size:.8rem;display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
 .sector-breadcrumbs a{color:#e4cf93;text-decoration:underline;text-underline-offset:3px}
 .sector-breadcrumbs [aria-current="page"]{color:#f0f3f2}
+
+.public-mobile-quote-cta{display:none;position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));left:14px;z-index:94;background:#b89e56;color:#092433!important;border:1px solid #ecdaa5;border-radius:100px;min-height:44px;padding:.7rem 1.2rem;align-items:center;text-decoration:none;font-size:.82rem;font-weight:850;box-shadow:0 10px 32px #07192369}.public-mobile-quote-cta[hidden]{display:none!important}@media(max-width:690px){.public-mobile-quote-cta{display:flex}.public-back-to-top{bottom:calc(70px + env(safe-area-inset-bottom))}}@media print{.public-mobile-quote-cta{display:none!important}}

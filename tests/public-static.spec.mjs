@@ -188,3 +188,23 @@ test('public interfaces do not generate uncaught script errors at first load',as
  }
  expect(errors).toEqual([]);
 });
+
+test('failed RFQ response preserves customer inputs and describes the problem',async ({page})=>{
+ await page.route('**/api/quote',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Quotation database is temporarily unavailable.'})}));
+ await page.goto('/');
+ await page.locator('#quote-form [name="organisation"]').fill('Save test customer');
+ await page.locator('#quote-form [name="contact"]').fill('Tester');
+ await page.locator('#quote-form [name="email"]').fill('customer@example.com');
+ await page.locator('#quote-form [name="requirements"]').fill('Please quote for 100 packs');
+ await page.locator('#quote-form button[type="submit"]').click();
+ await expect(page.locator('#form-status')).toContainText('Quotation database is temporarily unavailable');
+ await expect(page.locator('#quote-form [name="organisation"]')).toHaveValue('Save test customer');
+ await expect(page.locator('#quote-form button[type="submit"]')).toBeEnabled();
+});
+
+test('mobile quotation shortcut remains keyboard-accessible',async({page})=>{
+ await page.setViewportSize({width:375,height:800});
+ await page.goto('/');
+ await expect(page.locator('[data-mobile-quote-cta]')).toBeVisible();
+ await expect(page.locator('[data-mobile-quote-cta]')).toHaveAttribute('href','#quote');
+});

@@ -20,3 +20,5 @@
 .admin-list-refinement select{min-height:40px;border:1px solid #c5d2d3;border-radius:8px;padding:.55rem}
 .admin-refinement-count{font-size:.78rem;color:#536a75;min-width:90px}
 .db-row[hidden]{display:none!important}
+
+.admin-session-alert{border:2px solid #c99554;border-radius:10px;background:#fff1db;color:#49300f;padding:1rem;font-weight:700;line-height:1.5;margin-bottom:1rem}.admin-session-alert[hidden]{display:none!important}.admin-session-alert a{text-decoration:underline;color:#184c61}.admin-product-quality{color:#4b6571;font-size:.82rem;line-height:1.6;margin:.8rem 0}

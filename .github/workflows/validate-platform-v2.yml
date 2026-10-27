@@ -32,6 +32,8 @@ jobs:
         run: node scripts/validate-site-smoke.mjs
       - name: Validate public HTML asset references
         run: node scripts/validate-public-routes.mjs
+      - name: Verify approved brand text color contrasts
+        run: node scripts/validate-brand-contrast.mjs
       - name: Validate upload file-type screening
         run: node scripts/validate-upload-security.mjs
       - name: Install Chromium for public-site browser tests
