@@ -30,13 +30,29 @@
   addEventListener('scroll',scheduleScroll,{passive:true});
   addEventListener('resize',scheduleScroll,{passive:true});
 
+  function closeMenu({restoreFocus=false}={}){
+    nav?.classList.remove('open');
+    menuButton?.setAttribute('aria-expanded','false');
+    menuButton?.setAttribute('aria-label','Open menu');
+    if(restoreFocus)menuButton?.focus();
+  }
   menuButton?.addEventListener('click',()=>{
     const open=nav?.classList.toggle('open');
     menuButton.setAttribute('aria-expanded',String(Boolean(open)));
+    menuButton.setAttribute('aria-label',open?'Close menu':'Open menu');
   });
-  document.querySelectorAll('.nav-links a').forEach(link=>link.addEventListener('click',()=>{
-    nav?.classList.remove('open');menuButton?.setAttribute('aria-expanded','false');
-  }));
+  document.querySelectorAll('.nav-links a').forEach(link=>link.addEventListener('click',()=>closeMenu()));
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&nav?.classList.contains('open')){
+      event.preventDefault();closeMenu({restoreFocus:true});
+    }
+  });
+  document.addEventListener('click',event=>{
+    if(nav?.classList.contains('open')&&!event.target.closest('.nav-shell'))closeMenu();
+  });
+  addEventListener('resize',()=>{
+    if(innerWidth>1000&&nav?.classList.contains('open'))closeMenu();
+  },{passive:true});
 
   if('IntersectionObserver' in window){
     const observer=new IntersectionObserver(entries=>{
