@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 const read = file => readFileSync(file,'utf8');
 const home=read('public/index.html');
@@ -21,6 +21,9 @@ const checks=[
  ['Quote enhancements have syntax-safe implementation',existsSync('public/quote-enhancements.js')],
  ['Catering menu exposes selection form',read('public/catering-menu.html').includes('id="catering-brief-form"')&&read('public/catering-menu.html').includes('data-catering-search')],
  ['Catering quotation bridge remains active',read('public/catering-quote-bridge.js').includes('amantusi-catering-brief')],
+ ['Catering category count chips are present',read('public/catering.js').includes('category-count')],
+ ['Catering quote selected basket shortcut exists',read('public/catering-upgrades.js').includes('catering-floating-basket')],
+ ['Catering keyboard photo lightbox is available',read('public/catering-upgrades.js').includes('catering-lightbox')],
  ['Catering portfolio gallery gets keyboard controls',read('public/catering-upgrades.js').includes("track.addEventListener('keydown'")],
  ['Catering graceful failure fallback',read('public/catering.js').includes('Menu is temporarily unavailable')],
  ['Quote form posts to real API',app.includes("fetch('/api/quote'")],
@@ -32,9 +35,13 @@ const checks=[
  ['Admin stays separate from public homepage',!home.includes('src="/admin.js"')],
  ['Deployment configuration exists',existsSync('wrangler.jsonc')],
 ];
-for(const filename of ['public/quote-enhancements.js','public/catering-upgrades.js','public/app-fast.js','public/catering.js']){
-  execFileSync(process.execPath,['--check',filename],{stdio:'pipe'});
-  console.log('PASS Syntax '+filename);
+for(const directory of ['public','src','scripts']){
+  for(const name of readdirSync(directory)){
+    if(!/\\.(?:js|mjs)$/.test(name))continue;
+    const filename=directory+'/'+name;
+    execFileSync(process.execPath,['--check',filename],{stdio:'pipe'});
+    console.log('PASS Syntax '+filename);
+  }
 }
 let errors=0;
 for(const [name,pass] of checks){console.log((pass?'PASS':'FAIL')+' '+name);if(!pass)errors++}
