@@ -1,10 +1,10 @@
-# 300 Upgrade Delivery Ledger
+# 300 Upgrade Delivery Ledger| 121 |  | Integrated | category filters display item counts in catering.js || 127 |  | Integrated | sticky selected-options shortcut in catering-upgrades.js || 136 |  | Integrated | native dialog gallery lightbox supports mobile and keyboard || 241 |  | Integrated | validate-site-smoke.mjs syntax-checks all public, src and scripts JS |
 
 This checklist is the source-of-truth implementation status for [the 300-item backlog](./300-visual-and-functional-upgrades.md). **Integrated** means the repository contains a relevant working implementation or pre-existing corresponding capability; this does **not** certify production behavior or full acceptance testing. **Pending** includes unimplemented, partial, or unverified ideas. Classifications are conservative.
 
 **Branch:** `fix/website-smoke-accessibility-20261027` · **Review:** PR #59 · **Live production:** unchanged.
 
-**Integrated:** 63/300 · **Pending / not yet verified:** 237/300.
+**Integrated:** 67/300 · **Pending / not yet verified:** 233/300.
 
 | # | Upgrade | Status | Evidence |
 |---:|---|---|---|
