@@ -1,3 +1,4 @@
+import {gmailConfigured} from './gmail-delivery.js';
 import { json, getAdminSession } from './security-v3.js';
 import { sendEmail } from './notifications.js';
 
@@ -20,6 +21,26 @@ const ACCOUNTS = Object.freeze({
   's.k.businessline@gmail.com': { role: 'superadmin', label: 'Administrator' }
 });
 const ADMIN_EMAILS = Object.freeze(Object.keys(ACCOUNTS));
+const ADDRESS_PATTERN = /^[^\s@]{1,64}@[^\s@]{1,255}\.[A-Za-z]{2,63}$/;
+const recoveryAddressKey = (accountEmail) => `auth:verified-recovery-address:${accountEmail}`;
+
+async function verifiedRecoveryRecipient(env, accountEmail) {
+  const stored = await env.CMS_KV.get(recoveryAddressKey(accountEmail));
+  if (!stored) return accountEmail;
+  try {
+    const record = JSON.parse(stored);
+    if (record?.verified === true && ADDRESS_PATTERN.test(String(record.email || ''))) {
+      return emailOf(record.email);
+    }
+  } catch (_) {}
+  return accountEmail;
+}
+
+function maskedRecoveryAddress(email) {
+  const [local, domain] = String(email || '').split('@');
+  if (!local || !domain) return '';
+  return local[0] + '•••@' + domain;
+}
 
 const enc = new TextEncoder();
 const dec = new TextDecoder();
@@ -199,16 +220,19 @@ function activeFlowKey(purpose, email) {
   return `auth:recovery-active:${purpose}:${email}`;
 }
 
-async function createCodeFlow(request, env, email, purpose) {
+async function createCodeFlow(request, env, email, purpose, alternateDestination = '') {
   const previous = await env.CMS_KV.get(activeFlowKey(purpose, email));
   if (previous) await env.CMS_KV.delete(flowKey(previous));
 
+  const destination = alternateDestination ? emailOf(alternateDestination) : await verifiedRecoveryRecipient(env, email);
+  if (!ADDRESS_PATTERN.test(destination)) return { ok: false, error: 'Recovery email destination is invalid.' };
   const flowId = randomToken(24);
   const code = randomCode();
   const codeHash = await sha(`${flowId}|${email}|${purpose}|${code}`);
   const flow = {
     email,
     purpose,
+    destination: purpose === 'email-enroll' ? destination : undefined,
     codeHash,
     attempts: 0,
     createdAt: Date.now(),
@@ -222,13 +246,15 @@ async function createCodeFlow(request, env, email, purpose) {
     ? 'Amantusi Admin backup sign-in code'
     : purpose === 'setup'
       ? 'Amantusi Admin backup password setup code'
-      : 'Amantusi Admin password recovery code';
+      : purpose === 'email-enroll'
+        ? 'Confirm your Amantusi Admin recovery inbox'
+        : 'Amantusi Admin password recovery code';
   const text = [
     'AMANTUSI ADMIN SECURITY CODE',
     '',
     `Your one-time verification code is: ${code}`,
     '',
-    `Purpose: ${purpose === 'login' ? 'Backup administrator sign-in' : purpose === 'setup' ? 'Set or change backup password' : 'Reset forgotten backup password'}`,
+    `Purpose: ${purpose === 'login' ? 'Backup administrator sign-in' : purpose === 'setup' ? 'Set or change backup password' : purpose === 'email-enroll' ? 'Confirm a separate recovery inbox' : 'Reset forgotten backup password'}`,
     `Account: ${email}`,
     'This code expires in 10 minutes and can be used only once.',
     'Do not share this code with anyone.',
@@ -236,7 +262,7 @@ async function createCodeFlow(request, env, email, purpose) {
     'If you did not request this action, ignore this email and continue using Google sign-in.'
   ].join('\n');
 
-  const delivery = await sendEmail(env, [email], subject, text, `admin-recovery-${purpose}-${flowId}`);
+  const delivery = await sendEmail(env, [destination], subject, text, `admin-recovery-${purpose}-${flowId}`);
   if (!delivery?.sent) {
     await env.CMS_KV.delete(flowKey(flowId));
     await env.CMS_KV.delete(activeFlowKey(purpose, email));
@@ -339,9 +365,10 @@ function genericResetResponse() {
 async function config(request, env) {
   const admin = env.CMS_KV ? await getAdminSession(request, env) : null;
   const currentAdminConfigured = admin ? Boolean(await backupPassword(env, admin.email)) : null;
+  const verifiedAddress = admin ? await verifiedRecoveryRecipient(env, admin.email) : '';
   return json({
     enabled: Boolean(env.CMS_KV),
-    emailDelivery: Boolean(env.RESEND_API_KEY && env.ALERT_FROM_EMAIL),
+    emailDelivery: Boolean(gmailConfigured(env)),
     primary: 'google',
     backup: 'password+email-code',
     recoveryEngine: 'break-glass-v1',
@@ -349,14 +376,16 @@ async function config(request, env) {
     codeDigits: 8,
     codeTtlMinutes: CODE_TTL_SECONDS / 60,
     authenticated: Boolean(admin),
-    currentAdminConfigured
+    currentAdminConfigured,
+    recoveryInboxVerified: Boolean(admin && verifiedAddress !== admin.email),
+    recoveryInboxMasked: admin ? maskedRecoveryAddress(verifiedAddress) : null
   });
 }
 
 async function setupRequest(request, env) {
   const admin = await getAdminSession(request, env);
   if (!admin) return json({ error: 'Google administrator session required to create backup recovery.' }, 401);
-  if (!env.RESEND_API_KEY || !env.ALERT_FROM_EMAIL) return json({ error: 'Recovery email delivery is not configured.' }, 503);
+  if (!gmailConfigured(env)) return json({ error: 'Recovery email delivery is not configured.' }, 503);
   if (!(await consumeRequestRate(request, env, 'setup', admin.email))) return json({ error: 'Too many recovery-code requests. Try again later.' }, 429);
   const created = await createCodeFlow(request, env, admin.email, 'setup');
   return created.ok
@@ -379,7 +408,7 @@ async function setupConfirm(request, env) {
 }
 
 async function resetRequest(request, env) {
-  if (!env.RESEND_API_KEY || !env.ALERT_FROM_EMAIL) return json({ error: 'Recovery email delivery is not configured.' }, 503);
+  if (!gmailConfigured(env)) return json({ error: 'Recovery email delivery is not configured.' }, 503);
   const body = await readJson(request) || {};
   const email = emailOf(body.email);
   const generic = genericResetResponse();
@@ -415,7 +444,7 @@ async function resetConfirm(request, env) {
 }
 
 async function loginStart(request, env) {
-  if (!env.RESEND_API_KEY || !env.ALERT_FROM_EMAIL) return json({ error: 'Recovery email delivery is not configured.' }, 503);
+  if (!gmailConfigured(env)) return json({ error: 'Recovery email delivery is not configured.' }, 503);
   const body = await readJson(request);
   if (!body) return json({ error: 'Invalid request.' }, 400);
   const email = emailOf(body.email);
@@ -458,6 +487,54 @@ async function loginVerify(request, env) {
   }, 200, { 'set-cookie': sessionCookie(token) });
 }
 
+
+async function recoveryEmailRequest(request, env) {
+  const admin = await getAdminSession(request, env);
+  if (!admin || !ACCOUNTS[admin.email]) return json({ error: 'Administrator session required.' }, 401);
+  if (!gmailConfigured(env)) {
+    return json({ error: 'Recovery email delivery is not configured. Enable a verified email sender first.' }, 503);
+  }
+  const body = await readJson(request);
+  if (!body) return json({ error: 'Invalid request.' }, 400);
+  const destination = emailOf(body.recoveryEmail);
+  if (!ADDRESS_PATTERN.test(destination) || destination.length > 320) return json({ error: 'Enter a valid recovery email.' }, 400);
+  if (destination === admin.email) return json({ error: 'Choose a different email from your administrator login.' }, 400);
+
+  // For existing backup accounts, changing the second-factor destination also
+  // requires knowledge of the existing backup password, not only a session cookie.
+  const backup = await backupPassword(env, admin.email);
+  if (backup && !(await backupPasswordMatches(body.currentBackupPassword, backup))) {
+    return json({ error: 'Current backup password is required to change the recovery inbox.' }, 403);
+  }
+  if (!(await consumeRequestRate(request, env, 'email-enroll', admin.email))) {
+    return json({ error: 'Too many recovery inbox verification requests. Try later.' }, 429);
+  }
+  const created = await createCodeFlow(request, env, admin.email, 'email-enroll', destination);
+  if (!created.ok) return json({ error: created.error }, 503);
+  return json({ ok: true, flowId: created.flowId, message: 'Verification code requested. Check your separate recovery inbox.' });
+}
+
+async function recoveryEmailConfirm(request, env) {
+  const admin = await getAdminSession(request, env);
+  if (!admin || !ACCOUNTS[admin.email]) return json({ error: 'Administrator session required.' }, 401);
+  const body = await readJson(request);
+  if (!body) return json({ error: 'Invalid request.' }, 400);
+  const verified = await verifyCodeFlow(env, String(body.flowId || ''), body.code, 'email-enroll');
+  if (!verified.ok || verified.flow?.email !== admin.email) {
+    return json({ error: verified.error || 'Verification code belongs to another administrator.' }, 400);
+  }
+  const destination = emailOf(verified.flow.destination);
+  if (!ADDRESS_PATTERN.test(destination)) return json({ error: 'Verification destination is invalid.' }, 400);
+  await env.CMS_KV.put(recoveryAddressKey(admin.email), JSON.stringify({
+    email: destination,
+    verified: true,
+    verifiedAt: new Date().toISOString()
+  }));
+  await notifyRecoveryChange(env, admin.email, 'Separate recovery inbox verified and changed');
+  return json({ ok: true, recoveryInboxVerified: true, recoveryInboxMasked: maskedRecoveryAddress(destination),
+    message: 'Separate recovery inbox verified. Future backup codes for this administrator will be delivered there.' });
+}
+
 export async function adminRecoveryRoute(request, env) {
   const path = new URL(request.url).pathname;
   if (!path.startsWith('/api/admin/recovery/')) return null;
@@ -465,6 +542,8 @@ export async function adminRecoveryRoute(request, env) {
   if (!env.CMS_KV) return json({ error: 'Administrator recovery storage is unavailable.' }, 503);
 
   if (path === '/api/admin/recovery/config' && request.method === 'GET') return config(request, env);
+  if (path === '/api/admin/recovery/email/request' && request.method === 'POST') return recoveryEmailRequest(request, env);
+  if (path === '/api/admin/recovery/email/confirm' && request.method === 'POST') return recoveryEmailConfirm(request, env);
   if (path === '/api/admin/recovery/setup/request' && request.method === 'POST') return setupRequest(request, env);
   if (path === '/api/admin/recovery/setup/confirm' && request.method === 'POST') return setupConfirm(request, env);
   if (path === '/api/admin/recovery/reset/request' && request.method === 'POST') return resetRequest(request, env);

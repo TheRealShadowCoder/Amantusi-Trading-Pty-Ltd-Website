@@ -22,7 +22,7 @@ expect(recovery.includes("hash: 'SHA-256'") && recovery.includes("name: 'PBKDF2'
 expect(recovery.includes('randomToken(18)') && recovery.includes('twoFactorRequired: true'), 'backup password storage must use a random salt and require second factor');
 expect(recovery.includes('CODE_TTL_SECONDS = 600') && recovery.includes('CODE_ATTEMPT_MAX = 5'), 'one-time code expiry/attempt limits are missing');
 expect(recovery.includes('REQUEST_RATE_MAX = 4') && recovery.includes('LOGIN_ATTEMPT_MAX = 5') && recovery.includes('LOGIN_LOCK_SECONDS = 900'), 'recovery abuse protection is incomplete');
-expect(recovery.includes("sendEmail(env, [email]") && notifications.includes('RESEND_API_KEY') && notifications.includes('ALERT_FROM_EMAIL'), 'recovery email delivery is not connected to the existing email provider');
+expect(recovery.includes("sendEmail(env, [destination]") && notifications.includes("sendGmailEmail") && recovery.includes("gmailConfigured(env)"), 'verified recovery destination delivery is not connected to the existing email provider');
 expect(recovery.includes("purpose === 'login'") && recovery.includes("purpose === 'setup'") && recovery.includes("'reset'"), 'login/setup/reset one-time-code purposes are not isolated');
 expect(recovery.includes('getAdminSession(request, env)') && recovery.includes('Google administrator session required to create backup recovery.'), 'initial backup setup must require an authenticated Google admin session');
 expect(recovery.includes("if (!ACCOUNTS[email] || !(await backupPassword(env, email)))"), 'forgot-password reset must not create a backup method for an uninitialized account');
@@ -59,5 +59,13 @@ expect(wrangler.includes('"/admin-recovery.html"'), 'recovery page is not Worker
 for (const asset of ['/admin-recovery.html', '/admin-recovery.js', '/admin-recovery.css']) {
   expect(headers.includes(`${asset}\n  Cache-Control: no-store, no-cache, must-revalidate, max-age=0`), `${asset} is not explicitly no-store`);
 }
+
+expect(recovery.includes("recoveryAddressKey") && recovery.includes("verifiedRecoveryRecipient"), 'separate recovery inbox must be stored and read per administrator');
+expect(recovery.includes("purpose === 'email-enroll'") && recovery.includes("verified.flow.destination"), 'recovery inbox must be code-verified before activation');
+expect(recovery.includes("backupPasswordMatches(body.currentBackupPassword, backup)"), 'changing an existing recovery inbox requires backup password');
+expect(recovery.includes("sendEmail(env, [destination]"), 'recovery codes must be sent to verified destination');
+expect(recovery.includes("recoveryEmailConfirm") && recovery.includes("recoveryEmailRequest"), 'inbox enrollment endpoints must be implemented');
+expect(client.includes('/api/admin/recovery/email/request') && client.includes('/api/admin/recovery/email/confirm'), 'recovery inbox frontend must call the enrollment endpoints');
+expect(page.includes('id="recovery-inbox-address"') && page.includes('id="recovery-inbox-code"'), 'separate recovery Gmail interface must be present');
 
 console.log('Admin recovery validated: Google-primary setup, preinitialized break-glass password, PBKDF2-100k verifier, mandatory emailed one-time code, short-lived/replay-resistant code flows, rate limits, login lockout, session rotation after forgotten-password reset, Worker-first routing, no-store delivery, mobile/reduced-motion UI and retired legacy auth bypasses are wired.');

@@ -34,7 +34,7 @@
         <p>A backup password alone can never open the dashboard.</p>
         <div class="recovery-points">
           <div class="recovery-point"><b>1.</b><span>Use the authorized administrator email and backup password.</span></div>
-          <div class="recovery-point"><b>2.</b><span>Enter the one-time code sent to that same administrator email.</span></div>
+          <div class="recovery-point"><b>2.</b><span>Enter the one-time code sent to your verified recovery inbox (or the administrator email until a separate inbox is confirmed).</span></div>
           <div class="recovery-point"><b>3.</b><span>Codes expire after 10 minutes and lock after repeated incorrect attempts.</span></div>
         </div>
       </aside>
@@ -127,7 +127,32 @@
           <p class="recovery-status" id="backup-setup-confirm-status" aria-live="polite"></p>
         </form>
 
-        <div class="recovery-note"><strong>Important:</strong> backup recovery cannot be created anonymously. The first setup or any normal change requires an active Google administrator session plus an emailed code.</div>
+        <section class="recovery-inbox-panel" aria-labelledby="recovery-inbox-heading">
+          <h3 id="recovery-inbox-heading">Separate recovery Gmail</h3>
+          <p id="recovery-inbox-current">No separate recovery inbox verified. Until then, codes go to the administrator email.</p>
+          <p>Keep your admin login address unchanged. To use a different Gmail inbox, prove you can receive an eight-digit code there.</p>
+          <form id="recovery-inbox-start" class="recovery-form recovery-step active">
+            <label>Separate recovery email address
+              <input id="recovery-inbox-address" type="email" autocomplete="email" required placeholder="another-account@gmail.com">
+            </label>
+            <label id="recovery-inbox-password-group" hidden>Current backup password (required when changing an existing recovery method)
+              <input id="recovery-inbox-password" type="password" autocomplete="current-password">
+            </label>
+            <button class="recovery-button" type="submit">Send Inbox Verification Code</button>
+            <p class="recovery-status" id="recovery-inbox-start-status" role="status" aria-live="polite"></p>
+          </form>
+          <form id="recovery-inbox-confirm" class="recovery-form recovery-step">
+            <input id="recovery-inbox-flow" type="hidden">
+            <label>Verification code from your separate Gmail
+              <input id="recovery-inbox-code" class="recovery-code" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" autocomplete="one-time-code" required placeholder="00000000">
+            </label>
+            <button class="recovery-button gold" type="submit">Verify & Activate Recovery Inbox</button>
+            <button class="recovery-button secondary" type="button" id="recovery-inbox-restart">Choose another address</button>
+            <p class="recovery-status" id="recovery-inbox-confirm-status" role="status" aria-live="polite"></p>
+          </form>
+          <p class="recovery-small">Your recovery inbox cannot become active without completing email verification. Codes and passwords should not be shared.</p>
+        </section>
+        <div class="recovery-note"><strong>Important:</strong> backup recovery cannot be created anonymously. The first setup or any normal change requires an authenticated administrator session plus an emailed code.</div>
       </article>
     </section>
 

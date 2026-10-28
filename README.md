@@ -67,3 +67,7 @@ by the RFQ endpoint.
 
 Enabling customer email requires checking consent, email authentication,
 delivery rate limits and the company's approved data-handling notice.
+
+## Gmail-only automated recovery mail
+
+The production email sender is the Google Gmail API with the narrow `gmail.send` scope. Recovery recipients can be separate verified Gmail accounts. See [docs/gmail-recovery-setup.md](docs/gmail-recovery-setup.md) for required one-time authorization, private Worker secret names and activation tests. Nothing is enabled until the account holder authorizes a Gmail sender. Existing admin login is unchanged.
