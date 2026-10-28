@@ -63,6 +63,7 @@ test('optional WebGL samples real picture without masking it or breaking tabs',a
  await page.locator('#immersive').scrollIntoViewIfNeeded();
  const stage=page.locator('[data-amt-stage]');
  await expect.poll(()=>stage.getAttribute('data-renderer'),{timeout:12000}).toMatch(/webgl|fallback/);
+ await expect.poll(()=>page.locator('[data-amt-service-image]').evaluate(img=>img.complete&&img.naturalWidth>0),{timeout:12000}).toBe(true);
  const data=await page.evaluate(()=>{
   const el=document.querySelector('[data-amt-stage]'),canvas=el.querySelector('[data-amt-photo-webgl]'),image=el.querySelector('[data-amt-service-image]');
   return {mode:el.dataset.renderer,pointer:getComputedStyle(canvas).pointerEvents,w:canvas.width,h:canvas.height,imageNatural:image.naturalWidth,visible:getComputedStyle(image).display};
