@@ -30,7 +30,9 @@ try {
  assert.equal(enabled.receipt.sent,true);
  assert.equal(calls.length,3,'Admin and customer notification when enabled');
  assert.deepEqual(calls[2].to,['buyer@example.com']);
- assert.ok(calls[2].header.includes(lead.reference));
+ const encodedSubject=calls[2].header.match(/^Subject: =\?UTF-8\?B\?([^?]+)\?=/m)?.[1];
+ assert.ok(encodedSubject,'Subject uses a safe MIME-encoded header');
+ assert.ok(Buffer.from(encodedSubject,'base64').toString('utf8').includes(lead.reference));
  assert.ok(!calls[2].body.includes('CONFIDENTIAL ITEM LIST'));
  assert.ok(calls[2].body.includes('not confirmation of inventory'));
  console.log('PASS Gmail customer receipt remains opt-in and omits confidential RFQ contents');
