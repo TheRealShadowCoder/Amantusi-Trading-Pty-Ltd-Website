@@ -20,7 +20,7 @@ const ACCOUNTS = Object.freeze({
   's.k.businessline@gmail.com': { role: 'superadmin', label: 'Administrator' }
 });
 const ADMIN_EMAILS = Object.freeze(Object.keys(ACCOUNTS));
-const ADDRESS_PATTERN = /^[^\\s@]{1,64}@[^\\s@]{1,255}\\.[A-Za-z]{2,63}$/;
+const ADDRESS_PATTERN = /^[^\s@]{1,64}@[^\s@]{1,255}\.[A-Za-z]{2,63}$/;
 const recoveryAddressKey = (accountEmail) => `auth:verified-recovery-address:${accountEmail}`;
 
 async function verifiedRecoveryRecipient(env, accountEmail) {
