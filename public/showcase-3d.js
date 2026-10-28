@@ -31,8 +31,8 @@
  const connection=navigator.connection||navigator.webkitConnection;
  const lowPower=Number(navigator.deviceMemory||4)<=2||Number(navigator.hardwareConcurrency||4)<=2;
  const shouldFallback=()=>reduced.matches||contrast.matches||Boolean(connection?.saveData)||lowPower;
- const vertex=String.raw\`attribute vec2 position;varying vec2 uv;void main(){uv=(position+1.0)*0.5;gl_Position=vec4(position,0.0,1.0);}\`;
- const fragment=String.raw\`precision mediump float;
+ const vertex=String.raw`attribute vec2 position;varying vec2 uv;void main(){uv=(position+1.0)*0.5;gl_Position=vec4(position,0.0,1.0);}`;
+ const fragment=String.raw`precision mediump float;
  varying vec2 uv;
  uniform sampler2D image;
  uniform vec2 pointer;
@@ -57,7 +57,7 @@
   float edges=pow(1.0-abs(uv.x-.5)*2.0,10.0)*.025;
   vec3 color=mix(base,refracted,.52)+vec3(.94,.75,.48)*(chrome+edges);
   gl_FragColor=vec4(clamp(color,0.0,1.0),1.0);
- }\`;
+ }`;
  let uniforms={};
  function makeShader(type,source){
   const sh=gl.createShader(type);gl.shaderSource(sh,source);gl.compileShader(sh);
@@ -160,7 +160,7 @@
   if(!reduced.matches){void stage.offsetWidth;stage.classList.add('is-switching')}
   photo.alt=scene.alt;
   photo.src=scene.image;
-  frame.style.setProperty('--amt-photo-image',\`url("\${scene.image}")\`);
+  frame.style.setProperty('--amt-photo-image',`url("${scene.image}")`);
   const url=photo.currentSrc||photo.src;
   if(photo.complete&&photo.naturalWidth){currentImage=url;upload();}
  }
