@@ -13,7 +13,16 @@ test('diagnose catering heading after responsive route navigation',async({page})
     chain.push({element:e.tagName.toLowerCase(),cls:e.className||'',id:e.id||'',display:s.display,visibility:s.visibility,opacity:s.opacity,position:s.position,contain:s.contain,contentVisibility:s.contentVisibility,transform:s.transform,box:{x:r.x,y:r.y,w:r.width,h:r.height},offsetParent:Boolean(e.offsetParent),hidden:e.hidden});
     e=e.parentElement;
    }
-   return {path:location.pathname,chain};
+   const hero=document.querySelector('.menu-hero');
+   const children=hero?[...hero.children].map(el=>{
+     const cs=getComputedStyle(el),rect=el.getBoundingClientRect();
+     return {className:el.className,tag:el.tagName,pos:cs.position,display:cs.display,
+       width:rect.width,height:rect.height,top:rect.top,marginTop:cs.marginTop};
+   }):[];
+   const heroStyle=hero?getComputedStyle(hero):null;
+   return {path:location.pathname,chain,children,heroPadding:heroStyle?.paddingTop,
+     heroDisplay:heroStyle?.display};
+
   });
   console.log('AMANTUSI-H1-DIAG '+JSON.stringify(data));
   if(path==='/catering-menu.html')expect(data.chain[0].box.h).toBeGreaterThan(0);
