@@ -9,7 +9,10 @@ for(const name of checked){
  const html=readFileSync('public/'+name,'utf8');
  assert.ok(html.includes('href="/adaptive-layout.css"'),name+' must load adaptive mobile CSS');
  assert.ok(html.includes('href="/webgl-ambient.css"'),name+' must load progressive WebGL CSS');
- assert.ok(html.includes('src="/webgl-ambient.js"'),name+' must load WebGL fallback script');
+ if(name==='index.html'||name==='index-fast.html'){
+  assert.ok(html.includes('src="/hero-webgl-loop.js"'),name+' uses one lightweight photo-WebGL renderer');
+  assert.ok(!html.includes('src="/webgl-ambient.js"'),name+' avoids redundant GPU contexts');
+ }else assert.ok(html.includes('src="/webgl-ambient.js"'),name+' must load progressive WebGL fallback');
 }
 assert.ok(home.includes('am-landing-container')&&home.includes('quote-form'),'Homepage must retain semantic hero and RFQ');
 assert.ok(webgl.includes("prefers-reduced-motion: reduce"),'Respect reduced motion');
