@@ -67,3 +67,11 @@ by the RFQ endpoint.
 
 Enabling customer email requires checking consent, email authentication,
 delivery rate limits and the company's approved data-handling notice.
+
+## Production integrations: Google sign-in, recovery email, private R2
+
+Current integration activation procedure, safe permissions and acceptance tests: [docs/integration-activation.md](docs/integration-activation.md).
+
+This branch stages the private `CMS_MEDIA` R2 binding; **do not merge or deploy it** until the Cloudflare account's R2 subscription is activated and the bucket `amantusi-private-media` exists. Pre-existing media in KV remains accessible through the read fallback.
+
+Run the source check: `node scripts/validate-storage-binding.mjs`. To inspect a deployed Worker without changing customer data: `PUBLIC_URL=https://amantusi-trading-pty-ltd-website.dolomite-computer.workers.dev node scripts/verify-integrations-readiness.mjs`.
