@@ -60,4 +60,12 @@ for (const asset of ['/admin-recovery.html', '/admin-recovery.js', '/admin-recov
   expect(headers.includes(`${asset}\n  Cache-Control: no-store, no-cache, must-revalidate, max-age=0`), `${asset} is not explicitly no-store`);
 }
 
+expect(recovery.includes("recoveryAddressKey") && recovery.includes("verifiedRecoveryRecipient"), 'separate recovery inbox must be stored and read per administrator');
+expect(recovery.includes("purpose === 'email-enroll'") && recovery.includes("verified.flow.destination"), 'recovery inbox must be code-verified before activation');
+expect(recovery.includes("backupPasswordMatches(body.currentBackupPassword, backup)"), 'changing an existing recovery inbox requires backup password');
+expect(recovery.includes("sendEmail(env, [destination]"), 'recovery codes must be sent to verified destination');
+expect(recovery.includes("recoveryEmailConfirm") && recovery.includes("recoveryEmailRequest"), 'inbox enrollment endpoints must be implemented');
+expect(client.includes('/api/admin/recovery/email/request') && client.includes('/api/admin/recovery/email/confirm'), 'recovery inbox frontend must call the enrollment endpoints');
+expect(page.includes('id="recovery-inbox-address"') && page.includes('id="recovery-inbox-code"'), 'separate recovery Gmail interface must be present');
+
 console.log('Admin recovery validated: Google-primary setup, preinitialized break-glass password, PBKDF2-100k verifier, mandatory emailed one-time code, short-lived/replay-resistant code flows, rate limits, login lockout, session rotation after forgotten-password reset, Worker-first routing, no-store delivery, mobile/reduced-motion UI and retired legacy auth bypasses are wired.');

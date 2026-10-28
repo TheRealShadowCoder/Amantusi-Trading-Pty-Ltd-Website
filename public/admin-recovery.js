@@ -80,6 +80,13 @@
     }
 
     if (config.authenticated) {
+      const pwGroup = $('#recovery-inbox-password-group');
+      if (pwGroup) pwGroup.hidden = !config.currentAdminConfigured;
+      if ($('#recovery-inbox-password')) $('#recovery-inbox-password').required = Boolean(config.currentAdminConfigured);
+      const inbox = $('#recovery-inbox-current');
+      if (inbox) inbox.textContent = config.recoveryInboxVerified
+        ? 'Verified recovery destination: ' + (config.recoveryInboxMasked || 'configured')
+        : 'No separate recovery inbox verified. Codes currently go to the administrator email.';
       const panel = $('#backup-setup-panel');
       panel.hidden = false;
       const badge = $('#backup-setup-badge');
@@ -226,5 +233,43 @@
     });
 
     $('#backup-setup-restart')?.addEventListener('click', resetSetupFlow);
+
+    $('#recovery-inbox-start')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const output = $('#recovery-inbox-start-status');
+      status(output, 'Requesting email verification…');
+      const response = await api('/api/admin/recovery/email/request', { method: 'POST', body: {
+        recoveryEmail: $('#recovery-inbox-address').value.trim(),
+        currentBackupPassword: $('#recovery-inbox-password').value
+      }});
+      $('#recovery-inbox-password').value = '';
+      if (!response.ok) return status(output, response.error || 'Unable to request inbox verification.', 'error');
+      $('#recovery-inbox-flow').value = response.flowId || '';
+      status(output, response.message || 'Verification requested.', 'success');
+      showStep($('#recovery-inbox-start'), $('#recovery-inbox-confirm'), true);
+      $('#recovery-inbox-code').focus();
+    });
+
+    $('#recovery-inbox-confirm')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const output = $('#recovery-inbox-confirm-status');
+      status(output, 'Verifying your separate inbox…');
+      const response = await api('/api/admin/recovery/email/confirm', { method: 'POST', body: {
+        flowId: $('#recovery-inbox-flow').value, code: $('#recovery-inbox-code').value.trim()
+      }});
+      if (!response.ok) return status(output, response.error || 'Inbox verification failed.', 'error');
+      $('#recovery-inbox-current').textContent = 'Verified recovery destination: ' + response.recoveryInboxMasked;
+      $('#recovery-inbox-flow').value = '';
+      $('#recovery-inbox-code').value = '';
+      status(output, response.message || 'Separate Gmail verified.', 'success');
+    });
+
+    $('#recovery-inbox-restart')?.addEventListener('click', () => {
+      $('#recovery-inbox-flow').value = '';
+      $('#recovery-inbox-code').value = '';
+      $('#recovery-inbox-password').value = '';
+      status($('#recovery-inbox-confirm-status'));
+      showStep($('#recovery-inbox-start'), $('#recovery-inbox-confirm'), false);
+    });
   });
 })();
