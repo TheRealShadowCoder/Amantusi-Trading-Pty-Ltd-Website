@@ -6,6 +6,7 @@ import {
   recordAnalytics, recordAppEvent, recentAppEvents, listPasskeys
 } from './database.js';
 import { notifyNewLead, notifyLeadStatus, notifyQuotation, notificationStatus } from './notifications.js';
+import { validateRfqAttachment } from './upload-validation.js';
 
 const MAX_RFQ_FILES = 5;
 const MAX_RFQ_FILE_BYTES = 10_000_000;
@@ -70,7 +71,7 @@ async function requireAdmin(request, env) {
 }
 
 function fileName(value) {
-  return String(value || 'file').replace(/[\r\n"\\/]/g, '_').slice(0, 160) || 'file';
+  return String(value || 'file').replace(/[\r\n"\\/]/g, '_').replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e]/g,'_').slice(0,160)||'file';
 }
 
 async function saveRfqObject(env, leadId, file) {
@@ -123,6 +124,8 @@ export async function submitQuotationRequest(request, env) {
     total += file.size;
     if (file.size > MAX_RFQ_FILE_BYTES) return json({ error: `${fileName(file.name)} is larger than 10 MB.` }, 413);
     if (!FILE_TYPES.has(file.type)) return json({ error: `${fileName(file.name)} is not an allowed RFQ file type.` }, 415);
+    const validation=await validateRfqAttachment(file);
+    if(!validation.ok)return json({error:`${fileName(file.name)}: ${validation.reason}.`},415);
   }
   if (total > MAX_RFQ_TOTAL_BYTES) return json({ error: 'Combined RFQ attachments must be 30 MB or less.' }, 413);
 
@@ -150,7 +153,8 @@ export async function submitQuotationRequest(request, env) {
     files: storedFiles.length,
     notificationChannels: {
       email: Boolean(notifications.email?.sent),
-      whatsapp: Boolean(notifications.whatsapp?.sent)
+      whatsapp: Boolean(notifications.whatsapp?.sent),
+      receipt: Boolean(notifications.receipt?.sent)
     },
     message: `Your request has been received. Reference ${lead.reference}.`
   }, 201);

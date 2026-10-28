@@ -1,0 +1,4 @@
+/* Referral and deadline guidance in the structured RFQ composer. */
+.rfq-referral{display:grid;position:relative;gap:.5rem;margin:1rem 0;font-size:.79rem!important;color:#3d5863!important;font-weight:750!important;text-transform:none!important;letter-spacing:0!important}
+.rfq-referral select{width:100%;min-height:44px;padding:.65rem;border:1px solid #d2dcd9;border-radius:9px;background:white;color:#0e3441;font:inherit}
+.rfq-deadline-hint{font-size:.72rem;color:#57717e;font-weight:400;text-transform:none;letter-spacing:0;line-height:1.4}

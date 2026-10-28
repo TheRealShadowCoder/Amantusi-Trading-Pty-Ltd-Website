@@ -1,6 +1,19 @@
 import { getSiteSettings } from './platform.js';
 
 const PAGES = {
+  '/procurement-guides.html': {title: 'Procurement Guides | Amantusi Trading', description: 'Practical RFQ, tender, catering and procurement guidance to prepare sourcing enquiries.', type: 'website'},
+  '/supplier-onboarding.html': {title: 'Supplier Introductions | Amantusi Trading', description: 'Requirements and contact guidance for relevant suppliers introducing products and services.', type: 'website'},
+  '/procurement-templates.html': {title: 'RFQ Templates & Examples | Amantusi Trading', description: 'Sample procurement, service and catering quotation request formats.', type: 'website'},
+  '/capability-statement.html': {title: 'Capability Statement | Amantusi Trading', description: 'Printable company capability statement showing services, registration and contact details.', type: 'website'},
+  '/procurement-faq.html': {title: 'Procurement FAQs | Amantusi Trading', description: 'Common answers to questions about procurement quotations, document attachments and catering.', type: 'website'},
+  '/information-handling.html': {title: 'Information Handling | Amantusi Trading', description: 'How the Amantusi online enquiry form processes information and where to request details.', type: 'website'},
+  '/government-procurement.html': {title: 'Government Procurement RFQs | Amantusi Trading', description: 'Send government procurement RFQs and detailed specifications to Amantusi Trading Pty Ltd in Durban.', type: 'website'},
+  '/fmcg-supply.html': {title: 'FMCG & Institutional Supply | Amantusi Trading', description: 'Specification-based FMCG sourcing for institutional and private-sector buyers.', type: 'website'},
+  '/cleaning-hygiene.html': {title: 'Cleaning and Hygiene Supply | Amantusi Trading', description: 'Structured sourcing and RFQ enquiries for cleaning products and hygiene consumables.', type: 'website'},
+  '/office-institutional.html': {title: 'Office and Institutional Supply | Amantusi Trading', description: 'Request stationery, equipment and office supplies from Amantusi Trading.', type: 'website'},
+  '/general-trading.html': {title: 'General Trading and Sourcing | Amantusi Trading', description: 'Submit mixed-category sourcing briefs and general procurement enquiries.', type: 'website'},
+  '/corporate-catering.html': {title: 'Corporate and Institutional Catering | Amantusi Trading', description: 'Plan meeting and institutional catering with guest counts, venues and custom menu briefs.', type: 'website'},
+  '/procurement-checklist.html': {title: 'RFQ Preparation Checklist | Amantusi Trading', description: 'Printable procurement RFQ checklist covering quantity, specifications and delivery information.', type: 'website'},
   '/': {
     title: 'Amantusi Trading Pty Ltd | Procurement, Supply & Catering Solutions',
     description: 'Amantusi Trading Pty Ltd provides procurement, government supply, FMCG, catering, hygiene, office and general trading solutions in Durban, South Africa.',
@@ -29,8 +42,14 @@ const PAGES = {
 };
 
 function cleanBase(settings, request) {
-  const configured = String(settings?.publicSiteUrl || '').trim().replace(/\/$/, '');
-  return configured || new URL(request.url).origin;
+  const origin=new URL(request.url).origin;
+  const configured=String(settings?.publicSiteUrl||'').trim();
+  if(!configured)return origin;
+  try{
+    const url=new URL(configured);
+    if(url.protocol!=='https:' || url.username || url.password || url.search || url.hash)return origin;
+    return url.origin;
+  }catch(_){return origin;}
 }
 
 function pageData(pathname) {
@@ -79,6 +98,24 @@ function pageSchema(base, pathname) {
     isPartOf: { '@type': 'WebSite', name: 'Amantusi Trading Pty Ltd', url: `${base}/` },
     about: { '@id': `${base}/#organization` }
   };
+  if (pathname === '/procurement-faq.html') {
+    return {
+      '@context':'https://schema.org',
+      '@type':'FAQPage',
+      name:page.title,
+      url:common.url,
+      mainEntity:[
+        {q:'How do I submit a quotation request?',a:'Open Request a Quote from the homepage, enter your organization and contact details, describe the products or service and submit. A reference appears only after the server confirms receipt.'},
+        {q:'Can I attach an RFQ or tender schedule?',a:'Yes. The website form supports up to five PDF, Office, CSV, text or supported image files, each up to 10 MB, with a maximum combined total of 30 MB.'},
+        {q:'Are prices confirmed on the catering menu?',a:'No. Catering prices depend on guest count, menu selections, venue, staffing and delivery requirements. Request a tailored quotation.'},
+        {q:'Can I send a mixed-category sourcing enquiry?',a:'Yes. Choose General Procurement and give quantities, specifications and delivery location for each requested item.'},
+        {q:'Does a quotation request guarantee stock or an order?',a:'No. A submitted enquiry starts a review. Availability, lead time, final price and accepted purchase terms must be confirmed separately.'},
+        {q:'How can I contact the company?',a:'Use the email or phone number on the company profile. For a complete procurement brief, the secure website enquiry form is preferred.'},
+        {q:'How do I prepare an accurate RFQ?',a:'State item specifications, units, quantities, brands or permissible alternatives, delivery requirements and deadline. See the printable RFQ checklist.'},
+        {q:'Can I submit a catering brief without choosing a listed menu item?',a:'Yes. Describe your custom catering needs, guest count, event date, location and service format when building the catering brief.'}
+      ].map(item=>({'@type':'Question',name:item.q,acceptedAnswer:{'@type':'Answer',text:item.a}}))
+    };
+  }
   if (pathname === '/catering-menu.html' || pathname === '/catering-brochure.html') {
     return {
       '@context': 'https://schema.org',
@@ -105,6 +142,16 @@ export async function enhanceSeo(request, response, env, { home = false, admin =
   const canonical = `${base}${canonicalPath}`;
   const analyticsConfig = JSON.stringify({ gaId: settings.gaMeasurementId || '', firstParty: true });
   const schemas = admin ? [] : [organizationSchema(base), pageSchema(base, canonicalPath)];
+  if (!admin && canonicalPath!=='/' && PAGES[canonicalPath]) {
+    schemas.push({
+      '@context':'https://schema.org',
+      '@type':'BreadcrumbList',
+      itemListElement:[
+        {'@type':'ListItem',position:1,name:'Home',item:base+'/'},
+        {'@type':'ListItem',position:2,name:PAGES[canonicalPath].title.split(' | ')[0],item:canonical}
+      ]
+    });
+  }
 
   let rewriter = new HTMLRewriter()
     .on('title', { element(element) { if (!admin) element.setInnerContent(meta.title); } })
@@ -142,23 +189,6 @@ export async function enhanceSeo(request, response, env, { home = false, admin =
     });
   }
 
-  if (home) {
-    rewriter = rewriter
-      .on('#main-nav', {
-        element(element) {
-          element.append('<a href="/catering-menu.html">Catering Menu</a><a href="/company-profile.html">Company Profile</a>', { html: true });
-        }
-      })
-      .on('.capability-grid .cap-card:nth-child(3)', {
-        element(element) {
-          element.setAttribute('role', 'link');
-          element.setAttribute('tabindex', '0');
-          element.setAttribute('data-href', '/catering-menu.html');
-          element.setAttribute('style', 'cursor:pointer');
-        }
-      });
-  }
-
   return rewriter.transform(response);
 }
 
@@ -170,7 +200,20 @@ export async function sitemapResponse(request, env) {
     ['/', '1.0', 'weekly'],
     ['/catering-menu.html', '0.9', 'weekly'],
     ['/catering-brochure.html', '0.8', 'monthly'],
-    ['/company-profile.html', '0.8', 'monthly']
+    ['/company-profile.html', '0.8', 'monthly'],
+    ['/government-procurement.html', '0.9', 'monthly'],
+    ['/fmcg-supply.html', '0.8', 'monthly'],
+    ['/cleaning-hygiene.html', '0.8', 'monthly'],
+    ['/office-institutional.html', '0.8', 'monthly'],
+    ['/general-trading.html', '0.8', 'monthly'],
+    ['/corporate-catering.html', '0.8', 'monthly'],
+    ['/procurement-checklist.html', '0.7', 'monthly'],
+    ['/procurement-guides.html', '0.6', 'monthly'],
+    ['/supplier-onboarding.html', '0.6', 'monthly'],
+    ['/procurement-templates.html', '0.6', 'monthly'],
+    ['/capability-statement.html', '0.6', 'monthly'],
+    ['/procurement-faq.html', '0.6', 'monthly'],
+    ['/information-handling.html', '0.6', 'monthly']
   ];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pages.map(([path, priority, changefreq]) => `  <url><loc>${base}${path}</loc><lastmod>${lastmod}</lastmod><changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`).join('\n')}\n</urlset>`;
   return new Response(xml, { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'public, max-age=3600' } });

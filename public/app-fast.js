@@ -30,13 +30,29 @@
   addEventListener('scroll',scheduleScroll,{passive:true});
   addEventListener('resize',scheduleScroll,{passive:true});
 
+  function closeMenu({restoreFocus=false}={}){
+    nav?.classList.remove('open');
+    menuButton?.setAttribute('aria-expanded','false');
+    menuButton?.setAttribute('aria-label','Open menu');
+    if(restoreFocus)menuButton?.focus();
+  }
   menuButton?.addEventListener('click',()=>{
     const open=nav?.classList.toggle('open');
     menuButton.setAttribute('aria-expanded',String(Boolean(open)));
+    menuButton.setAttribute('aria-label',open?'Close menu':'Open menu');
   });
-  document.querySelectorAll('.nav-links a').forEach(link=>link.addEventListener('click',()=>{
-    nav?.classList.remove('open');menuButton?.setAttribute('aria-expanded','false');
-  }));
+  document.querySelectorAll('.nav-links a').forEach(link=>link.addEventListener('click',()=>closeMenu()));
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&nav?.classList.contains('open')){
+      event.preventDefault();closeMenu({restoreFocus:true});
+    }
+  });
+  document.addEventListener('click',event=>{
+    if(nav?.classList.contains('open')&&!event.target.closest('.nav-shell'))closeMenu();
+  });
+  addEventListener('resize',()=>{
+    if(innerWidth>1000&&nav?.classList.contains('open'))closeMenu();
+  },{passive:true});
 
   if('IntersectionObserver' in window){
     const observer=new IntersectionObserver(entries=>{
@@ -76,17 +92,30 @@
   const status=document.getElementById('form-status');
   quoteForm?.addEventListener('submit',async event=>{
     event.preventDefault();
+    if(quoteForm.dataset.submitting==='1')return;
+    if(window.AmantusiQuoteEnhancements?.validate()===false)return;
+    quoteForm.dataset.submitting='1';
     const submit=quoteForm.querySelector('button[type="submit"]');if(submit)submit.disabled=true;
     if(status){status.className='form-status';status.textContent='Sending your quotation request securely…'}
     try{
-      const response=await fetch('/api/quote',{method:'POST',body:new FormData(quoteForm)});
+      const response=await (window.AmantusiQuoteTransport?.send(quoteForm) || fetch('/api/quote',{method:'POST',body:new FormData(quoteForm)}));
       let payload={};try{payload=await response.json()}catch(_){}
       if(!response.ok)throw new Error(payload.error||'Could not submit your quotation request.');
       quoteForm.reset();
-      if(status){status.className='form-status success';status.textContent=`Request received successfully. Reference: ${String(payload.reference||'')}`}
+      window.AmantusiQuoteEnhancements?.onSuccess(payload);
+      if(status){
+        status.className='form-status success';
+        status.textContent=`Request received successfully. Reference: ${String(payload.reference||'')}. Keep this reference for your records. Amantusi will review your request and contact you if clarification is needed. `;
+        const feedback=document.createElement('a');
+        feedback.href='mailto:zodwangema37@gmail.com?subject='+encodeURIComponent('Feedback on Amantusi quotation enquiry');
+        feedback.textContent='Share feedback';
+        feedback.style.textDecoration='underline';
+        feedback.style.fontWeight='700';
+        status.append(feedback);
+      }
       window.amantusiTrack?.('generate_lead',{files:payload.files||0});
     }catch(error){
       if(status){status.className='form-status error';status.textContent=`${error.message||'Submission failed.'} You can also email zodwangema37@gmail.com or call 073 247 6716.`}
-    }finally{if(submit)submit.disabled=false}
+    }finally{quoteForm.dataset.submitting='0';if(submit)submit.disabled=false}
   });
 })();

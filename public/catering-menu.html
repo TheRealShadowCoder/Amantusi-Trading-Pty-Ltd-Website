@@ -14,6 +14,8 @@
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/catering.css">
   <link rel="stylesheet" href="/catering-responsive-v3.css">
+  <link rel="stylesheet" href="/catering-upgrades.css">
+  <link rel="stylesheet" href="/site-navigation.css">
 </head>
 <body class="catering-body" data-catering-safe-mode="true">
   <header class="subsite-header" id="top">
@@ -75,15 +77,31 @@
           </div>
           <p>Explore published menu options. Final pricing remains aligned to guest count, menu selection, venue, service level and delivery requirements.</p>
         </div>
+        <div class="catering-search-toolbar"><label for="catering-search">Search menu options<input id="catering-search" data-catering-search type="search" placeholder="Search menu, ingredients or dietary tags" autocomplete="off"></label><label class="catering-diet-control" for="catering-dietary">Dietary tags<select id="catering-dietary" data-catering-dietary-filter aria-label="Filter by dietary tag"><option value="">All dietary options</option></select></label><p data-catering-results role="status" aria-live="polite">Loading options…</p></div>
         <div class="category-tabs" data-category-tabs aria-label="Menu categories"></div>
         <div class="menu-grid" data-menu-grid aria-live="polite">
           <div class="empty-menu">Loading catering menu…</div>
         </div>
-        <div class="price-note" data-price-note></div>
+        <div class="price-note" data-price-note></div><p class="catering-allergen-note">Dietary tags are informational only when supplied. Please describe allergies or dietary needs in your enquiry. Ingredients and suitable substitutions must be confirmed before an order.</p>
       </div>
     </section>
 
-    <section class="menu-section cm-gallery-shell" id="portfolio" data-catering-gallery-shell hidden tabindex="-1">
+    <section class="catering-brief-shell" id="build-quote" aria-labelledby="build-quote-heading"><div class="container">
+<div class="catering-brief-heading"><p class="menu-kicker">Build an enquiry</p><h2 id="build-quote-heading">Your occasion, your requirements.</h2><p>Choose menu options above, add your event information and continue to the secured RFQ form. Menu selections are not confirmed orders or binding prices.</p></div>
+<form id="catering-brief-form" class="catering-brief-form">
+<label>Event type <select name="eventType" required><option value="">Choose one</option><option>Business meeting</option><option>Corporate function</option><option>Wedding / private event</option><option>Institutional catering</option><option>Other event</option></select></label>
+<label>Guest count <input type="number" name="guestCount" min="1" max="50000" step="1" required placeholder="e.g. 80"></label>
+<label>Event date <input type="date" name="date" required></label>
+<label>Service format <select name="serviceFormat"><option value="">To be discussed</option><option>Delivered meals / platters</option><option>Buffet service</option><option>On-site catering</option><option>Refreshments / break service</option></select></label>
+<label>Venue / delivery location <input name="location" placeholder="Town / venue / address" autocomplete="street-address" required></label>
+<label>RFQ / reference (optional) <input name="reference" placeholder="Organisation reference"></label>
+<label class="wide">Dietary needs, extra requirements or custom menu <textarea name="notes" rows="4" placeholder="Allergies, menu details, timing, staffing or delivery instructions"></textarea></label>
+<div class="catering-brief-summary"><strong data-catering-basket aria-live="polite">0 options selected</strong><button type="button" data-catering-clear disabled>Clear selection</button></div>
+<div class="catering-brief-action"><button type="submit">Continue to secure RFQ →</button><small>Your brief is transferred in this browser only when you continue. It is not submitted until you complete the RFQ form.</small></div>
+<p class="wide" data-catering-brief-status role="status" aria-live="polite"></p>
+</form></div></section>
+
+<section class="menu-section cm-gallery-shell" id="portfolio" data-catering-gallery-shell hidden tabindex="-1">
       <div class="container">
         <div class="cm-gallery-heading">
           <div>
@@ -124,5 +142,7 @@
   </footer>
   <script src="/catering.js" defer></script>
   <script src="/catering-responsive-v3.js" defer></script>
+  <script src="/catering-upgrades.js" defer></script>
+  <script src="/site-navigation.js" defer></script>
 </body>
 </html>

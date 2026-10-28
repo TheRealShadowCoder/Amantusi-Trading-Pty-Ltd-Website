@@ -364,8 +364,9 @@ function showPanel(id) {
 }
 
 async function logout() {
+  if (!window.confirm('Sign out of Amantusi administration? Any unsaved edits in this browser may be lost.')) return;
   try { await fetch("/api/admin/logout", { method: "POST" }); } catch (_) {}
-  location.reload();
+  location.href='/admin.html';
 }
 
 document.addEventListener("DOMContentLoaded", async () => {

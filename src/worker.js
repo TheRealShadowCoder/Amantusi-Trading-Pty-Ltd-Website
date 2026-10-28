@@ -27,7 +27,12 @@ const MAX_IMAGE_BYTES = 8000000;
 const KV_MEDIA_PREFIX = 'media:';
 const ENHANCED_HTML = new Set([
   '/', '/index.html', '/catering-menu.html', '/catering-brochure.html',
-  '/company-profile.html', '/admin.html', '/admin-reset.html'
+  '/company-profile.html', '/admin.html', '/admin-reset.html',
+  '/government-procurement.html','/fmcg-supply.html','/cleaning-hygiene.html',
+  '/office-institutional.html','/general-trading.html','/corporate-catering.html',
+  '/procurement-checklist.html','/procurement-guides.html','/supplier-onboarding.html',
+  '/procurement-templates.html','/capability-statement.html','/procurement-faq.html',
+  '/information-handling.html'
 ]);
 
 function sameOrigin(request) {
@@ -109,7 +114,9 @@ function enhanceLayout(response, { admin = false } = {}) {
 
 async function serveEnhancedPage(request, env, home = false, admin = false) {
   let response = await env.ASSETS.fetch(request);
-  response = enhanceLayout(response, { admin });
+  // Homepage already owns a device-aware runtime gate. Avoid injecting a second
+  // set of global animation scripts and styles into the critical render path.
+  if (!home) response = enhanceLayout(response, { admin });
   response = await enhanceSeo(request, response, env, { home, admin });
   return response;
 }
@@ -228,12 +235,19 @@ async function routeRequest(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
 
+  if (request.method === 'GET' && path === '/index-fast.html') {
+    return Response.redirect(new URL('/', request.url).toString(), 308);
+  }
   if (request.method === 'GET' && path === '/sitemap.xml') return sitemapResponse(request, env);
   if (request.method === 'GET' && path === '/robots.txt') return robotsResponse(request, env);
 
   if (request.method === 'GET' && ENHANCED_HTML.has(path)) {
     const admin = path === '/admin.html' || path === '/admin-reset.html';
-    return serveEnhancedPage(request, env, path === '/' || path === '/index.html', admin);
+    const home = path === '/' || path === '/index.html';
+    const legacy = home || admin || ['/catering-menu.html','/catering-brochure.html','/company-profile.html'].includes(path);
+    // New static-first service/resource routes need SEO only, not legacy 3D layers.
+    if (!legacy) return enhanceSeo(request, await env.ASSETS.fetch(request), env);
+    return serveEnhancedPage(request, env, home, admin);
   }
 
   if (path === '/api/catering-content' && request.method === 'GET') return publicContent(request, env);
