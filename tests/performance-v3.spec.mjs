@@ -4,7 +4,7 @@ test('landing page is static-first, branded and immediately usable', async ({ pa
   const response=await page.goto('/');
   expect(response?.ok()).toBeTruthy();
   await expect(page).toHaveTitle(/Amantusi Trading/i);
-  await expect(page.locator('h1').first()).toContainText(/Complex requirements/i);
+  await expect(page.locator('h1').first()).toContainText(/FEEDING PEOPLE./i);
   await expect(page.locator('#quote-form')).toBeVisible();
   await expect(page.locator('#quote-form input[name="rfqFiles"]')).toHaveCount(1);
   await expect(page.locator('#experience-loader')).toHaveCount(0);
@@ -14,14 +14,16 @@ test('landing page is static-first, branded and immediately usable', async ({ pa
   expect(home.headers()['x-amantusi-request-id']).toBeUndefined();
 });
 
-test('heavy realtime experience is not part of first paint and hydrates after scroll on desktop', async ({ page }, testInfo) => {
+test('homepage does not hydrate duplicate heavyweight cinematic engines on scroll', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name.includes('mobile'),'Desktop progressive enhancement check');
   await page.goto('/');
   await expect(page.locator('script[src="/experience.js"]')).toHaveCount(0);
   await page.evaluate(() => scrollTo(0,Math.max(700,innerHeight*.75)));
-  await page.waitForFunction(() => Boolean(document.querySelector('script[src="/experience.js"]')),{timeout:10000});
-  await expect(page.locator('script[src="/experience.js"]')).toHaveCount(1);
-  await expect(page.locator('h1').first()).toContainText(/Complex requirements/i);
+  await page.waitForTimeout(1100);
+  await expect(page.locator('script[src="/experience.js"]')).toHaveCount(0);
+  await expect(page.locator('script[src="/cinematic.js"]')).toHaveCount(0);
+  await expect(page.locator('script[src="/animation-3d-overlay.js"]')).toHaveCount(0);
+  await expect(page.locator('h1').first()).toContainText(/FEEDING PEOPLE./i);
 });
 
 test('mobile remains content-first and does not initialize WebGL', async ({ page }, testInfo) => {

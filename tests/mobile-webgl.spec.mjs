@@ -37,29 +37,21 @@ test('mobile 320, 390, 768 and 1024 layouts keep content within viewport', async
  }
 });
 
-test('WebGL is progressive and cannot hide navigation or RFQ actions',async({page})=>{
+test('photo-WebGL enhancement never blocks the quote form or glass service links',async({page})=>{
  await page.goto('/');
- await expect(page.locator('.hero [data-never-exists]')).toHaveCount(0);
- await expect(page.locator('.hero .hero-title')).toBeVisible();
+ await expect(page.locator('.am-landing-hero .hero-title')).toBeVisible();
  await expect(page.getByRole('link',{name:'Request a Quotation'})).toBeVisible();
- await expect.poll(()=>page.locator('.hero').getAttribute('data-webgl-state'),{timeout:12000}).toMatch(/active|ready|fallback|paused/);
+ await expect(page.locator('.am-glass-tile')).toHaveCount(5);
+ await expect(page.locator('.hero .ambient-webgl-canvas')).toHaveCount(0);
+ await expect.poll(()=>page.locator('.am-landing-hero').getAttribute('data-am-loop-state'),{timeout:12000}).toMatch(/playing|ready|fallback|paused/);
  const data=await page.evaluate(()=>{
-  const hero=document.querySelector('.hero'),canvas=hero.querySelector('.ambient-webgl-canvas');
-  return {
-   state:hero.dataset.webglState,
-   pointerEvents:canvas?getComputedStyle(canvas).pointerEvents:null,
-   aria:canvas?.getAttribute('aria-hidden')||null,
-   dimensions:canvas?[canvas.width,canvas.height]:null
-  };
+  const canvas=document.querySelector('.am-glass-webgl');
+  return {pointer:canvas?getComputedStyle(canvas).pointerEvents:null,aria:canvas?.getAttribute('aria-hidden')||null};
  });
- if(data.state!=='fallback'){
-  expect(data.pointerEvents).toBe('none');
-  expect(data.aria).toBe('true');
-  expect(data.dimensions?.[0]).toBeGreaterThan(0);
- }
+ if(data.pointer!==null){expect(data.pointer).toBe('none');expect(data.aria).toBe('true')}
 });
 
-test('WebGL gracefully degrades when GPU unavailable',async({page})=>{
+test('WebGL gracefully falls back when no context can be allocated',async({page})=>{
  await page.addInitScript(()=>{
   const original=HTMLCanvasElement.prototype.getContext;
   HTMLCanvasElement.prototype.getContext=function(type,...args){
@@ -68,16 +60,16 @@ test('WebGL gracefully degrades when GPU unavailable',async({page})=>{
   };
  });
  await page.goto('/');
- await expect.poll(()=>page.locator('.hero').getAttribute('data-webgl-state')).toBe('fallback');
- await expect(page.locator('.ambient-webgl-canvas')).toHaveCount(0);
+ await expect.poll(()=>page.locator('.am-landing-hero').getAttribute('data-am-loop-state'),{timeout:12000}).toBe('fallback');
+ await expect(page.locator('.am-glass-tile--catering img')).toBeVisible();
  await expect(page.getByRole('link',{name:'Request a Quotation'})).toBeVisible();
 });
 
-test('reduced motion bypasses WebGL and leaves accessible content',async({page})=>{
+test('reduced motion bypasses photo WebGL while preserving content',async({page})=>{
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/');
- await expect(page.locator('.hero')).toHaveAttribute('data-webgl-state','fallback');
- await expect(page.locator('.ambient-webgl-canvas')).toHaveCount(0);
+ await expect(page.locator('.am-landing-hero')).toHaveAttribute('data-am-loop-state','fallback');
+ await expect(page.locator('.am-glass-webgl')).toHaveCount(0);
  await expect(page.locator('.hero h1')).toBeVisible();
  await expect(page.locator('#quote-form')).toBeVisible();
 });

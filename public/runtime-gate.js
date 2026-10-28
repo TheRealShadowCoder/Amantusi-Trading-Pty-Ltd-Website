@@ -14,6 +14,9 @@
   const standard=memory<=4||cores<=4||mobile;
   const tier=low?'lite':standard?'standard':'high';
   body.dataset.runtimeTier=tier;
+  // The photo-driven landing has its own GPU budget: disable duplicate cinematic
+  // engines, optional Three.js download, deep DOM loops and click FX ONLY here.
+  const leanHome=body.dataset.scene==='home';
 
   const loaded=new Set();
   function css(href){
@@ -47,7 +50,7 @@
   let lastFrames=[];
   let pressureTimer=0;
   function samplePressure(){
-    if(reduced||document.hidden)return;
+    if(leanHome||reduced||document.hidden)return;
     let last=performance.now(),frames=0;
     const started=last;
     const run=now=>{
@@ -62,24 +65,28 @@
   }
 
   function loadCoreRuntime(){
+    if(leanHome)return;
     if(reduced||saveData)return;
     css('/performance-v3.css');
     script('/performance-v3.js');
   }
 
   function loadCinematic(){
+    if(leanHome)return;
     if(reduced||tier==='lite')return;
     css('/cinematic.css');css('/motion-plus.css');
     script('/cinematic.js');script('/motion-plus.js');
   }
 
   function loadExperience(){
+    if(leanHome)return;
     if(reduced||saveData||tier==='lite')return;
     if(mobile&&tier!=='high')return;
     script('/experience.js',{module:true});
   }
 
   function loadDeepLayers(){
+    if(leanHome)return;
     if(reduced||tier==='lite')return;
     css('/animation-registry.css');
     script('/animation-registry.js');
@@ -90,6 +97,7 @@
   }
 
   function loadInteractionFx(){
+    if(leanHome)return;
     if(tier!=='high'||mobile||reduced||saveData)return;
     css('/click-3d-fx.css');
     script('/click-3d-fx.js');
@@ -97,6 +105,7 @@
   }
 
   function loadTouchEnhancements(){
+    if(leanHome)return;
     if(!mobile||tier==='lite'||reduced)return;
     css('/touch-60.css');
     script('/touch-60-guard.js').then(()=>script('/touch-60.js'));
@@ -104,6 +113,7 @@
 
   let cinematicLoaded=false,experienceLoaded=false,deepLoaded=false,touchLoaded=false;
   function onProgress(){
+    if(leanHome)return;
     const y=scrollY;
     const d=depth();
     if(!cinematicLoaded&&y>Math.min(220,innerHeight*.22)){cinematicLoaded=true;loadCinematic()}
