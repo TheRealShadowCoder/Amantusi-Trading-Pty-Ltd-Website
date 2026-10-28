@@ -13,6 +13,7 @@
  const network=navigator.connection||navigator.webkitConnection;
  const lowPower=Number(navigator.deviceMemory||4)<4||Number(navigator.hardwareConcurrency||4)<4;
  const motionOff=()=>reduced.matches||contrast.matches||Boolean(network?.saveData)||coarse.matches||innerWidth<=980||lowPower;
+ if(motionOff())hero.dataset.amLoopState='fallback';
  let visible=false,gl=null,program=null,texture=null,buffer=null,frame=0,prev=0,started=0,disabled=false,initScheduled=false;
  let canvas=null,observer=null,rect=null;
  const vs=String.raw`attribute vec2 aPosition;
@@ -102,9 +103,9 @@
  }
  let mouse=[.5,.5];
  function resize(){
-  const box=tile.getBoundingClientRect();
+  if(!rect)rect=tile.getBoundingClientRect();
+  const box=rect;
   if(box.width<2||box.height<2)return false;
-  rect=box;
   // 1x DPR, max 400x550: avoid expensive full-resolution GPU redraws.
   const width=Math.max(1,Math.min(400,Math.round(box.width)));
   const height=Math.max(1,Math.min(550,Math.round(box.height)));
@@ -129,7 +130,7 @@
    gl.uniform1f(u.phase,phase);
    gl.uniform2f(u.pointer,mouse[0],1-mouse[1]);
    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
-   hero.dataset.amLoopState='playing';
+   if(hero.dataset.amLoopState!=='playing')hero.dataset.amLoopState='playing';
   }catch(_){fallback()}
  }
  function play(){

@@ -30,7 +30,7 @@
  const coarse=matchMedia('(pointer:coarse)');
  const connection=navigator.connection||navigator.webkitConnection;
  const lowPower=Number(navigator.deviceMemory||4)<=2||Number(navigator.hardwareConcurrency||4)<=2;
- const shouldFallback=()=>reduced.matches||contrast.matches||Boolean(connection?.saveData)||lowPower;
+ const shouldFallback=()=>reduced.matches||contrast.matches||Boolean(connection?.saveData)||lowPower||coarse.matches;
  const vertex=String.raw`attribute vec2 position;varying vec2 uv;void main(){uv=(position+1.0)*0.5;gl_Position=vec4(position,0.0,1.0);}`;
  const fragment=String.raw`precision mediump float;
  varying vec2 uv;
@@ -42,7 +42,7 @@
  void main(){
   vec2 d=uv-pointer;
   float lens=exp(-dot(d,d)*13.0)*strength;
-  vec2 ripple=normalize(d+vec2(0.0001))*sin(length(d)*35.0-time*2.2)*0.0035*lens;
+  vec2 ripple=normalize(d+vec2(0.0001))*sin(length(d)*35.0+2.2*sin(time))*0.0035*lens;
   vec2 bend=d*lens*.027+ripple;
   vec2 sampleUV=clamp(uv+bend,vec2(.002),vec2(.998));
   vec3 base=texture2D(uImage,sampleUV).rgb;
@@ -52,7 +52,7 @@
    base.g,
    texture2D(uImage,clamp(sampleUV-rgbOffset,vec2(.002),vec2(.998))).b
   );
-  float spec=pow(max(0.0,1.0-abs(uv.x*.76+uv.y*.55-.55-.15*sin(time*.4+depth))),28.0);
+  float spec=pow(max(0.0,1.0-abs(uv.x*.76+uv.y*.55-.55-.15*sin(time+depth))),28.0);
   float chrome=.05*spec + .045*lens;
   float edges=pow(1.0-abs(uv.x-.5)*2.0,10.0)*.025;
   vec3 color=mix(base,refracted,.52)+vec3(.94,.75,.48)*(chrome+edges);
@@ -119,7 +119,7 @@
  function paint(now){
   raf=0;
   if(!visible||document.hidden||broken||shouldFallback())return;
-  const speed=coarse.matches?1000/18:1000/30;
+  const speed=1000/20;
   raf=requestAnimationFrame(paint);
   if(now-last<speed)return;
   last=now;
@@ -131,7 +131,7 @@
   try{
    gl.useProgram(program);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);
    gl.uniform2f(uniforms.pointer,mouseX,1-mouseY);
-   gl.uniform1f(uniforms.time,(now-started)/1000);
+   gl.uniform1f(uniforms.time,((now-started)%10000)/10000*Math.PI*2);
    gl.uniform1f(uniforms.strength,hover);
    gl.uniform1f(uniforms.depth,scrollY/30);
    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
@@ -140,6 +140,13 @@
  function stop(){if(raf)cancelAnimationFrame(raf);raf=0}
  function play(){
   if(!visible||document.hidden||broken||shouldFallback())return;
+  // Do not allocate this second GPU context below the fold at page load.
+  if(!gl){
+   try{if(!setup()){stage.dataset.renderer='fallback';return}
+       currentImage=photo.currentSrc||photo.src;
+       if(photo.complete&&photo.naturalWidth)upload();
+   }catch(_){abandon();return}
+  }
   if(!raf)raf=requestAnimationFrame(paint);
  }
  function select(index,focus=false){
@@ -198,27 +205,30 @@
  });
  stage.addEventListener('pointercancel',()=>{dragStart=null});
  stage.style.touchAction='pan-y';
+ let scrollRaf=0;
  function onScroll(){
-  const bounds=section.getBoundingClientRect(),progress=Math.max(-1,Math.min(1,(innerHeight*.5-bounds.top)/Math.max(1,bounds.height)-.5));
-  scrollY=progress*24;
+  if(!visible||scrollRaf)return;
+  scrollRaf=requestAnimationFrame(()=>{
+   scrollRaf=0;
+   const bounds=section.getBoundingClientRect(),progress=Math.max(-1,Math.min(1,(innerHeight*.5-bounds.top)/Math.max(1,bounds.height)-.5));
+   scrollY=progress*24;
+  });
  }
- addEventListener('scroll',onScroll,{passive:true});onScroll();
+ addEventListener('scroll',onScroll,{passive:true});
  const mediaChange=()=>{if(shouldFallback()){stop();stage.dataset.renderer='fallback'}else{if(gl&&texture)stage.dataset.renderer='webgl';play()}};
  reduced.addEventListener?.('change',mediaChange);contrast.addEventListener?.('change',mediaChange);
  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();stop();stage.dataset.renderer='fallback';gl=null;texture=null});
  canvas.addEventListener('webglcontextrestored',()=>{
   try{if(setup()){currentImage=photo.currentSrc||photo.src;upload();play()}}catch(_){abandon()}
  });
- document.addEventListener('visibilitychange',()=>document.hidden?stop():play(),{passive:true});
+ document.addEventListener('visibilitychange',()=>{section.dataset.amLoopVisible=visible&&!document.hidden?'true':'false';document.hidden?stop():play()},{passive:true});
  if('IntersectionObserver' in window){
-  observer=new IntersectionObserver(entries=>{visible=entries.some(x=>x.isIntersecting);if(visible)play();else stop()},{rootMargin:'90px 0px',threshold:0});
+  observer=new IntersectionObserver(entries=>{visible=entries.some(x=>x.isIntersecting);section.dataset.amLoopVisible=visible&&!document.hidden?'true':'false';if(visible){onScroll();play()}else stop()},{rootMargin:'90px 0px',threshold:0});
   observer.observe(stage);
  }else{visible=true}
  addEventListener('resize',()=>{if(gl)size()},{passive:true});
- try{
-  if(!shouldFallback()&&setup()){if(photo.complete&&photo.naturalWidth){currentImage=photo.currentSrc||photo.src;upload()}}
-  else{stage.dataset.renderer='fallback'}
- }catch(_){abandon()}
+ stage.dataset.renderer='fallback';
  select(0);
- play();
+ // A tab click must work immediately; visual GPU is lazy until intersection.
+ if(visible)play();
 })();
