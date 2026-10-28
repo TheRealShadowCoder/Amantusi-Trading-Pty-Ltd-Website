@@ -1,0 +1,30 @@
+name: Validate Separate Admin Recovery Inbox
+on:
+  push:
+    branches: [feature/verified-alternate-recovery-email-20261028]
+  pull_request:
+    paths:
+      - 'src/admin-recovery.js'
+      - 'public/admin-recovery.js'
+      - 'public/admin-recovery.html'
+      - 'scripts/test-recovery-inbox.mjs'
+      - 'scripts/validate-admin-recovery.mjs'
+      - '.github/workflows/recovery-inbox-unit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Validate recovery source, security constraints and mocked email delivery
+        run: |
+          node --check src/admin-recovery.js
+          node --check public/admin-recovery.js
+          node scripts/validate-admin-recovery.mjs
+          node scripts/test-recovery-inbox.mjs
