@@ -24,6 +24,15 @@ test('mobile 320, 390, 768 and 1024 layouts keep content within viewport', async
    });
    expect(data.css,path+' CSS').toBe(true);
    expect(data.scroll,path+' at '+item.width+'px').toBeLessThanOrEqual(data.viewport+2);
+   if(path==='/catering-menu.html'&&item.width<=390){
+    const title=page.locator('#catering-main-title');
+    await expect(title).toBeVisible();
+    const box=await title.boundingBox();
+    expect(box?.width,'Catering heading width at '+item.width).toBeGreaterThan(180);
+    expect(box?.y,'Catering heading position at '+item.width).toBeLessThan(520);
+    const canvas=page.locator('.menu-hero .ambient-webgl-canvas');
+    if(await canvas.count())await expect(canvas).toHaveCSS('position','absolute');
+   }
   }
  }
 });
