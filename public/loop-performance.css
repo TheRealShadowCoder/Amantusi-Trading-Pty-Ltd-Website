@@ -1,0 +1,37 @@
+/* Precisely 10-second, loopable compositor transforms in two homepage areas.
+   Hero GPU renders one real photo. All other images are plain clickable WebP fallbacks. */
+.am-glass-tile{position:absolute;isolation:isolate}
+.am-glass-tile img{position:relative;z-index:0}
+.am-glass-webgl{position:absolute;inset:0;display:block;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity .3s ease}
+.am-glass-tile[data-glass-webgl="active"] .am-glass-webgl{opacity:1}
+.am-landing-hero .am-glass-light{animation:am-gold-pulse-10s 10s ease-in-out infinite}
+.am-landing-hero .am-glass-orbit--one{animation:am-orbit-10s 10s ease-in-out infinite}
+.am-landing-hero .am-glass-orbit--two{animation:am-orbit-10s 10s ease-in-out infinite reverse}
+.am-glass-tile--meals .am-glass-tile__gloss,.am-glass-tile--hygiene .am-glass-tile__gloss{animation:am-sheen-10s 10s ease-in-out infinite}
+@keyframes am-gold-pulse-10s{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.045);opacity:1}}
+@keyframes am-orbit-10s{0%,100%{opacity:.4;transform:rotate(-15deg) scale(.98)}50%{opacity:.8;transform:rotate(8deg) scale(1.02)}}
+@keyframes am-sheen-10s{0%,100%{transform:translateX(-1%);opacity:.4}50%{transform:translateX(3%);opacity:.75}}
+/* Photo studio's gold light follows the same 10 s seamless timing. */
+.amt-showcase .amt-photo-glint{animation:am-studio-light-10s 10s ease-in-out infinite}
+@keyframes am-studio-light-10s{0%,100%{opacity:.23;transform:translateX(-8%) rotate(-10deg)}50%{opacity:.54;transform:translateX(8%) rotate(-10deg)}}
+/* Pause all compositor loops when the section is not visible or tab is hidden. */
+.am-landing-hero:not([data-am-loop-visible="true"]) :is(.am-glass-light,.am-glass-orbit,.am-glass-tile__gloss){animation-play-state:paused!important}
+.amt-showcase:not([data-am-loop-visible="true"]) .amt-photo-glint{animation-play-state:paused!important}
+/* Remove expensive full-screen blur and long-running decorative layers on slow screens. */
+@media(max-width:980px){
+ body[data-scene="home"] .site-header{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+ .am-landing-hero::before{background-image:linear-gradient(105deg,#03090f,#172029)!important}
+ .am-landing-hero .am-glass-light{filter:none!important;opacity:.45!important}
+ .am-glass-tiles{transform:none!important}
+}
+@media(max-width:700px){
+ .am-glass-orbit,.am-glass-sparks{display:none!important}
+ .am-glass-tile__gloss,.amt-photo-glint{animation:none!important}
+ .am-landing-hero .am-glass-light{animation:none!important}
+ .am-landing-hero .hero-aurora{display:none!important}
+}
+@media(prefers-reduced-motion:reduce),(prefers-contrast:more){
+ .am-glass-light,.am-glass-orbit,.am-glass-tile__gloss,.amt-photo-glint{animation:none!important}
+ .am-glass-webgl{display:none!important}
+}
+@media print{.am-glass-webgl{display:none!important}}
