@@ -22,7 +22,7 @@ expect(recovery.includes("hash: 'SHA-256'") && recovery.includes("name: 'PBKDF2'
 expect(recovery.includes('randomToken(18)') && recovery.includes('twoFactorRequired: true'), 'backup password storage must use a random salt and require second factor');
 expect(recovery.includes('CODE_TTL_SECONDS = 600') && recovery.includes('CODE_ATTEMPT_MAX = 5'), 'one-time code expiry/attempt limits are missing');
 expect(recovery.includes('REQUEST_RATE_MAX = 4') && recovery.includes('LOGIN_ATTEMPT_MAX = 5') && recovery.includes('LOGIN_LOCK_SECONDS = 900'), 'recovery abuse protection is incomplete');
-expect(recovery.includes("sendEmail(env, [email]") && notifications.includes('RESEND_API_KEY') && notifications.includes('ALERT_FROM_EMAIL'), 'recovery email delivery is not connected to the existing email provider');
+expect(recovery.includes("sendEmail(env, [destination]") && notifications.includes('RESEND_API_KEY') && notifications.includes('ALERT_FROM_EMAIL'), 'verified recovery destination delivery is not connected to the existing email provider');
 expect(recovery.includes("purpose === 'login'") && recovery.includes("purpose === 'setup'") && recovery.includes("'reset'"), 'login/setup/reset one-time-code purposes are not isolated');
 expect(recovery.includes('getAdminSession(request, env)') && recovery.includes('Google administrator session required to create backup recovery.'), 'initial backup setup must require an authenticated Google admin session');
 expect(recovery.includes("if (!ACCOUNTS[email] || !(await backupPassword(env, email)))"), 'forgot-password reset must not create a backup method for an uninitialized account');
