@@ -163,3 +163,10 @@ body[data-scene="home"] .am-landing-hero{position:relative;padding:clamp(123px,1
  .am-landing-hero::before{background:linear-gradient(90deg,#03090f,#111b23)!important}
 }
 @media print{.am-glass-tiles{display:grid;grid-template-columns:repeat(5,1fr)}.am-glass-tile{position:relative!important;transform:none!important}.am-glass-sparks{display:none}}
+
+/* Override legacy low-bandwidth orbital-logo rules for this new, clickable gallery.
+   These photos are real <img> elements and must remain interactive on mobile. */
+body[data-scene="home"] .am-landing-art{display:block!important;opacity:1!important;pointer-events:auto!important;mix-blend-mode:normal!important;contain:layout style!important}
+body[data-scene="home"][data-runtime-tier="lite"] .am-landing-art{opacity:1!important}
+.am-glass-tile{--am-stage-x:0px;--am-stage-y:0px;transform:translate3d(var(--am-stage-x),var(--offset-y),var(--base-z)) rotateY(var(--tilt)) rotateZ(var(--rotate,0deg))}
+@media(max-width:700px){.am-glass-tiles{--am-stage-x:0px;--am-stage-y:0px}.am-glass-tile{transform:none!important;opacity:1!important}}
