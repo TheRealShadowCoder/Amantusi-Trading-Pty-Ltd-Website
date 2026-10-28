@@ -34,7 +34,7 @@
  const vertex=String.raw`attribute vec2 position;varying vec2 uv;void main(){uv=(position+1.0)*0.5;gl_Position=vec4(position,0.0,1.0);}`;
  const fragment=String.raw`precision mediump float;
  varying vec2 uv;
- uniform sampler2D image;
+ uniform sampler2D uImage;
  uniform vec2 pointer;
  uniform float time;
  uniform float strength;
@@ -45,12 +45,12 @@
   vec2 ripple=normalize(d+vec2(0.0001))*sin(length(d)*35.0-time*2.2)*0.0035*lens;
   vec2 bend=d*lens*.027+ripple;
   vec2 sampleUV=clamp(uv+bend,vec2(.002),vec2(.998));
-  vec3 base=texture2D(image,sampleUV).rgb;
+  vec3 base=texture2D(uImage,sampleUV).rgb;
   vec2 rgbOffset=vec2(.0026,-.0016)*lens;
   vec3 refracted=vec3(
-   texture2D(image,clamp(sampleUV+rgbOffset,vec2(.002),vec2(.998))).r,
+   texture2D(uImage,clamp(sampleUV+rgbOffset,vec2(.002),vec2(.998))).r,
    base.g,
-   texture2D(image,clamp(sampleUV-rgbOffset,vec2(.002),vec2(.998))).b
+   texture2D(uImage,clamp(sampleUV-rgbOffset,vec2(.002),vec2(.998))).b
   );
   float spec=pow(max(0.0,1.0-abs(uv.x*.76+uv.y*.55-.55-.15*sin(time*.4+depth))),28.0);
   float chrome=.05*spec + .045*lens;
@@ -83,7 +83,7 @@
   const position=gl.getAttribLocation(program,'position');
   gl.enableVertexAttribArray(position);gl.vertexAttribPointer(position,2,gl.FLOAT,false,0,0);
   uniforms={
-   image:gl.getUniformLocation(program,'image'),
+   image:gl.getUniformLocation(program,'uImage'),
    pointer:gl.getUniformLocation(program,'pointer'),
    time:gl.getUniformLocation(program,'time'),
    strength:gl.getUniformLocation(program,'strength'),
@@ -110,7 +110,7 @@
   if(!gl)return false;
   const rect=frame.getBoundingClientRect();
   if(rect.width<5||rect.height<5)return false;
-  const dpr=Math.min(devicePixelRatio||1,coarse.matches?.85:1.35);
+  const dpr=Math.min(devicePixelRatio||1,coarse.matches ? 0.85 : 1.35);
   const w=Math.max(1,Math.min(720,Math.round(rect.width*dpr)));
   const h=Math.max(1,Math.min(960,Math.round(rect.height*dpr)));
   if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}
