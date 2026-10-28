@@ -52,7 +52,7 @@ jobs:
             if curl -fsS http://127.0.0.1:4173/ >/dev/null; then break; fi
             sleep 1
           done
-          npx playwright test tests/public-static.spec.mjs
+          npx playwright test tests/public-static.spec.mjs tests/mobile-webgl.spec.mjs
       - name: Syntax and Wrangler validation
         run: |
           set -euo pipefail

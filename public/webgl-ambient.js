@@ -55,7 +55,7 @@
  function resize(){
   const rect=hero.getBoundingClientRect();
   if(rect.width<4||rect.height<4)return false;
-  const dpr=Math.min(devicePixelRatio||1,mobile?.9:1.4);
+  const dpr=Math.min(devicePixelRatio||1,mobile ? 0.9 : 1.4);
   const w=Math.max(1,Math.min(1400,Math.round(rect.width*dpr)));
   const h=Math.max(1,Math.min(900,Math.round(rect.height*dpr)));
   if(w!==canvas.width||h!==canvas.height){

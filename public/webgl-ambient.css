@@ -1,7 +1,7 @@
 /* WebGL decorative background, no pointer capture and no content replacement. */
 .ambient-webgl-host{position:relative;isolation:isolate}
 .ambient-webgl-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;pointer-events:none;user-select:none;opacity:.78;contain:strict}
-.ambient-webgl-host > :not(.ambient-webgl-canvas){position:relative;z-index:1}
+.ambient-webgl-host > :not(.ambient-webgl-canvas):not(.hero-aurora){position:relative;z-index:1}
 .hero.ambient-webgl-host .hero-grid,.hero.ambient-webgl-host .trust-ribbon{z-index:2}
 .ambient-webgl-host[data-webgl-state=fallback]{background-image:radial-gradient(ellipse at 78% 32%,rgba(185,151,77,.15),transparent 48%)}
 .sector-hero.ambient-webgl-host .ambient-webgl-canvas,.menu-hero.ambient-webgl-host .ambient-webgl-canvas{opacity:.34}

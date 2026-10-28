@@ -51,7 +51,7 @@
     if(nav?.classList.contains('open')&&!event.target.closest('.nav-shell'))closeMenu();
   });
   addEventListener('resize',()=>{
-    if(innerWidth>1000&&nav?.classList.contains('open'))closeMenu();
+    if(innerWidth>980&&nav?.classList.contains('open'))closeMenu();
   },{passive:true});
 
   if('IntersectionObserver' in window){
