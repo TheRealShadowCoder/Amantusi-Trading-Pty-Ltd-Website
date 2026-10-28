@@ -28,4 +28,6 @@ jobs:
           node --check src/admin-recovery.js
           node --check public/admin-recovery.js
           node scripts/validate-admin-recovery.mjs
+          node scripts/test-gmail-delivery.mjs
+          node scripts/validate-notification-receipt.mjs
           node scripts/test-recovery-inbox.mjs
