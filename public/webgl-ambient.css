@@ -1,0 +1,21 @@
+/* WebGL decorative background, no pointer capture and no content replacement. */
+.ambient-webgl-host{position:relative;isolation:isolate}
+.ambient-webgl-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;pointer-events:none;user-select:none;opacity:.78;contain:strict}
+.hero.ambient-webgl-host > .hero-grid,.hero.ambient-webgl-host > .trust-ribbon,.menu-hero.ambient-webgl-host > .menu-hero-grid,.sector-hero.ambient-webgl-host > .sector-wrap,.profile-hero.ambient-webgl-host > .profile-hero-grid,.brochure-cover.ambient-webgl-host > .container{position:relative;z-index:1}
+.hero.ambient-webgl-host .hero-grid,.hero.ambient-webgl-host .trust-ribbon{z-index:2}
+.ambient-webgl-host[data-webgl-state=fallback]{background-image:radial-gradient(ellipse at 78% 32%,rgba(185,151,77,.15),transparent 48%)}
+.sector-hero.ambient-webgl-host .ambient-webgl-canvas,.menu-hero.ambient-webgl-host .ambient-webgl-canvas{opacity:.34}
+.profile-hero.ambient-webgl-host .ambient-webgl-canvas,.brochure-cover.ambient-webgl-host .ambient-webgl-canvas{opacity:.3}
+@media(max-width:700px){.ambient-webgl-canvas{opacity:.25}.sector-hero.ambient-webgl-host .ambient-webgl-canvas,.menu-hero.ambient-webgl-host .ambient-webgl-canvas{opacity:.18}}
+@media(prefers-reduced-motion:reduce),(prefers-contrast:more){.ambient-webgl-canvas{display:none!important}}
+@media print{.ambient-webgl-canvas{display:none!important}}
+
+/* Catering's runtime photo layer can turn the hero into a flex row. Keep the
+   content grid full-width; photos and GPU canvas must never consume flex space. */
+.menu-hero.ambient-webgl-host{display:block!important}
+.menu-hero.ambient-webgl-host > .menu-hero-grid{width:min(1180px,calc(100% - 2 * var(--amt-edge)))!important;max-width:100%;margin-inline:auto!important;min-width:0}
+.menu-hero.ambient-webgl-host > .catering-photo-hero{position:absolute!important;inset:0;pointer-events:none}
+
+/* Runtime catering styles can override unqualified canvas positioning.
+   Always keep GPU output absolutely positioned out of document flow. */
+.ambient-webgl-host > canvas.ambient-webgl-canvas{position:absolute!important;inset:0!important;display:block!important;flex:none!important;width:100%!important;height:100%!important;pointer-events:none!important;z-index:0!important}
