@@ -26,6 +26,6 @@ assert.ok(js.includes('texImage2D')&&js.includes('texture2D'),'WebGL must sample
 assert.ok(js.includes('UNPACK_FLIP_Y_WEBGL')&&js.includes('RGB'),'Photographic textures uploaded to GPU');
 assert.ok(!js.includes('surfaceBox')&&!js.includes('drawElements'),'No model-only objects');
 assert.ok(js.includes('prefers-reduced-motion: reduce')&&js.includes('saveData')&&js.includes('IntersectionObserver'),'Mobile/low-power fallback required');
-assert.ok(js.includes('webglcontextlost')&&js.includes('stage.dataset.renderer=\\'fallback\\''),'GPU failure fallback required');
+assert.ok(js.includes('webglcontextlost') && js.includes("stage.dataset.renderer='fallback'"),'GPU failure fallback required');
 assert.ok(css.includes('@media(max-width:440px)')&&css.includes('@media(prefers-reduced-motion:reduce)'),'Responsive and reduced motion styling required');
 console.log('PASS five original rendered WebP service photos, image-based GPU refraction and static fallbacks');
