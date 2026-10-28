@@ -26,6 +26,7 @@
 <link rel="stylesheet" href="/webgl-ambient.css">
   <link rel="stylesheet" href="/showcase-3d.css" />
   <link rel="stylesheet" href="/showcase-photography.css" />
+  <link rel="stylesheet" href="/landing-glass.css" />
 </head>
 <body data-scene="home">
   <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -48,23 +49,63 @@
   </header>
 
   <main id="main-content" tabindex="-1">
-    <section class="hero section-dark">
+    <section class="hero section-dark am-landing-hero" aria-labelledby="landing-main-heading">
       <div class="hero-aurora" aria-hidden="true"></div>
-      <div class="hero-grid container">
-        <div class="hero-copy reveal visible">
-          <p class="eyebrow">Integrated procurement • supply • service</p>
-          <h1 class="hero-title">Complex requirements.<br /><em>Precisely supplied.</em></h1>
-          <p class="hero-lead">Amantusi Trading Pty Ltd sources and supplies goods and services for government, institutional and private sector requirements across FMCG, catering, hygiene, office supply and general procurement categories.</p>
-          <div class="hero-actions"><a class="button button-gold" href="#quote">Request a Quotation</a><a class="button button-ghost" href="#capabilities">Explore Capabilities</a></div>
-          <a class="amt-studio-hero-link" href="#immersive">Explore the 3D supply studio <span aria-hidden="true">↗</span></a>
-          <aside class="hero-contact-card" aria-label="Direct business contact"><span>Talk to our procurement team</span><a href="mailto:zodwangema37@gmail.com">Email your requirements</a><a href="tel:+27732476716">Call 073 247 6716</a></aside>
-          <div class="hero-meta" aria-label="Company credentials"><span><small>Registration</small><strong>2016/443097/07</strong></span><span><small>CSD No.</small><strong>MAAA0100552</strong></span><span><small>Based in</small><strong>Durban, South Africa</strong></span></div>
+      <div class="am-glass-sparks" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div class="am-landing-container">
+        <div class="hero-copy am-landing-copy reveal visible">
+          <p class="eyebrow am-landing-eyebrow">FOOD <span>·</span> SUPPLIES <span>·</span> STRONGER COMMUNITIES</p>
+          <h1 class="hero-title am-landing-title" id="landing-main-heading"><span>FEEDING PEOPLE.</span><span>SUPPLYING</span><span class="am-gold-text">ESSENTIALS.</span></h1>
+          <p class="hero-lead am-landing-lead">Catering, packed meals, office and institutional supplies, cleaning and hygiene products, and general trading — sourced around your requirements.</p>
+          <div class="hero-actions am-landing-actions">
+            <a class="button button-gold am-landing-button" href="#services-gallery">Explore our services <span aria-hidden="true">↗</span></a>
+            <a class="button button-ghost am-landing-quote" href="#quote">Request a Quotation <span aria-hidden="true">→</span></a>
+          </div>
+          <a class="amt-studio-hero-link am-landing-studio-link" href="#immersive">Explore the interactive service studio <span aria-hidden="true">↗</span></a>
+          <aside class="hero-contact-card am-landing-contact" aria-label="Contact Amantusi Trading">
+            <span>Tell us what you need</span><a href="mailto:zodwangema37@gmail.com">Email your brief</a><a href="tel:+27732476716">Call 073 247 6716</a>
+          </aside>
         </div>
-        <div class="hero-art reveal visible" data-tilt aria-label="Amantusi Trading brand presentation">
-          <div class="orbital-card"><div class="orbit-track track-a"></div><div class="orbit-track track-b"></div><div class="fine-ring ring-one"></div><div class="fine-ring ring-two"></div><div class="logo-plaque"><span class="plaque-shine"></span><img src="/assets/amantusi-logo.svg" width="240" height="240" alt="Amantusi Trading" /></div><div class="capability-chip chip-a">Government Procurement</div><div class="capability-chip chip-b">FMCG Supply</div><div class="capability-chip chip-c">Catering</div><div class="capability-chip chip-d">General Trading</div></div>
+        <div class="hero-art am-landing-art" id="services-gallery" aria-label="Explore Amantusi services pictured in floating glass panels">
+          <div class="am-glass-light" aria-hidden="true"></div><div class="am-glass-orbit am-glass-orbit--one" aria-hidden="true"></div><div class="am-glass-orbit am-glass-orbit--two" aria-hidden="true"></div>
+          <div class="am-glass-tiles" data-glass-gallery>
+            <a class="am-glass-tile am-glass-tile--catering" href="/corporate-catering.html" aria-label="Explore Catering services" data-glass-tile>
+              <img src="/assets/service-scenes/catering.webp" alt="Illustrative catered buffet with serving trays and prepared meals" width="550" height="760" fetchpriority="high" loading="eager" decoding="async" />
+              <span class="am-glass-tile__gloss" aria-hidden="true"></span>
+              <span class="am-glass-tile__top"><span class="am-glass-icon" aria-hidden="true">✳</span><span>01 / EVENTS</span></span>
+              <span class="am-glass-tile__bottom"><strong>Catering</strong><small>Buffets & functions</small></span>
+            </a>
+            <a class="am-glass-tile am-glass-tile--meals" href="/catering-menu.html" aria-label="Explore Packed meals services" data-glass-tile>
+              <img src="/assets/service-scenes/packed-meals.webp" alt="Illustrative packed lunches with sandwiches and fruit" width="550" height="760" loading="lazy" decoding="async" />
+              <span class="am-glass-tile__gloss" aria-hidden="true"></span>
+              <span class="am-glass-tile__top"><span class="am-glass-icon" aria-hidden="true">◩</span><span>02 / MEALS</span></span>
+              <span class="am-glass-tile__bottom"><strong>Packed meals</strong><small>Meetings & groups</small></span>
+            </a>
+            <a class="am-glass-tile am-glass-tile--institutional" href="/office-institutional.html" aria-label="Explore Institutional supply services" data-glass-tile>
+              <img src="/assets/service-scenes/institutional-supply.webp" alt="Illustrative notebooks and stationery for institutional supply" width="550" height="760" loading="lazy" decoding="async" />
+              <span class="am-glass-tile__gloss" aria-hidden="true"></span>
+              <span class="am-glass-tile__top"><span class="am-glass-icon" aria-hidden="true">▤</span><span>03 / SUPPLY</span></span>
+              <span class="am-glass-tile__bottom"><strong>Institutional supply</strong><small>Books & stationery</small></span>
+            </a>
+            <a class="am-glass-tile am-glass-tile--hygiene" href="/cleaning-hygiene.html" aria-label="Explore Cleaning & hygiene services" data-glass-tile>
+              <img src="/assets/service-scenes/cleaning-hygiene.webp" alt="Illustrative cleaning supplies, gloves and hygiene consumables" width="550" height="760" loading="lazy" decoding="async" />
+              <span class="am-glass-tile__gloss" aria-hidden="true"></span>
+              <span class="am-glass-tile__top"><span class="am-glass-icon" aria-hidden="true">✧</span><span>04 / HYGIENE</span></span>
+              <span class="am-glass-tile__bottom"><strong>Cleaning & hygiene</strong><small>Facility essentials</small></span>
+            </a>
+            <a class="am-glass-tile am-glass-tile--trading" href="/general-trading.html" aria-label="Explore General trading services" data-glass-tile>
+              <img src="/assets/service-scenes/general-trading.webp" alt="Illustrative supply packages and delivery goods" width="550" height="760" loading="lazy" decoding="async" />
+              <span class="am-glass-tile__gloss" aria-hidden="true"></span>
+              <span class="am-glass-tile__top"><span class="am-glass-icon" aria-hidden="true">◇</span><span>05 / SOURCING</span></span>
+              <span class="am-glass-tile__bottom"><strong>General trading</strong><small>Products & goods</small></span>
+            </a>
+          </div>
+          <div class="am-gallery-index" aria-hidden="true"><span>OUR SERVICES</span><span>01 — 05</span></div><div class="am-gallery-hint" aria-hidden="true">SWIPE TO EXPLORE <span>→</span></div>
         </div>
       </div>
-      <div class="trust-ribbon"><div class="container trust-grid"><div class="trust-item"><span>Government Procurement</span><small>RFQs • Tenders • Supply</small></div><div class="trust-item"><span>FMCG & Institutional Supply</span><small>Goods • Consumables • Sourcing</small></div><div class="trust-item"><span>Catering Solutions</span><small>Meetings • Events • Institutions</small></div><div class="trust-item"><span>General Trading</span><small>Flexible procurement support</small></div></div></div>
+      <div class="trust-ribbon am-landing-ribbon"><div class="container am-landing-proof">
+        <span><b>01</b> Catering &amp; events</span><span><b>02</b> Institutional supplies</span><span><b>03</b> Hygiene essentials</span><span><b>04</b> Procurement &amp; trading</span>
+      </div></div>
     </section>
 
     <section class="section section-light" id="about"><div class="section-accent" aria-hidden="true"></div><div class="container split-layout"><div class="section-intro reveal"><p class="eyebrow dark">Company</p><h2>Built to source.<br />Structured to supply.</h2></div><div class="prose reveal"><p class="large-copy">Amantusi Trading is a diversified procurement, supply and service business positioned to respond to RFQs, purchase requirements and tender opportunities across multiple product and service categories.</p><p>Our model is intentionally flexible: understand the requirement, source competitively, quote clearly and coordinate reliable fulfilment.</p><a class="text-link" href="#capabilities">View our capabilities <span>↗</span></a></div></div></section>
@@ -155,5 +196,6 @@
   <script src="/site-navigation.js" defer></script>
 <script src="/webgl-ambient.js" defer></script>
   <script src="/showcase-3d.js" defer></script>
+  <script src="/landing-glass.js" defer></script>
 </body>
 </html>

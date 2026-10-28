@@ -4,7 +4,7 @@ test('homepage is accessible, fast-first, and links to sector detail pages', asy
   const response=await page.goto('/');
   expect(response?.ok()).toBeTruthy();
   await expect(page).toHaveTitle(/Amantusi Trading/i);
-  await expect(page.locator('h1').first()).toContainText('Complex requirements');
+  await expect(page.locator('h1').first()).toContainText('FEEDING PEOPLE.');
   await expect(page.locator('.skip-link')).toHaveAttribute('href','#main-content');
   await expect(page.locator('#quote-form [name="rfqFiles"]')).toHaveCount(1);
   await expect(page.locator('#rfq-save-draft')).toHaveCount(1);
