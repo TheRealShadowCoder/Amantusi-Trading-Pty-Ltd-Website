@@ -1,3 +1,4 @@
+import {sendGmailEmail, gmailConfigured} from './gmail-delivery.js';
 const SESSION_COOKIE = "amantusi_admin";
 const SESSION_HOURS = 8;
 const FAILED_ALERT_THRESHOLD = 4;
@@ -258,21 +259,7 @@ async function clearAttempts(request, env, email) {
 }
 
 async function sendEmail(env, to, subject, text, idempotencyKey = "") {
-  if (!env.RESEND_API_KEY || !env.ALERT_FROM_EMAIL) return false;
-  try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-        ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey.slice(0, 240) } : {})
-      },
-      body: JSON.stringify({ from: env.ALERT_FROM_EMAIL, to, subject, text })
-    });
-    return response.ok;
-  } catch (_) {
-    return false;
-  }
+  return (await sendGmailEmail(env,to,subject,text,idempotencyKey)).sent;
 }
 
 async function sendWhatsApp(env, text) {
@@ -487,7 +474,7 @@ export async function requestReset(request, env) {
     });
   }
 
-  if (!ACCOUNTS[email] || count >= RESET_RATE_MAX || !env.RESEND_API_KEY || !env.ALERT_FROM_EMAIL) {
+  if (!ACCOUNTS[email] || count >= RESET_RATE_MAX || !gmailConfigured(env)) {
     return json(generic);
   }
 
@@ -615,7 +602,7 @@ export async function status(env) {
     contentStorage: Boolean(env.CMS_KV),
     mediaStorage: Boolean(env.CMS_MEDIA || env.CMS_KV),
     mediaBackend: env.CMS_MEDIA ? "r2" : (env.CMS_KV ? "kv" : "none"),
-    emailAlerts: Boolean(env.RESEND_API_KEY && env.ALERT_FROM_EMAIL),
+    emailAlerts: Boolean(gmailConfigured(env)),
     whatsappAlerts: Boolean(
       env.WHATSAPP_GRAPH_VERSION &&
       env.WHATSAPP_ACCESS_TOKEN &&
@@ -623,7 +610,7 @@ export async function status(env) {
       env.OWNER_WHATSAPP_NUMBER &&
       env.WHATSAPP_ALERT_TEMPLATE
     ),
-    passwordReset: Boolean(env.CMS_KV && env.RESEND_API_KEY && env.ALERT_FROM_EMAIL),
+    passwordReset: Boolean(env.CMS_KV && gmailConfigured(env)),
     authVersion: AUTH_VERSION
   });
 }

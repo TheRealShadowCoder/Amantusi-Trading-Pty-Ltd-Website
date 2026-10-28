@@ -1,3 +1,4 @@
+import { gmailConfigured, sendGmailEmail } from './gmail-delivery.js';
 const DEFAULT_ADMINS = ["zodwangema37@gmail.com", "s.k.businessline@gmail.com"];
 
 function adminRecipients(env) {
@@ -5,24 +6,7 @@ function adminRecipients(env) {
   return configured.length ? configured : DEFAULT_ADMINS;
 }
 
-export async function sendEmail(env, to, subject, text, idempotencyKey = '') {
-  if (!env.RESEND_API_KEY || !env.ALERT_FROM_EMAIL) return { sent: false, provider: 'resend', reason: 'not-configured' };
-  const recipients = Array.isArray(to) ? to : [to];
-  try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-        ...(idempotencyKey ? { 'Idempotency-Key': String(idempotencyKey).slice(0, 240) } : {})
-      },
-      body: JSON.stringify({ from: env.ALERT_FROM_EMAIL, to: recipients, subject, text })
-    });
-    return { sent: response.ok, provider: 'resend', status: response.status };
-  } catch (error) {
-    return { sent: false, provider: 'resend', reason: String(error?.message || error) };
-  }
-}
+export const sendEmail = sendGmailEmail;
 
 export async function sendWhatsApp(env, text) {
   const version = env.WHATSAPP_GRAPH_VERSION;
@@ -57,7 +41,7 @@ export async function sendWhatsApp(env, text) {
 
 export function notificationStatus(env) {
   return {
-    email: Boolean(env.RESEND_API_KEY && env.ALERT_FROM_EMAIL),
+    email: gmailConfigured(env),
     whatsapp: Boolean(
       env.WHATSAPP_GRAPH_VERSION && env.WHATSAPP_ACCESS_TOKEN && env.WHATSAPP_PHONE_NUMBER_ID &&
       env.OWNER_WHATSAPP_NUMBER && env.WHATSAPP_ALERT_TEMPLATE
@@ -83,7 +67,7 @@ export async function notifyNewLead(env, lead, details) {
   ].join('\n');
 
   // Client receipt is opt-in at deployment: never claim email delivery
-  // when Resend is disabled, and never include the confidential RFQ content.
+  // when Gmail delivery is disabled, and never include the confidential RFQ content.
   const receiptEnabled=String(env.SEND_CUSTOMER_RECEIPT_EMAIL||'').toLowerCase()==='true';
   const tasks=[
     sendEmail(env, adminRecipients(env), `New Amantusi RFQ — ${lead.reference}`, text, `new-lead-${lead.id}`),
@@ -92,7 +76,7 @@ export async function notifyNewLead(env, lead, details) {
       ? sendEmail(env,[details.email],`Amantusi enquiry received — ${lead.reference}`,
           `Hello ${details.contactName||'there'},\n\nWe received your quotation enquiry and assigned reference ${lead.reference}.\n\nKeep this reference for your records. A submitted request is not confirmation of inventory, price, delivery or an accepted order.\n\nAmantusi Trading Pty Ltd\n073 247 6716`,
           `client-receipt-${lead.id}`)
-      : Promise.resolve({sent:false,provider:'resend',reason:'customer-receipt-not-enabled'})
+      : Promise.resolve({sent:false,provider:'gmail',reason:'customer-receipt-not-enabled'})
   ];
   const [email,whatsapp,receipt]=await Promise.all(tasks);
   return {email,whatsapp,receipt};
@@ -104,7 +88,7 @@ export async function notifyLeadStatus(env, lead, status) {
     sendEmail(env, adminRecipients(env), `Amantusi lead ${lead.reference} — ${status}`, adminText, `lead-status-${lead.id}-${status}`),
     sendWhatsApp(env, adminText)
   ];
-  if (lead.email && env.RESEND_API_KEY && env.ALERT_FROM_EMAIL) {
+  if (lead.email && gmailConfigured(env)) {
     tasks.push(sendEmail(
       env,
       [lead.email],
@@ -123,7 +107,7 @@ export async function notifyQuotation(env, lead, quotation) {
     sendEmail(env, adminRecipients(env), `Quotation ${quotation.quote_no} — ${quotation.status}`, text, `quote-${quotation.id}-${quotation.status}`),
     sendWhatsApp(env, text)
   ];
-  if (lead.email && quotation.status === 'Sent' && env.RESEND_API_KEY && env.ALERT_FROM_EMAIL) {
+  if (lead.email && quotation.status === 'Sent' && gmailConfigured(env)) {
     tasks.push(sendEmail(
       env,
       [lead.email],

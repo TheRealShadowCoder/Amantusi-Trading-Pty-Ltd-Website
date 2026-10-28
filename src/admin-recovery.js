@@ -1,3 +1,4 @@
+import {gmailConfigured} from './gmail-delivery.js';
 import { json, getAdminSession } from './security-v3.js';
 import { sendEmail } from './notifications.js';
 
@@ -367,7 +368,7 @@ async function config(request, env) {
   const verifiedAddress = admin ? await verifiedRecoveryRecipient(env, admin.email) : '';
   return json({
     enabled: Boolean(env.CMS_KV),
-    emailDelivery: Boolean(env.RESEND_API_KEY && env.ALERT_FROM_EMAIL),
+    emailDelivery: Boolean(gmailConfigured(env)),
     primary: 'google',
     backup: 'password+email-code',
     recoveryEngine: 'break-glass-v1',
@@ -384,7 +385,7 @@ async function config(request, env) {
 async function setupRequest(request, env) {
   const admin = await getAdminSession(request, env);
   if (!admin) return json({ error: 'Google administrator session required to create backup recovery.' }, 401);
-  if (!env.RESEND_API_KEY || !env.ALERT_FROM_EMAIL) return json({ error: 'Recovery email delivery is not configured.' }, 503);
+  if (!gmailConfigured(env)) return json({ error: 'Recovery email delivery is not configured.' }, 503);
   if (!(await consumeRequestRate(request, env, 'setup', admin.email))) return json({ error: 'Too many recovery-code requests. Try again later.' }, 429);
   const created = await createCodeFlow(request, env, admin.email, 'setup');
   return created.ok
@@ -407,7 +408,7 @@ async function setupConfirm(request, env) {
 }
 
 async function resetRequest(request, env) {
-  if (!env.RESEND_API_KEY || !env.ALERT_FROM_EMAIL) return json({ error: 'Recovery email delivery is not configured.' }, 503);
+  if (!gmailConfigured(env)) return json({ error: 'Recovery email delivery is not configured.' }, 503);
   const body = await readJson(request) || {};
   const email = emailOf(body.email);
   const generic = genericResetResponse();
@@ -443,7 +444,7 @@ async function resetConfirm(request, env) {
 }
 
 async function loginStart(request, env) {
-  if (!env.RESEND_API_KEY || !env.ALERT_FROM_EMAIL) return json({ error: 'Recovery email delivery is not configured.' }, 503);
+  if (!gmailConfigured(env)) return json({ error: 'Recovery email delivery is not configured.' }, 503);
   const body = await readJson(request);
   if (!body) return json({ error: 'Invalid request.' }, 400);
   const email = emailOf(body.email);
@@ -490,7 +491,7 @@ async function loginVerify(request, env) {
 async function recoveryEmailRequest(request, env) {
   const admin = await getAdminSession(request, env);
   if (!admin || !ACCOUNTS[admin.email]) return json({ error: 'Administrator session required.' }, 401);
-  if (!env.RESEND_API_KEY || !env.ALERT_FROM_EMAIL) {
+  if (!gmailConfigured(env)) {
     return json({ error: 'Recovery email delivery is not configured. Enable a verified email sender first.' }, 503);
   }
   const body = await readJson(request);
