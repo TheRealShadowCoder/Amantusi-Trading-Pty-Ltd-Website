@@ -51,7 +51,14 @@ async function call(path,body,cookieValue=cookie){
  return {status:response.status,payload};
 }
 try{
- let r=await call('/api/admin/recovery/email/request',{recoveryEmail:destination},'');
+ // Until a separate, email-verified destination is enrolled, this administrator's
+ // recovery codes should go to the login Gmail itself.
+ let r=await call('/api/admin/recovery/setup/request',{});
+ assert.equal(r.status,200,'Initial recovery setup should be possible with Gmail configured');
+ assert.deepEqual(sent[0].to,[account],'Initial recovery code must go to the administrator Gmail address');
+ sent.length=0;
+
+ r=await call('/api/admin/recovery/email/request',{recoveryEmail:destination},'');
  assert.equal(r.status,401,'Anonymous user must not enroll');
  r=await call('/api/admin/recovery/email/request',{recoveryEmail:destination});
  assert.equal(r.status,200,'Authenticated admin can request destination proof');
