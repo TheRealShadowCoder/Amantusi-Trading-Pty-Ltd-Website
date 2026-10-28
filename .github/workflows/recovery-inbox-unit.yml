@@ -24,6 +24,7 @@ jobs:
           node-version: 22
       - name: Validate recovery source, security constraints and mocked email delivery
         run: |
+          node scripts/prepare-admin-dashboard-google-only.mjs
           node --check src/admin-recovery.js
           node --check public/admin-recovery.js
           node scripts/validate-admin-recovery.mjs
