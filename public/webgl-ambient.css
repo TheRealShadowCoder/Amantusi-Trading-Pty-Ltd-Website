@@ -9,3 +9,9 @@
 @media(max-width:700px){.ambient-webgl-canvas{opacity:.25}.sector-hero.ambient-webgl-host .ambient-webgl-canvas,.menu-hero.ambient-webgl-host .ambient-webgl-canvas{opacity:.18}}
 @media(prefers-reduced-motion:reduce),(prefers-contrast:more){.ambient-webgl-canvas{display:none!important}}
 @media print{.ambient-webgl-canvas{display:none!important}}
+
+/* Catering's runtime photo layer can turn the hero into a flex row. Keep the
+   content grid full-width; photos and GPU canvas must never consume flex space. */
+.menu-hero.ambient-webgl-host{display:block!important}
+.menu-hero.ambient-webgl-host > .menu-hero-grid{width:min(1180px,calc(100% - 2 * var(--amt-edge)))!important;max-width:100%;margin-inline:auto!important;min-width:0}
+.menu-hero.ambient-webgl-host > .catering-photo-hero{position:absolute!important;inset:0;pointer-events:none}
