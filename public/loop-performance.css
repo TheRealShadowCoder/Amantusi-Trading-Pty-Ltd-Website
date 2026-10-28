@@ -35,3 +35,10 @@
  .am-glass-webgl{display:none!important}
 }
 @media print{.am-glass-webgl{display:none!important}}
+
+/* Stop legacy full-page cinematic overlays from competing with the focused photo effects. */
+body[data-scene="home"]::after{animation:none!important;opacity:.015!important}
+body[data-scene="home"] .page-glow,
+body[data-scene="home"] .particle-layer,
+body[data-scene="home"] .cursor-glow{display:none!important}
+body[data-scene="home"] .hero-aurora{animation:none!important}
