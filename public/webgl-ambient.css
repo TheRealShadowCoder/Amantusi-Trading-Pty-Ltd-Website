@@ -15,3 +15,7 @@
 .menu-hero.ambient-webgl-host{display:block!important}
 .menu-hero.ambient-webgl-host > .menu-hero-grid{width:min(1180px,calc(100% - 2 * var(--amt-edge)))!important;max-width:100%;margin-inline:auto!important;min-width:0}
 .menu-hero.ambient-webgl-host > .catering-photo-hero{position:absolute!important;inset:0;pointer-events:none}
+
+/* Runtime catering styles can override unqualified canvas positioning.
+   Always keep GPU output absolutely positioned out of document flow. */
+.ambient-webgl-host > canvas.ambient-webgl-canvas{position:absolute!important;inset:0!important;display:block!important;flex:none!important;width:100%!important;height:100%!important;pointer-events:none!important;z-index:0!important}
