@@ -14,8 +14,10 @@ const env={
   async put(key,value){store.set(key,value)},
   async delete(key){store.delete(key)}
  },
- RESEND_API_KEY:'test-key',
- ALERT_FROM_EMAIL:'Amantusi Security <security@example.invalid>'
+ GMAIL_OAUTH_CLIENT_ID:'mock-client-id',
+ GMAIL_OAUTH_CLIENT_SECRET:'mock-client-secret',
+ GMAIL_REFRESH_TOKEN:'mock-refresh-token',
+ GMAIL_SENDER_EMAIL:'authorized-sender@example.com'
 };
 function b64url(input){return Buffer.from(input).toString('base64url')}
 async function session(email){
@@ -31,10 +33,15 @@ const otherCookie=await session(backupAccount);
 const sent=[];
 const savedFetch=globalThis.fetch;
 globalThis.fetch=async (url,opts)=>{
- assert.equal(url,'https://api.resend.com/emails');
- const mail=JSON.parse(opts.body);
- sent.push(mail);
- return new Response(JSON.stringify({id:'test'}),{status:202,headers:{'content-type':'application/json'}});
+ if(url==='https://oauth2.googleapis.com/token')
+  return new Response(JSON.stringify({access_token:'mock-access-token'}),{status:200,headers:{'content-type':'application/json'}});
+ assert.equal(url,'https://gmail.googleapis.com/gmail/v1/users/me/messages/send');
+ const mime=Buffer.from(JSON.parse(opts.body).raw,'base64url').toString('utf8');
+ const [header,body]=mime.split('\r\n\r\n');
+ const to=header.match(/^To: ([^\r\n]+)/m)?.[1]?.trim();
+ const decoded=Buffer.from((body||'').replace(/\s/g,''),'base64').toString('utf8');
+ sent.push({to:to?.split(', ').map(x=>x.trim()),text:decoded});
+ return new Response(JSON.stringify({id:'test'}),{status:200,headers:{'content-type':'application/json'}});
 };
 async function call(path,body,cookieValue=cookie){
  const headers={'content-type':'application/json'};
