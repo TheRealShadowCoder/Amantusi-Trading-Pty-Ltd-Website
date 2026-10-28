@@ -59,11 +59,11 @@ test('10-second compositor loop timing is CSS-defined, not video/audio downloads
   const css=[...document.styleSheets].find(s=>s.href?.endsWith('/loop-performance.css'));
   const orbit=document.querySelector('.am-glass-orbit--one');
   const light=document.querySelector('.am-glass-light');
-  return {css:Boolean(css),orbitDuration:getComputedStyle(orbit).animationDuration,lightDuration:getComputedStyle(light).animationDuration,
+  return {css:Boolean(css),isMobile:innerWidth<=700,orbitDuration:getComputedStyle(orbit).animationDuration,lightDuration:getComputedStyle(light).animationDuration,
    videoCount:document.querySelectorAll('.am-landing-hero video,.amt-showcase video').length};
  });
  expect(result.css).toBe(true);
  expect(result.orbitDuration).toBe('10s');
- expect(result.lightDuration).toBe('10s');
+ expect(result.lightDuration).toBe(result.isMobile?'0s':'10s');
  expect(result.videoCount).toBe(0);
 });
