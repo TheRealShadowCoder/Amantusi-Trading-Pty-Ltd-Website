@@ -35,9 +35,9 @@ const hardFailures=Object.keys(names).filter(k=>!availability[k]);
 if(process.env.GITHUB_STEP_SUMMARY){
  const fs=await import('node:fs');
  fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
-  '\\n### Amantusi integration readiness (read-only)\\n\\n'+
-  Object.entries(names).map(([key,label])=>'- '+(availability[key]?'READY':'NOT READY')+' — '+label).join('\\n')+
-  '\\n- Google authorized administrator login: not tested by this probe\\n');
+  '\n### Amantusi integration readiness (read-only)\n\n'+
+  Object.entries(names).map(([key,label])=>'- '+(availability[key]?'READY':'NOT READY')+' — '+label).join('\n')+
+  '\n- Google authorized administrator login: not tested by this probe\n');
 }
 if(process.env.STRICT_INTEGRATIONS==='1'&&hardFailures.length){
  console.error('Required integrations incomplete: '+hardFailures.join(', '));process.exitCode=1;
