@@ -38,6 +38,8 @@ jobs:
         run: node scripts/validate-upload-security.mjs
       - name: Verify optional customer receipt security
         run: node scripts/validate-notification-receipt.mjs
+      - name: Validate adaptive mobile and WebGL safeguards
+        run: node scripts/validate-mobile-webgl.mjs
       - name: Install Chromium for public-site browser tests
         run: npx playwright install --with-deps chromium
       - name: Desktop and mobile public-site browser tests
