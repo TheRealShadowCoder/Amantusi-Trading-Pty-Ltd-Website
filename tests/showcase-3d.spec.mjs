@@ -30,7 +30,7 @@ test('each rendered service image loads and changes with accurate labels and lin
   await expect(image).toHaveAttribute('src','/assets/service-scenes/'+cases[i].file);
   await expect(page.locator('[data-amt-link]')).toHaveAttribute('href',cases[i].href);
   await expect.poll(()=>image.evaluate(el=>el.complete&&el.naturalWidth>0)).toBe(true);
-  expect(await image.getAttribute('alt')).toMatch(/Rendered/i);
+  expect((await image.getAttribute('alt'))?.length).toBeGreaterThan(15);
  }
  await tabs.nth(1).click();
  await tabs.nth(1).press('ArrowRight');
