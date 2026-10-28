@@ -49,3 +49,10 @@ button,.button,a{-webkit-tap-highlight-color:transparent}
 @media(max-width:900px){.amantusi-resource-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.amantusi-method-grid,.amantusi-faq-grid{grid-template-columns:1fr}}
 @media(max-width:580px){.amantusi-resource-grid,.amantusi-method-steps{grid-template-columns:1fr}.amantusi-resource-card{padding:1.25rem}}
 @media print{.amantusi-method-section{background:white;color:#071923}.amantusi-method-grid h2,.amantusi-method-grid p{color:#17303b}.amantusi-resource-card{box-shadow:none}}
+
+/* Verified public company contact card: no unapproved response-time promises */
+.hero-contact-card{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:.65rem 1.15rem;padding:1rem 1.15rem;margin:1.5rem 0 0;border:1px solid rgba(203,175,101,.38);border-radius:14px;background:rgba(7,25,35,.58);color:#f9faf7}
+.hero-contact-card span{font-size:.78rem;letter-spacing:.045em;font-weight:750;color:#e8d59f;flex-basis:100%}
+.hero-contact-card a{font-size:.84rem;font-weight:750;color:white;text-decoration:underline;text-decoration-color:#c9ac65;text-underline-offset:4px}
+.hero-contact-card a:focus-visible{outline:3px solid #edd292;outline-offset:4px}
+@media(max-width:480px){.hero-contact-card{flex-direction:column;align-items:flex-start;gap:.6rem}.hero-contact-card span{flex-basis:auto}}

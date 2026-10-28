@@ -128,6 +128,15 @@
   form.addEventListener('input',schedule);
   form.addEventListener('change',schedule);
   addEventListener('pagehide',()=>{if(save.checked){clearTimeout(timer);write();}});
+  // Warn only when abandoning unsaved, non-empty form text. Browsers decide whether to display a generic message.
+  let submissionComplete=false;
+  const hasUnsavedChanges=()=>required.some(name=>String(form.elements.namedItem(name)?.value||'').trim()) ||
+    Boolean(upload?.files?.length);
+  addEventListener('beforeunload',event=>{
+    if(submissionComplete||save.checked||form.dataset.submitting==='1'||!hasUnsavedChanges())return;
+    event.preventDefault();event.returnValue='';
+  });
+
   const prefillService=new URLSearchParams(location.search).get('service');
   if(prefillService){
     const select=form.elements.namedItem('type');
@@ -146,6 +155,7 @@
   window.AmantusiQuoteEnhancements={
     validate,
     onSuccess(data){
+      submissionComplete=true;
       remove();save.checked=false;
       try{localStorage.removeItem('amantusi-catering-brief');}catch(_){}
       note.textContent='Quotation received. This browser’s saved draft has been cleared.';

@@ -218,3 +218,23 @@ test('required RFQ fields have persistent visible badges and accessible state',a
  await expect(page.locator('#quote-form label.rfq-required-field, #quote-form .rfq-required-marker').first()).toBeVisible();
  await expect(page.locator('#quote-form .rfq-required-marker')).toHaveCount(4);
 });
+
+test('homepage offers direct verified contact links and departure protection for unsaved RFQ',async ({page})=>{
+  await page.goto('/');
+  await expect(page.locator('.hero-contact-card a[href^="mailto:"]')).toBeVisible();
+  await expect(page.locator('.hero-contact-card a[href^="tel:"]')).toBeVisible();
+  await page.locator('#quote-form [name="organisation"]').fill('Unsaved draft');
+  const blocked=await page.evaluate(()=>{
+    const e=new Event('beforeunload',{cancelable:true});
+    window.dispatchEvent(e);
+    return e.defaultPrevented;
+  });
+  expect(blocked).toBeTruthy();
+  await page.locator('#rfq-save-draft').check();
+  const allowed=await page.evaluate(()=>{
+    const e=new Event('beforeunload',{cancelable:true});
+    window.dispatchEvent(e);
+    return e.defaultPrevented;
+  });
+  expect(allowed).toBeFalsy();
+});

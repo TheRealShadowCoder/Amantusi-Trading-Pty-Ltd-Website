@@ -4,7 +4,7 @@
 
 This document tracks the [original 300 proposals](./300-visual-and-functional-upgrades.md) against repository source. **Integrated** means matching code or content exists on this branch, with a documented reference; it does **not** mean live production deployment, authorized integration testing, full WCAG compliance or independent verification of business claims. **Pending** means not implemented or insufficient evidence to mark complete.
 
-**Integrated in source: 217/300** · **Pending: 83/300**.
+**Integrated in source: 219/300** · **Pending: 81/300**.
 
 | # | Upgrade recommendation | Status | Source evidence |
 |---:|---|---|---|
@@ -37,7 +37,7 @@ This document tracks the [original 300 proposals](./300-visual-and-functional-up
 | 27 | Include relevant procurement document previews. | Integrated | Illustrative procurement document examples in public/procurement-templates.html |
 | 28 | Add a verified company credentials panel. | Pending |  |
 | 29 | Add a dedicated catering callout. | Integrated | public/index.html; public/site-upgrades.css; public/procurement-templates.html |
-| 30 | Add a direct contact strip near the hero. | Pending |  |
+| 30 | Add a direct contact strip near the hero. | Integrated | Hero contact links added next to the primary quote CTA |
 | 31 | Add trust-building delivery workflow details. | Integrated | public/index.html; public/site-upgrades.css; public/procurement-templates.html |
 | 32 | Add a plain-language company mission section. | Integrated | public/index.html; public/site-upgrades.css; public/procurement-templates.html |
 | 33 | Provide a service availability qualifier. | Integrated | public/index.html; public/site-upgrades.css; public/procurement-templates.html |
@@ -121,7 +121,7 @@ This document tracks the [original 300 proposals](./300-visual-and-functional-up
 | 111 | Add catering guest-count input. | Integrated | public/rfq-composer.js; public/quote-enhancements.js; public/app-fast.js; src/platform.js |
 | 112 | Add event date and venue fields. | Integrated | public/rfq-composer.js; public/quote-enhancements.js; public/app-fast.js; src/platform.js |
 | 113 | Preserve form draft locally with consent. | Integrated | public/rfq-composer.js; public/quote-enhancements.js; public/app-fast.js; src/platform.js |
-| 114 | Warn before discarding an unfinished request. | Pending |  |
+| 114 | Warn before discarding an unfinished request. | Integrated | beforeunload warning on nonempty unsaved RFQ, bypassed for opted-in drafts |
 | 115 | Display descriptive network error recovery. | Integrated | public/rfq-composer.js; public/quote-enhancements.js; public/app-fast.js; src/platform.js |
 | 116 | Prevent accidental duplicate submission. | Integrated | public/rfq-composer.js; public/quote-enhancements.js; public/app-fast.js; src/platform.js |
 | 117 | Show upload progress for large attachments. | Integrated | public/rfq-composer.js; public/quote-enhancements.js; public/app-fast.js; src/platform.js |
