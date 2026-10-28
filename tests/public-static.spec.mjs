@@ -238,3 +238,21 @@ test('homepage offers direct verified contact links and departure protection for
   });
   expect(allowed).toBeFalsy();
 });
+
+test('public routes have a primary heading and scale to 200 percent without document overflow',async ({page},testInfo)=>{
+  const routes=['/','/company-profile.html','/catering-menu.html','/catering-brochure.html',
+    '/government-procurement.html','/fmcg-supply.html','/cleaning-hygiene.html',
+    '/office-institutional.html','/general-trading.html','/corporate-catering.html',
+    '/procurement-checklist.html','/procurement-guides.html','/procurement-templates.html',
+    '/procurement-faq.html','/supplier-onboarding.html','/capability-statement.html'];
+  for(const route of routes){
+    const response=await page.goto(route);
+    expect(response?.ok(),route).toBeTruthy();
+    await expect(page.locator('main h1').first()).toBeAttached();
+    if(testInfo.project.name.includes('mobile')){
+      await page.evaluate(()=>document.documentElement.style.fontSize='200%');
+      const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,viewport:innerWidth}));
+      expect(width.scroll,route+' overflow at 200% text').toBeLessThanOrEqual(width.viewport+2);
+    }
+  }
+});

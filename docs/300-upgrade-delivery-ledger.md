@@ -4,7 +4,7 @@
 
 This document tracks the [original 300 proposals](./300-visual-and-functional-upgrades.md) against repository source. **Integrated** means matching code or content exists on this branch, with a documented reference; it does **not** mean live production deployment, authorized integration testing, full WCAG compliance or independent verification of business claims. **Pending** means not implemented or insufficient evidence to mark complete.
 
-**Integrated in source: 219/300** · **Pending: 81/300**.
+**Integrated in source: 221/300** · **Pending: 79/300**.
 
 | # | Upgrade recommendation | Status | Source evidence |
 |---:|---|---|---|
@@ -89,7 +89,7 @@ This document tracks the [original 300 proposals](./300-visual-and-functional-up
 | 79 | Optimize section stacking and whitespace. | Integrated | public/sector.css; public/catering-responsive-v3.css; tests/public-static.spec.mjs |
 | 80 | Verify no offscreen modal content. | Pending |  |
 | 81 | Audit keyboard navigation on every public page. | Pending |  |
-| 82 | Ensure one primary h1 per page. | Pending |  |
+| 82 | Ensure one primary h1 per page. | Integrated | Playwright asserts primary main heading across 16 public pages |
 | 83 | Create proper labels for uploaded files. | Integrated | public/index.html; public/rfq-composer.js; public/procurement-faq.html; scripts/validate-public-routes.mjs |
 | 84 | Add visible focus rings to all controls. | Integrated | public/index.html; public/rfq-composer.js; public/procurement-faq.html; scripts/validate-public-routes.mjs |
 | 85 | Add ARIA-expanded state to mobile toggles. | Integrated | public/index.html; public/rfq-composer.js; public/procurement-faq.html; scripts/validate-public-routes.mjs |
@@ -104,7 +104,7 @@ This document tracks the [original 300 proposals](./300-visual-and-functional-up
 | 94 | Provide clear errors linked to form fields. | Integrated | RFQ upload aria-invalid, aria-errormessage and errors in public/quote-enhancements.js |
 | 95 | Verify labels survive placeholder disappearance. | Integrated | public/index.html; public/rfq-composer.js; public/procurement-faq.html; scripts/validate-public-routes.mjs |
 | 96 | Make accordion components keyboard operable. | Integrated | public/index.html; public/rfq-composer.js; public/procurement-faq.html; scripts/validate-public-routes.mjs |
-| 97 | Test zoom up to 200 percent. | Pending |  |
+| 97 | Test zoom up to 200 percent. | Integrated | Playwright tests 200% root font scaling and mobile overflow across 16 public pages |
 | 98 | Avoid color-only success/error indication. | Integrated | public/index.html; public/rfq-composer.js; public/procurement-faq.html; scripts/validate-public-routes.mjs |
 | 99 | Add accessible names to icon-only buttons. | Integrated | public/index.html; public/rfq-composer.js; public/procurement-faq.html; scripts/validate-public-routes.mjs |
 | 100 | Add automated accessibility tests. | Integrated | Static semantic/alt checks plus contrast test and Playwright accessibility assertions |
