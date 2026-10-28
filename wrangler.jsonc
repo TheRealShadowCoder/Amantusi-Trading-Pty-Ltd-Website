@@ -3,7 +3,9 @@
   "name": "amantusi-trading-pty-ltd-website",
   "account_id": "3b4dba2eec2c69b95eae20d70941e9b2",
   "compatibility_date": "2026-08-16",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "main": "./src/worker-v5.js",
   "workers_dev": true,
   "preview_urls": false,
@@ -21,15 +23,29 @@
     "GCP_WIF_TOKEN_AUDIENCE": "amantusi-cloudflare-worker",
     "GCP_WIF_KEY_ID": "amantusi-cloudflare-1",
     "GCP_INVOKER_SERVICE_ACCOUNT": "amantusi-cloudflare-invoker@amantusi-trading-pty-ltd.iam.gserviceaccount.com",
-    "GCP_CLOUD_RUN_URL": "https://amantusi-overflow-w5cotgahzq-uc.a.run.app"
+    "GCP_CLOUD_RUN_URL": "https://amantusi-overflow-w5cotgahzq-uc.a.run.app",
+    "GMAIL_SENDER_EMAIL": "s.k.businessline@gmail.com"
   },
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "run_worker_first": ["/admin.html", "/admin-dashboard.html", "/admin-settings.html", "/admin-recovery", "/admin-recovery.html", "/admin-reset.html", "/api/*", "/media/*", "/sitemap.xml", "/robots.txt"]
+    "run_worker_first": [
+      "/admin.html",
+      "/admin-dashboard.html",
+      "/admin-settings.html",
+      "/admin-recovery",
+      "/admin-recovery.html",
+      "/admin-reset.html",
+      "/api/*",
+      "/media/*",
+      "/sitemap.xml",
+      "/robots.txt"
+    ]
   },
   "kv_namespaces": [
-    { "binding": "CMS_KV" }
+    {
+      "binding": "CMS_KV"
+    }
   ],
   "d1_databases": [
     {

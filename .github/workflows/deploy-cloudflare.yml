@@ -84,14 +84,13 @@ jobs:
           GMAIL_OAUTH_CLIENT_ID: ${{ secrets.GMAIL_OAUTH_CLIENT_ID }}
           GMAIL_OAUTH_CLIENT_SECRET: ${{ secrets.GMAIL_OAUTH_CLIENT_SECRET }}
           GMAIL_REFRESH_TOKEN: ${{ secrets.GMAIL_REFRESH_TOKEN }}
-          GMAIL_SENDER_EMAIL: ${{ secrets.GMAIL_SENDER_EMAIL }}
         run: |
           set -euo pipefail
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
             echo "::error::Cloudflare deployment credentials are missing"
             exit 1
           fi
-          for name in GMAIL_OAUTH_CLIENT_ID GMAIL_OAUTH_CLIENT_SECRET GMAIL_REFRESH_TOKEN GMAIL_SENDER_EMAIL; do
+          for name in GMAIL_OAUTH_CLIENT_ID GMAIL_OAUTH_CLIENT_SECRET GMAIL_REFRESH_TOKEN; do
             value="${!name:-}"
             if [ -n "$value" ]; then
               printf '%s' "$value" | npx wrangler secret put "$name"

@@ -1,6 +1,6 @@
 # Gmail-only sending for Amantusi recovery codes
 
-**Sender and recipient are separate concepts.** The requested **recovery recipient** is `kidlunaprodigy@gmail.com`. The **Gmail sender** is the Google account you explicitly authorize to send automated emails through the Gmail API; it can be another Gmail account. Do not assume it is the administrator sign-in account, and do not grant Gmail access to the website's normal login flow.
+**Sender and recipient are separate concepts.** The requested **recovery recipient** is `kidlunaprodigy@gmail.com`. The **selected Gmail sender** is `s.k.businessline@gmail.com`. The **Gmail recovery recipient** is `kidlunaprodigy@gmail.com`. The sender must still explicitly authorize the Gmail API before any emails can be delivered. Do not assume it is the administrator sign-in account, and do not grant Gmail access to the website's normal login flow.
 
 The app uses Google's Gmail API endpoint `users.messages.send` with OAuth2 refresh credentials and **only** the `gmail.send` email permission (plus basic email identity metadata during the one-time authorization). It cannot read a mailbox. The Worker must never log or commit OAuth secrets, refresh tokens or recovery codes.
 
@@ -17,7 +17,7 @@ In a *local terminal on your own computer* (not a GitHub runner or shared device
 
 - `GMAIL_OAUTH_CLIENT_ID` — OAuth client ID.
 - `GMAIL_OAUTH_CLIENT_SECRET` — corresponding client secret.
-- `GMAIL_SENDER_EMAIL` — the exact Gmail account you authorize to send.
+- `GMAIL_SENDER_EMAIL` — set locally to `s.k.businessline@gmail.com`; the deployment uses the same sender in its non-secret Wrangler configuration.
 
 Run `npm run setup:gmail` in this repository. The script starts a local callback at `http://127.0.0.1:8765/callback` and displays a Google authorization URL. Open it in a browser on the same computer, select the sender Gmail account, review the `gmail.send` request, and approve. The script confirms the Google account address matches `GMAIL_SENDER_EMAIL`, then prints the Gmail refresh token **only to your local terminal**. It does not automatically send any email.
 
@@ -25,14 +25,14 @@ Run `npm run setup:gmail` in this repository. The script starts a local callback
 
 ## Step 3 — Configure the live Worker
 
-Create these **four** encrypted repository secrets at [GitHub Actions → Secrets](https://github.com/TheRealShadowCoder/Amantusi-Trading-Pty-Ltd-Website/settings/secrets/actions):
+Create these **three** encrypted repository secrets at [GitHub Actions → Secrets](https://github.com/TheRealShadowCoder/Amantusi-Trading-Pty-Ltd-Website/settings/secrets/actions):
 
 - `GMAIL_OAUTH_CLIENT_ID`
 - `GMAIL_OAUTH_CLIENT_SECRET`
 - `GMAIL_REFRESH_TOKEN`
-- `GMAIL_SENDER_EMAIL`
+- `GMAIL_SENDER_EMAIL` is already declared as `s.k.businessline@gmail.com` in `wrangler.jsonc` as a non-secret environment variable. Do not create a competing Worker secret with this name.
 
-The Cloudflare deployment workflow transfers each secret into the Worker using `wrangler secret put` without printing its value. Review and merge the Gmail-only pull request after tests pass, then deploy through the normal workflow. Changing these credentials is independent of the existing Google admin login.
+The Cloudflare deployment workflow transfers the three OAuth secrets using `wrangler secret put`, and the declared sender email is deployed from `wrangler.jsonc`. None of the OAuth credentials are printed. Review and merge the Gmail-only pull request after tests pass, then deploy through the normal workflow. Changing these credentials is independent of the existing Google admin login.
 
 ## Step 4 — Verify the alternate inbox
 
