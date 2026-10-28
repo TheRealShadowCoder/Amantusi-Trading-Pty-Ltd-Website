@@ -1,6 +1,6 @@
 /* Precisely 10-second, loopable compositor transforms in two homepage areas.
    Hero GPU renders one real photo. All other images are plain clickable WebP fallbacks. */
-.am-glass-tile{position:absolute;isolation:isolate}
+.am-glass-tile{isolation:isolate}
 .am-glass-tile img{position:relative;z-index:0}
 .am-glass-webgl{position:absolute;inset:0;display:block;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity .3s ease}
 .am-glass-tile[data-glass-webgl="active"] .am-glass-webgl{opacity:1}
