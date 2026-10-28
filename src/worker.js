@@ -203,7 +203,11 @@ async function uploadMedia(request, env) {
 
 async function serveMedia(request, env) {
   const key = mediaPath(request);
-  if (!key) return new Response('Not found.', { status: 404 });
+  // RFQ attachment objects share the same R2 binding but must NEVER be served
+  // through this public endpoint. Private RFQ downloads use authenticated APIs.
+  if (!key || !/^catering\/[a-z0-9/_-]+\.(?:png|jpe?g|webp)$/i.test(key)) {
+    return new Response('Not found.', { status: 404 });
+  }
   if (env.CMS_MEDIA) {
     const object = await env.CMS_MEDIA.get(key);
     if (object) {

@@ -37,8 +37,9 @@ Cloudflare's account API currently responds to a read request for `/r2/buckets` 
 2. Activate the R2 subscription and complete any checkout/payment verification yourself. R2 includes free monthly usage but can incur usage-based charges.
 3. Once activated, create a **private** bucket named `amantusi-private-media`. Do not enable public bucket access or add an open public domain: RFQ attachments may contain private information.
 4. The staged `wrangler.jsonc` already maps `CMS_MEDIA` to that bucket. After the bucket exists, run the validation workflow on the PR, review and merge it, and deploy using the existing GitHub production workflow.
-5. Confirm `/api/health` reports `r2:true` and `mediaBackend:'r2'`. Perform an approved test upload and authenticated download against the real storage before certifying it. Do **not** upload a customer's documents just to test.
-6. Historical media uploaded into `CMS_KV` still uses the existing KV read fallback. The lead-file database stores the original backend so older RFQ attachments can remain accessible.
+5. Public media serving is explicitly restricted to `/media/catering/*.(jpg|jpeg|png|webp)`. Objects under `rfq/` remain private and are only downloadable via authenticated admin lead APIs. This is tested by `scripts/validate-media-privacy.mjs`.
+6. Confirm `/api/health` reports `r2:true` and `mediaBackend:'r2'`. Perform an approved test upload and authenticated download against the real storage before certifying it. Do **not** upload a customer's documents just to test.
+7. Historical media uploaded into `CMS_KV` still uses the existing KV read fallback. The lead-file database stores the original backend so older RFQ attachments can remain accessible.
 
 ## Verification
 

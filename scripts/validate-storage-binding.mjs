@@ -9,6 +9,7 @@ assert.equal(cfg.assets?.binding,'ASSETS','Static assets binding must stay intac
 assert.equal(cfg.kv_namespaces?.find(x=>x.binding==='CMS_KV')?.binding,'CMS_KV','Legacy KV storage must remain configured');
 const worker=readFileSync('src/worker.js','utf8');
 const platform=readFileSync('src/platform.js','utf8');
+assert.ok(worker.includes("!/^catering\\/[a-z0-9/_-]+\\.(?:png|jpe?g|webp)$/i.test(key)"),'Public media must never include private RFQ keys');
 assert.ok(worker.includes('env.CMS_MEDIA.put(')&&worker.includes('env.CMS_MEDIA.get('),'CMS media must support R2 read/write');
 assert.ok(worker.includes('env.CMS_KV.getWithMetadata('),'Legacy KV media needs a read fallback');
 assert.ok(platform.includes("backend: 'r2'")&&platform.includes("backend: 'kv'"),'RFQ documents must keep storage-backend provenance');

@@ -30,6 +30,8 @@ jobs:
         run: npm install
       - name: Public experience regression smoke tests
         run: node scripts/validate-site-smoke.mjs
+      - name: Verify private RFQ media cannot use public object route
+        run: node scripts/validate-media-privacy.mjs
       - name: Validate private R2 media binding and legacy KV compatibility
         run: node scripts/validate-storage-binding.mjs
       - name: Validate public HTML asset references
