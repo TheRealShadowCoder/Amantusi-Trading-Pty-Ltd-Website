@@ -20,6 +20,7 @@ test('the photographic landing replaces orbital art, retains navigation and RFQ'
   await expect(page.locator('#immersive')).toBeAttached();
   for(const [service,href] of services){
    const tile=page.locator('.am-glass-tile--'+service);
+   await tile.scrollIntoViewIfNeeded();
    await expect(tile).toHaveAttribute('href',href);
    const img=tile.locator('img');
    expect(await img.getAttribute('alt')).toBeTruthy();
