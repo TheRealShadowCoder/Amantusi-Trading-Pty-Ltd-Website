@@ -61,7 +61,7 @@
     })());
     detail.setAttribute('aria-labelledby',tabs[selected].id);
     counter.textContent=String(selected+1).padStart(2,'0');
-    fallbackArts.forEach(art=>{art.hidden=art.dataset.amtFallback!==item.key});
+    fallbackArts.forEach(art=>{if(art.dataset.amtFallback===item.key)art.removeAttribute('hidden');else art.setAttribute('hidden','');});
     switchAt=performance.now();
     stage.classList.remove('is-switching');
     if(!reduce.matches) {
