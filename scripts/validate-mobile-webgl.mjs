@@ -11,7 +11,7 @@ for(const name of checked){
  assert.ok(html.includes('href="/webgl-ambient.css"'),name+' must load progressive WebGL CSS');
  assert.ok(html.includes('src="/webgl-ambient.js"'),name+' must load WebGL fallback script');
 }
-assert.ok(home.includes('hero-grid')&&home.includes('quote-form'),'Homepage must retain semantic hero and RFQ');
+assert.ok(home.includes('am-landing-container')&&home.includes('quote-form'),'Homepage must retain semantic hero and RFQ');
 assert.ok(webgl.includes("prefers-reduced-motion: reduce"),'Respect reduced motion');
 assert.ok(webgl.includes('saveData')&&webgl.includes('lowMemory'),'Conserve bandwidth and GPU on slower phones');
 assert.ok(webgl.includes('contextlost')&&webgl.includes('contextrestored'),'Recover from GPU resets');
