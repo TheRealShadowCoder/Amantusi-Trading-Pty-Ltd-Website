@@ -42,7 +42,7 @@ test('homepage has a scroll-pinned live-footage cinema just after the hero',asyn
 });
 test('scrolling and chapter selection change the real MP4 source',async({page})=>{
  await page.goto('/index-fast.html');
- await page.locator('[data-cin-chapter="product"]').scrollIntoViewIfNeeded();
+ await page.locator('[data-cin-chapter="product"]').evaluate(el=>el.scrollIntoView({block:'end',behavior:'instant'}));
  await expect(page.locator('[data-cin-stage]')).toHaveAttribute('data-film','product');
  await expect(page.locator('[data-cin-video]')).toHaveAttribute('src','/assets/films/product.mp4');
  await page.locator('[data-cin-chapter="food"]').click();
@@ -54,7 +54,7 @@ test('scrolling and chapter selection change the real MP4 source',async({page})=
 test('reduced-motion keeps film paused until visitor explicitly plays',async({page})=>{
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/index-fast.html');
- await page.locator('[data-cin-chapter="architecture"]').scrollIntoViewIfNeeded();
+ await page.locator('[data-cin-chapter="architecture"]').evaluate(el=>el.scrollIntoView({block:'end',behavior:'instant'}));
  await expect(page.locator('[data-cin-stage]')).toHaveAttribute('data-film','architecture');
  await expect(page.locator('[data-cin-video]')).not.toHaveAttribute('src',/.+/);
  await page.locator('[data-cin-toggle]').click();

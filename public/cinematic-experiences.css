@@ -18,3 +18,9 @@
 .cin-canvas:not(.is-ready) .cin-film-vignette{opacity:0}
 .cin-note a{color:#d8b46b;text-decoration:underline;text-underline-offset:3px}
 @media(prefers-reduced-motion:reduce){.cin-film{transition:none;transform:none}}
+
+/* Keep source-footage captions and navigation clickable: film visual layers never intercept the chapter menu. */
+.cin-layout{isolation:isolate}
+.cin-viewer{min-width:0}
+.cin-poster,.cin-poster-shade,.cin-film-vignette{pointer-events:none}
+.cin-sidebar{position:relative;z-index:8;min-width:0}

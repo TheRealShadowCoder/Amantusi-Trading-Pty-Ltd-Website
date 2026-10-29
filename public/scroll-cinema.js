@@ -31,7 +31,7 @@
   };
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   const saveData=Boolean(navigator.connection?.saveData);
-  let active='intro',visible=false,manualPause=false,scrollFrame=0,selectionToken=0,swipeOrigin=null,lastSwipe=0,draggingSeek=false;
+  let active='intro',visible=false,manualPause=false,scrollFrame=0,selectionToken=0,swipeOrigin=null,lastSwipe=0,draggingSeek=false,userNavigationUntil=0;
   function clamp(n,a,b){return Math.min(b,Math.max(a,n));}
   function announce(msg){status.textContent=msg;}
   function updateControls(){
@@ -80,6 +80,7 @@
     }
   }
   function chooseFilm(key,{scrollTo=false,fromUser=false}={}){
+    if(fromUser)userNavigationUntil=performance.now()+1300;
     if(!Object.hasOwn(films,key))return;
     const same=key===active;
     if(!same){
@@ -130,7 +131,7 @@
   }
   function updateFromScroll(){
     scrollFrame=0;
-    if(!visible)return;
+    if(!visible||performance.now()<userNavigationUntil)return;
     const line=chapterOffset();
     let closest=cards[0],distance=Infinity;
     for(const card of cards){
