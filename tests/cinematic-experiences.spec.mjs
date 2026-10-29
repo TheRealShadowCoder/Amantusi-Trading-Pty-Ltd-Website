@@ -25,7 +25,7 @@ test('scroll triggers motion and starts nearby real footage without video UI',as
 test('mobile touch navigation works and cinematography does not block service links',async({page})=>{
  await page.setViewportSize({width:390,height:844});
  await page.goto('/index-fast.html');
- await expect(page.locator('a[href="/catering-menu.html"]').first()).toBeVisible();
+ await expect(page.locator('#catering-film a[href="/catering-menu.html"]')).toBeVisible();
  await page.locator('#catering-film').scrollIntoViewIfNeeded();
  await expect(page.locator('#catering-film video')).toHaveAttribute('playsinline','');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBeTruthy();
