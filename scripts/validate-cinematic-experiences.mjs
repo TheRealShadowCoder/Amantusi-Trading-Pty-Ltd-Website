@@ -24,5 +24,5 @@ assert.ok(!runtime.includes('WebGLRenderer')&&!runtime.includes("import('/vendor
 assert.ok(runtime.includes('video.play()')&&runtime.includes("visibilitychange"),'Video controls and background pause missing');
 assert.ok(html.includes('stock-video')&&html.includes('Pexels license')&&html.includes('Mixkit free license'),'Transparent commercial stock footage disclosure missing');
 assert.ok(css.includes('.cin-film{')&&css.includes('@media(max-width:700px)'),'Responsive HTML5 video CSS required');
-assert.ok(home.includes('/cinematic-experiences.html')&&fast.includes('/cinematic-experiences.html'),'Homepage live-footage entry missing');
+assert.ok(home.includes('data-motion-film="intro"')&&fast.includes('data-motion-film="food"'),'Independent footage must live within the actual homepage');
 console.log('PASS five licensed real-world MP4 films, native playback, rights disclosure, mobile fallback and no Three.js');

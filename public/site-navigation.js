@@ -8,7 +8,6 @@ const routes=[
  ['General Trading','/general-trading.html'],['RFQ Checklist','/procurement-checklist.html'],
  ['Catering Menu','/catering-menu.html'],['Catering Brochure','/catering-brochure.html'],
  ['Company Profile','/company-profile.html'],
- ['Cinematic Experiences','/cinematic-experiences.html'],
  ['Capability Statement','/capability-statement.html'],['Procurement Guides','/procurement-guides.html'],
  ['RFQ Examples','/procurement-templates.html'],['Supplier Information','/supplier-onboarding.html'],
  ['Frequently Asked Questions','/procurement-faq.html'],['Information Handling','/information-handling.html'],
