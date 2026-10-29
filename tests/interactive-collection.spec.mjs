@@ -1,0 +1,71 @@
+import {test,expect} from '@playwright/test';
+test('floating-shelf studio loads ten photographic service offers on both homepages',async({page})=>{
+ await page.goto('/index-fast.html');
+ await expect(page.locator('#collections')).toBeAttached();
+ await expect(page.locator('#collections .am-shelf-row')).toHaveCount(2);
+ await expect(page.locator('#collections .am-collection-item')).toHaveCount(10);
+ await expect(page.locator('#collections img')).toHaveCount(10);
+ await expect(page.locator('video')).toHaveCount(0);
+ await expect(page.locator('#quote-form')).toBeAttached();
+ await expect(page.locator('#immersive')).toBeAttached();
+});
+test('click uses an accessible in-place service detail instead of navigating',async({page})=>{
+ await page.goto('/index-fast.html');
+ const card=page.locator('[data-offer="hygiene"]');
+ await card.click();
+ const dialog=page.locator('#am-offer-dialog');
+ await expect(dialog).toBeVisible();
+ await expect(dialog.locator('#am-offer-title')).toHaveText('Cleaning & hygiene');
+ await expect(dialog.locator('#am-offer-link')).toHaveAttribute('href','/cleaning-hygiene.html');
+ await expect(page).toHaveURL(/index-fast.html$/);
+ await page.keyboard.press('Escape');
+ await expect(dialog).not.toBeVisible();
+ await expect(card).toBeFocused();
+});
+test('selected quantity and intended use are appended to the real quotation form',async({page})=>{
+ await page.goto('/index-fast.html');
+ await page.locator('[data-offer="stationery"]').click();
+ await page.locator('#am-offer-quantity').fill('14');
+ await page.locator('#am-offer-usage').selectOption('Institution / government');
+ await page.locator('#am-offer-request button[type="submit"]').click();
+ await expect(page.locator('#am-offer-feedback')).toContainText('Added');
+ const field=page.locator('#quote-form textarea[name="requirements"]');
+ await expect(field).toHaveValue(/Office & stationery — 14 estimated units — Institution \/ government/);
+ await expect(page.locator('#quote-form select[name="type"]')).toHaveValue('Office / Institutional Supply');
+ await expect(page.locator('[data-quote-count]')).toHaveText('1');
+ await page.locator('[data-offer-quote]').click();
+ await expect(page.locator('#am-offer-dialog')).not.toBeVisible();
+ await expect(page).toHaveURL(/#quote$/);
+ await expect(field).toHaveValue(/Office & stationery/);
+});
+test('multiple service requirements are preserved without triggering server submission',async({page})=>{
+ await page.goto('/index-fast.html');
+ const t=page.locator('#quote-form textarea[name="requirements"]');
+ await t.fill('Existing requested A4 paper specification');
+ await page.locator('[data-offer="meals"]').click();
+ await page.locator('#am-offer-quantity').fill('30');
+ await page.locator('#am-offer-request button[type="submit"]').click();
+ await expect(t).toHaveValue(/Existing requested A4 paper specification[\s\S]+Packed meal supply — 30 estimated people/);
+ await expect(page.locator('[data-quote-count]')).toHaveText('1');
+});
+test('on narrow phones detail opens as a bottom sheet and remains functional',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/index-fast.html');
+ await page.locator('[data-offer="bento"]').click();
+ const dialog=page.locator('#am-offer-dialog');
+ await expect(dialog).toBeVisible();
+ const rect=await dialog.boundingBox();
+ expect(rect?.y).toBeGreaterThan(0);
+ await expect(dialog.locator('#am-offer-title')).toHaveText('Executive meal boxes');
+ await page.locator('[data-close-offer]').click();
+ await expect(dialog).not.toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBeTruthy();
+});
+test('with reduced motion, photos remain clickable and no video is introduced',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/index-fast.html');
+ await page.locator('[data-offer="catering"]').click();
+ await expect(page.locator('#am-offer-dialog')).toBeVisible();
+ await expect(page.locator('video')).toHaveCount(0);
+ await expect(page.locator('#quote-form')).toBeAttached();
+});
