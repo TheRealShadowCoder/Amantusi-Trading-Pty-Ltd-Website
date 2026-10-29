@@ -7,12 +7,6 @@ const pages=readdirSync('public').filter(name=>name.endsWith('.html'));
 const checked=pages.filter(name=>!/^admin/.test(name)&&name!=='404.html');
 for(const name of checked){
  const html=readFileSync('public/'+name,'utf8');
- if(name==='cinematic-experiences.html'){
-  assert.ok(html.includes('href="/cinematic-experiences.css"'),'Dedicated cinematic experience has responsive styling');
-  assert.ok(html.includes('src="/cinematic-experiences.js"'),'Dedicated cinematic experience loads the on-demand Three.js module');
-  assert.ok(!html.includes('src="/webgl-ambient.js"'),'Avoid duplicate WebGL contexts in cinematic theatre');
-  continue;
- }
  assert.ok(html.includes('href="/adaptive-layout.css"'),name+' must load adaptive mobile CSS');
  assert.ok(html.includes('href="/webgl-ambient.css"'),name+' must load progressive WebGL CSS');
  if(name==='index.html'||name==='index-fast.html'){

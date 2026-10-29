@@ -28,16 +28,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install FFmpeg for real-life stock film rendering
-        shell: bash
-        run: |
-          set -euo pipefail
-          if ! command -v ffmpeg >/dev/null 2>&1; then
-            sudo apt-get update -qq
-            sudo apt-get install -y -qq ffmpeg
-          fi
-          ffmpeg -version | head -1
-
       - name: Validate application and Worker
         shell: bash
         run: |
@@ -209,7 +199,7 @@ jobs:
           [ -f /tmp/recovery.json ] && cat /tmp/recovery.json || true
           exit 1
 
-      - name: Browser-test real scroll cinema on desktop and mobile
+      - name: Browser-test homepage after stock film removal
         shell: bash
         env:
           BASE_URL: https://amantusi-trading-pty-ltd-website.dolomite-computer.workers.dev
