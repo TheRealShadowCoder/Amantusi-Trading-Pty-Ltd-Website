@@ -42,7 +42,7 @@ for (const film of manifest.films){
  try{
   source=await get(film,film.source);
   const out=output+'.tmp.mp4';
-  await exec('ffmpeg',['-hide_banner','-loglevel','error','-nostdin','-y','-i',source,
+  await exec('ffmpeg',['-hide_banner','-loglevel','error','-nostdin','-y','-stream_loop','-1','-i',source,
    '-t','10','-vf','scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,fps=30,format=yuv420p',
    '-an','-c:v','libx264','-preset','veryfast','-crf','27','-maxrate','1400k','-bufsize','2800k','-movflags','+faststart',out]);
   const s=await stat(out);if(s.size<25000||s.size>18*1024*1024)throw new Error('Invalid output media size '+film.id+': '+s.size);
