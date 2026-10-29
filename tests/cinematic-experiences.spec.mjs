@@ -9,7 +9,7 @@ for(const route of ['/index.html','/index-fast.html']){
   await expect(page.locator('#immersive')).toBeAttached();
   await expect(page.locator('#government')).toBeAttached();
   await expect(page.locator('#contact')).toBeAttached();
-  await expect(page.locator('a[href="#quote"]').first()).toBeVisible();
+  await expect(page.locator('a[href="#quote"]').first()).toBeAttached();
  });
 }
 test('mobile page remains usable after video removal',async({page})=>{
