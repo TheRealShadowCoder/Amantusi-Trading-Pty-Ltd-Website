@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {existsSync,readFileSync} from 'node:fs';
+const page=readFileSync('public/cinematic-experiences.html','utf8');
+const runtime=readFileSync('public/cinematic-experiences.js','utf8');
+const css=readFileSync('public/cinematic-experiences.css','utf8');
+const home=readFileSync('public/index.html','utf8'),fast=readFileSync('public/index-fast.html','utf8');
+for (const id of ['intro','product','architecture','marquee','food']) assert.ok(page.includes('data-experience="'+id+'"'),'Missing film selector '+id);
+for (const id of ['cin-play','cin-pause','cin-status','cin-canvas','cin-poster-image','cin-detail-link']) assert.ok(page.includes('id="'+id+'"'),'Missing cinematic control '+id);
+for (const key of ['intro','product','architecture','marquee','food']) assert.ok(runtime.includes('case "'+key+'"')||runtime.includes('case \''+key+'\''),'Missing 3D mode '+key);
+assert.ok(runtime.includes("import('/vendor/three.module.js')"),'Three.js must load on demand from same origin');
+assert.ok(runtime.includes("prefers-reduced-motion")&&runtime.includes("saveData"),'Motion/data accessibility required');
+assert.ok(runtime.includes('visibilitychange')&&runtime.includes('IntersectionObserver'),'Visibility-based GPU pause required');
+assert.ok(runtime.includes('ShaderMaterial')&&runtime.includes('MeshPhysicalMaterial'),'Shader and PBR visual treatments required');
+assert.ok(css.includes('@media(max-width:700px)'),'Mobile layout required');
+assert.ok(page.includes('illustrative 3D designs'),'Concept disclosure required');
+assert.ok(home.includes('/cinematic-experiences.html')&&fast.includes('/cinematic-experiences.html'),'Homepage cinematic entry missing');
+assert.ok(existsSync('public/vendor/three.module.js')&&existsSync('public/vendor/three.core.js'),'Local Three.js vendor files missing');
+console.log('PASS five cinematic experiences, accessible fallback, shaders, mobile and local Three.js vendor');
