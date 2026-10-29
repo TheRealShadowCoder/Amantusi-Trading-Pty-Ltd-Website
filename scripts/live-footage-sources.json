@@ -36,11 +36,11 @@
     },
     {
       "id": "food",
-      "slug": "Real chef and catering footage",
-      "source": "https://videos.pexels.com/video-files/4253139/4253139-hd_1920_1080_30fps.mp4",
-      "page": "https://www.pexels.com/videos/",
-      "license": "https://www.pexels.com/license/",
-      "credit": "Pexels / culinary footage"
+      "slug": "Cinematic real chef cooking with fire",
+      "source": "https://huggingface.co/datasets/FastVideo/Mixkit-Src/resolve/main/fire/mixkit-chef-in-black-suit-cooking-with-fire-4118_clip_1.mp4",
+      "page": "https://mixkit.co/free-stock-video/chef-in-black-suit-cooking-with-fire-4118/",
+      "license": "https://mixkit.co/license/modal/videoFree/",
+      "credit": "Mixkit / chef cooking with fire"
     }
   ]
 }
