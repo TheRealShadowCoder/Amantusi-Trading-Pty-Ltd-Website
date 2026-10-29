@@ -20,16 +20,16 @@
     },
     {
       "id": "architecture",
-      "slug": "Real interior camera movement",
-      "source": "https://assets.mixkit.co/videos/preview/mixkit-luxury-hotel-room-panning-shot-4196-large.mp4",
-      "page": "https://mixkit.co/free-stock-video/luxury-hotel-room-panning-shot-4196/",
+      "slug": "Real aerial journey above skyscrapers",
+      "source": "https://huggingface.co/datasets/FastVideo/Mixkit-Src/resolve/main/Business/mixkit-aerial-view-above-the-skyscrapers-of-a-city-41539_clip_1.mp4",
+      "page": "https://mixkit.co/free-stock-video/aerial-view-above-the-skyscrapers-of-a-city-41539/",
       "license": "https://mixkit.co/license/modal/videoFree/",
-      "credit": "Mixkit / hotel interior"
+      "credit": "Mixkit / aerial architecture"
     },
     {
       "id": "marquee",
       "slug": "Real event venue decorations",
-      "source": "https://assets.mixkit.co/videos/preview/mixkit-decorations-on-the-ceiling-of-a-wedding-party-5213-large.mp4",
+      "source": "https://huggingface.co/datasets/FastVideo/Mixkit-Src/resolve/main/Party/mixkit-decorations-on-the-ceiling-of-a-wedding-party-5213_clip_1.mp4",
       "page": "https://mixkit.co/free-stock-video/decorations-on-the-ceiling-of-a-wedding-party-5213/",
       "license": "https://mixkit.co/license/modal/videoFree/",
       "credit": "Mixkit / wedding event"
