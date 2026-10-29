@@ -17,7 +17,7 @@ test('click uses an accessible in-place service detail instead of navigating',as
  await expect(dialog).toBeVisible();
  await expect(dialog.locator('#am-offer-title')).toHaveText('Cleaning & hygiene');
  await expect(dialog.locator('#am-offer-link')).toHaveAttribute('href','/cleaning-hygiene.html');
- await expect(page).toHaveURL(/\\/index-fast(?:\\.html)?$/);
+ await expect(page).toHaveURL(/\/index-fast(?:\.html)?$/);
  await page.keyboard.press('Escape');
  await expect(dialog).not.toBeVisible();
  await expect(card).toBeFocused();
