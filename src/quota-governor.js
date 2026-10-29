@@ -9,8 +9,8 @@ let cached = { expiresAt: 0, state: null };
 
 const DEFAULT_OVERRIDE = Object.freeze({ mode: 'AUTO', updatedAt: null, updatedBy: null });
 const DEFAULT_STATE = Object.freeze({
-  mode: 'NORMAL',
-  source: 'default',
+  mode: 'EMERGENCY',
+  source: 'missing-usage-data',
   updatedAt: null,
   workerRequests: null,
   workerRequestRatio: null,
@@ -29,7 +29,7 @@ export const FREE_TIER_REFERENCE = Object.freeze({
   d1RowsWrittenPerDay: 100000
 });
 
-export const GOVERNOR_THRESHOLDS = Object.freeze({ conserve: 0.60, critical: 0.80, emergency: 0.93 });
+export const GOVERNOR_THRESHOLDS = Object.freeze({ conserve: 0.25, critical: 0.50, emergency: 0.70 });
 
 function normalizeOverride(value) {
   const input = value && typeof value === 'object' ? value : {};
@@ -93,12 +93,25 @@ export async function getQuotaState(env, { force = false } = {}) {
     cached = { state, expiresAt: now + CACHE_TTL_MS };
   }
 
-  const automaticMode = state.mode;
+  // If the hourly account-wide sampler is down or its reading is from a
+  // previous UTC day, assume the most restrictive mode. A Worker cannot
+  // prove account-wide usage from its own request count.
+  const timestamp = Date.parse(state.updatedAt || '');
+  const stale = !Number.isFinite(timestamp) || timestamp > now + 60_000
+    || now - timestamp > 2.5 * 60 * 60_000
+    || new Date(timestamp).toISOString().slice(0,10) !== new Date(now).toISOString().slice(0,10);
+  const automaticMode = stale ? 'EMERGENCY' : state.mode;
   const envForced = envOverrideMode(env);
   const manual = state.manualOverride ? normalizeOverride(state.manualOverride) : DEFAULT_OVERRIDE;
   const manualMode = manual.mode !== 'AUTO' ? manual.mode : null;
-  const effectiveMode = envForced || manualMode || automaticMode;
-  const effectiveSource = envForced ? 'env-override' : (manualMode ? 'manual-override' : state.source);
+  // Administrator overrides may increase protection, never bypass a high
+  // account-wide free-tier utilization reading or stale sampler.
+  const candidates = [automaticMode, envForced, manualMode].filter(Boolean);
+  const effectiveMode = candidates.reduce((max, mode) => MODE_RANK[mode] > MODE_RANK[max] ? mode : max, automaticMode);
+  const effectiveSource = stale ? 'stale-account-usage-fail-safe'
+    : effectiveMode === envForced && MODE_RANK[envForced] > MODE_RANK[automaticMode] ? 'env-override'
+    : effectiveMode === manualMode && MODE_RANK[manualMode] > MODE_RANK[automaticMode] ? 'manual-override'
+    : state.source;
 
   return {
     ...state,
@@ -136,7 +149,10 @@ export async function evaluateQuotaPolicy(request, env) {
   const category = categoryFor(request);
   const mode = state.mode;
   if (category === 'optional' && mode !== 'NORMAL') return { state, category, allowed: false, reason: 'optional-work-shed' };
-  if (category === 'background' && (mode === 'CRITICAL' || mode === 'EMERGENCY')) return { state, category, allowed: false, reason: 'background-work-shed' };
+  if (category === 'background' && (mode === 'CRITICAL' || mode === 'EMERGENCY'))
+    return { state, category, allowed: false, reason: 'background-work-shed' };
+  if (category === 'normal' && mode === 'EMERGENCY' && new URL(request.url).pathname.startsWith('/api/'))
+    return { state, category, allowed: false, reason: 'nonessential-api-work-shed' };
   return { state, category, allowed: true, reason: null };
 }
 

@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const wr=JSON.parse(readFileSync('wrangler.jsonc','utf8'));
+const gh=readFileSync('.github/workflows/quota-governor.yml','utf8');
+const quota=readFileSync('src/quota-governor.js','utf8');
+assert.equal(wr.observability.enabled,false,'Cloudflare Observability must remain off on every redeploy');
+assert.equal(wr.logpush,false,'Do not enable billable Logpush');
+assert.equal(wr.vars.GCP_OVERFLOW_ENABLED,'false','Do not overflow to potentially billed external Cloud Run');
+assert.ok(!gh.includes('scriptName: $scriptName')&&!gh.includes('CLOUDFLARE_WORKER_NAME'),'Account-wide request quota required');
+assert.ok(gh.includes('cloudflare-account-wide-graphql'),'Account-wide data source must be identifiable');
+assert.ok(gh.includes('MODE=EMERGENCY'),'Fail closed when usage metrics are unavailable');
+for(const [v,m] of [['25000','CONSERVE'],['50000','CRITICAL'],['70000','EMERGENCY']])assert.ok(gh.includes(v),'Missing early reserve threshold '+m);
+assert.ok(quota.includes('stale-account-usage-fail-safe'),'Stale usage data must not silently disable protections');
+assert.ok(quota.includes('const candidates = [automaticMode, envForced, manualMode]'),'Manual overrides must not lower safety');
+assert.ok(quota.includes('nonessential-api-work-shed'),'Noncritical APIs must shed load in emergency');
+console.log('PASS strict free-tier defaults: observability off, logpush off, no GCP overflow, account-wide quotas, stale fail-safe');
