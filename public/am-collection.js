@@ -27,6 +27,7 @@
  const quantity=dialog.querySelector('#am-offer-quantity'),usage=dialog.querySelector('#am-offer-usage');
  const detailForm=dialog.querySelector('#am-offer-request'),feedback=dialog.querySelector('#am-offer-feedback');
  const add=dialog.querySelector('.am-offer-add');
+ const position=dialog.querySelector('[data-offer-position]');
  const countFloat=document.querySelector('[data-quote-float]'),countLabel=countFloat?.querySelector('[data-quote-count]');
  const less=document.getElementById('am-offer-less'),more=document.getElementById('am-offer-more');
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -39,7 +40,10 @@
   const offer=items.get(key);
   if(!offer)return;
   if(typeof dialog.showModal!=='function')return; // Original links work in older browsers.
+  const isSwitch=dialog.open;
   current=offer;trigger=origin;root.classList.add('is-focused');
+  if(position)position.textContent=String(offers.indexOf(offer)+1).padStart(2,'0')+' / '+String(offers.length).padStart(2,'0');
+  if(isSwitch){dialog.classList.remove('is-switching');void dialog.offsetWidth;dialog.classList.add('is-switching');}
   for(const link of allCards)link.classList.toggle('is-selected',link===origin);
   category.textContent=offer.label;
   title.textContent=offer.name;
@@ -63,6 +67,20 @@
    details(card.dataset.offer,card);
   });
  }
+ function move(delta){
+  if(!current)return;
+  const n=offers.findIndex(x=>x.id===current.id);
+  const next=offers[(n+delta+offers.length)%offers.length];
+  const target=allCards.find(x=>x.dataset.offer===next.id);
+  if(next&&target)details(next.id,target);
+ }
+ dialog.querySelector('[data-offer-prev]')?.addEventListener('click',()=>move(-1));
+ dialog.querySelector('[data-offer-next]')?.addEventListener('click',()=>move(1));
+ dialog.addEventListener('keydown',event=>{
+  if(event.target.matches('input,textarea,select,[contenteditable="true"]'))return;
+  if(event.key==='ArrowLeft'){event.preventDefault();move(-1);}
+  if(event.key==='ArrowRight'){event.preventDefault();move(1);}
+ });
  dialog.querySelectorAll('[data-close-offer]').forEach(btn=>btn.addEventListener('click',close));
  dialog.addEventListener('click',event=>{if(event.target===dialog)close()});
  dialog.addEventListener('close',()=>{
@@ -113,6 +131,43 @@
    card.addEventListener('pointerleave',()=>{clearTimeout(enterTimer);leaveTimer=setTimeout(()=>{card.classList.remove('is-spotlit');if(!row?.querySelector('.is-spotlit'))row?.classList.remove('has-spotlight')},200)});
   }
  }
+ // MotionSites-inspired photographic tilt. Uses one RAF and stops at rest.
+ if(!reduced&&matchMedia('(hover:hover) and (pointer:fine)').matches){
+  let currentCard=null,frame=0,dx=0,dy=0,targetX=0,targetY=0;
+  function render(){
+   frame=0;
+   dx+=(targetX-dx)*.19;dy+=(targetY-dy)*.19;
+   if(currentCard){
+    currentCard.style.setProperty('--am-tilt-x',(-dy*6).toFixed(3)+'deg');
+    currentCard.style.setProperty('--am-tilt-y',(dx*8).toFixed(3)+'deg');
+   }
+   if(Math.abs(targetX-dx)>.012||Math.abs(targetY-dy)>.012)frame=requestAnimationFrame(render);
+  }
+  function schedule(){if(!frame)frame=requestAnimationFrame(render)}
+  for(const card of allCards){
+   card.addEventListener('pointerenter',()=>{
+    if(currentCard&&currentCard!==card){currentCard.style.removeProperty('--am-tilt-x');currentCard.style.removeProperty('--am-tilt-y');}
+    currentCard=card;dx=0;dy=0;targetX=0;targetY=0;schedule();
+   },{passive:true});
+   card.addEventListener('pointermove',event=>{
+    if(event.pointerType!=='mouse')return;
+    const rect=card.getBoundingClientRect();
+    targetX=Math.max(-1,Math.min(1,(event.clientX-rect.left)/Math.max(rect.width,1)*2-1));
+    targetY=Math.max(-1,Math.min(1,(event.clientY-rect.top)/Math.max(rect.height,1)*2-1));
+    schedule();
+   },{passive:true});
+   card.addEventListener('pointerleave',()=>{
+    if(currentCard===card){targetX=0;targetY=0;schedule();}
+   },{passive:true});
+  }
+ }
+ if('IntersectionObserver' in window&&!reduced){
+  const reveal=new IntersectionObserver(entries=>{
+   if(entries.some(entry=>entry.isIntersecting)){root.classList.add('is-activated');reveal.disconnect();}
+  },{threshold:.07});
+  reveal.observe(root);
+ }
+ 
  // Native momentum scrolling / snap works for touch, keyboard and trackpads.
  // No wheel-event interception, no fake scroll-bar hiding at document level.
 })();
