@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "licenseNotice": "Source footage is illustrative licensed stock video. It does not document Amantusi premises, personnel, products in stock or completed projects.",
+  "films": [
+    {
+      "id": "intro",
+      "slug": "Company introduction",
+      "source": "https://videos.pexels.com/video-files/3191887/3191887-uhd_2560_1440_25fps.mp4",
+      "page": "https://www.pexels.com/video/group-of-people-in-a-business-meeting-3191887/",
+      "license": "https://www.pexels.com/license/",
+      "credit": "Pressmaster / Pexels"
+    },
+    {
+      "id": "product",
+      "slug": "Product and supply showcase",
+      "source": "https://videos.pexels.com/video-files/39045741/16614877_1280_720_30fps.mp4",
+      "page": "https://www.pexels.com/videos/",
+      "license": "https://www.pexels.com/license/",
+      "credit": "Pexels / supply-chain footage"
+    },
+    {
+      "id": "architecture",
+      "slug": "Real interior camera movement",
+      "source": "https://assets.mixkit.co/videos/preview/mixkit-luxury-hotel-room-panning-shot-4196-large.mp4",
+      "page": "https://mixkit.co/free-stock-video/luxury-hotel-room-panning-shot-4196/",
+      "license": "https://mixkit.co/license/modal/videoFree/",
+      "credit": "Mixkit / hotel interior"
+    },
+    {
+      "id": "marquee",
+      "slug": "Real event venue decorations",
+      "source": "https://assets.mixkit.co/videos/preview/mixkit-decorations-on-the-ceiling-of-a-wedding-party-5213-large.mp4",
+      "page": "https://mixkit.co/free-stock-video/decorations-on-the-ceiling-of-a-wedding-party-5213/",
+      "license": "https://mixkit.co/license/modal/videoFree/",
+      "credit": "Mixkit / wedding event"
+    },
+    {
+      "id": "food",
+      "slug": "Real chef and catering footage",
+      "source": "https://videos.pexels.com/video-files/4253139/4253139-hd_1920_1080_30fps.mp4",
+      "page": "https://www.pexels.com/videos/",
+      "license": "https://www.pexels.com/license/",
+      "credit": "Pexels / culinary footage"
+    }
+  ]
+}
