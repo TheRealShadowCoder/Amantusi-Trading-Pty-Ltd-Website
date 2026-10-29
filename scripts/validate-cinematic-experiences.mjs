@@ -6,7 +6,7 @@ const css=readFileSync('public/cinematic-experiences.css','utf8');
 const home=readFileSync('public/index.html','utf8'),fast=readFileSync('public/index-fast.html','utf8');
 for (const id of ['intro','product','architecture','marquee','food']) assert.ok(page.includes('data-experience="'+id+'"'),'Missing film selector '+id);
 for (const id of ['cin-play','cin-pause','cin-status','cin-canvas','cin-poster-image','cin-detail-link']) assert.ok(page.includes('id="'+id+'"'),'Missing cinematic control '+id);
-for (const key of ['intro','product','architecture','marquee','food']) assert.ok(runtime.includes('case "'+key+'"')||runtime.includes('case \''+key+'\''),'Missing 3D mode '+key);
+for (const key of ['intro','product','architecture','marquee','food']) assert.ok(runtime.includes('function build'+key[0].toUpperCase()+key.slice(1)+'('),'Missing 3D mode '+key);
 assert.ok(runtime.includes("import('/vendor/three.module.js')"),'Three.js must load on demand from same origin');
 assert.ok(runtime.includes("prefers-reduced-motion")&&runtime.includes("saveData"),'Motion/data accessibility required');
 assert.ok(runtime.includes('visibilitychange')&&runtime.includes('IntersectionObserver'),'Visibility-based GPU pause required');
