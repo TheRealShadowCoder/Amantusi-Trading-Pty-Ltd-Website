@@ -209,6 +209,15 @@ jobs:
           [ -f /tmp/recovery.json ] && cat /tmp/recovery.json || true
           exit 1
 
+      - name: Browser-test real scroll cinema on desktop and mobile
+        shell: bash
+        env:
+          BASE_URL: https://amantusi-trading-pty-ltd-website.dolomite-computer.workers.dev
+        run: |
+          set -euo pipefail
+          npx playwright install --with-deps chromium
+          npm run test:cinematic
+
       - name: Dependency security audit
         continue-on-error: true
         run: npm audit --omit=dev --audit-level=high
