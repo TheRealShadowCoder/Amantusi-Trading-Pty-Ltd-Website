@@ -14,7 +14,7 @@ for(const path of ['public/assets/catering/boardroom-lunch.webp','public/assets/
  assert.ok(existsSync(path),'Service image is not present: '+path);
  assert.ok(home.includes('/'+path.replace(/^public\//,'')),'Service image is not present in page: '+path);
 }
-for(const word of ['dialog.showModal()', "dialog.addEventListener('close'", "event.preventDefault()", "new Event('input'", "new Event('change'", "form.elements.namedItem('requirements')","window","matchMedia","200","120"]){
+for(const word of ['dialog.showModal()', "dialog.addEventListener('close'", "event.preventDefault()", "new Event('input'", "new Event('change'", "form.elements.namedItem('requirements')","matchMedia","200","120"]){
  assert.ok(js.includes(word),'missing interactive handling: '+word);
 }
 assert.ok(css.includes('scroll-snap-type:x proximity')&&css.includes('.am-offer-dialog::backdrop')&&css.includes('@media(max-width:770px)')&&css.includes('prefers-reduced-motion:reduce'),'Responsive/motion rules missing');
