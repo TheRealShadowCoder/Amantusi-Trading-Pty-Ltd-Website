@@ -10,3 +10,11 @@
 @media(max-width:700px){.cin-header nav a:not(.cin-header-cta){display:none}.cin-intro{padding-top:78px}.cin-theatre-head>p{display:none}.cin-viewer{aspect-ratio:4/4.1}.cin-viewer-copy{bottom:103px}.cin-viewer-copy h3{font-size:1.8rem}.cin-viewer-copy p{font-size:.76rem;max-width:330px}.cin-scenes{grid-template-columns:1fr}.cin-scene{min-height:62px}.cin-scene-actions{display:grid}.cin-viewer-chrome{top:25px}.cin-header{padding:13px 16px}.cin-header-cta{font-size:.74rem}.cin-brand strong{font-size:.78rem}.cin-brand small{font-size:.5rem}.cin-live{font-size:.54rem}.cin-counter{font-size:.61rem}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 @media print{.cin-canvas,.cin-transport{display:none!important}.cin-viewer{break-inside:avoid}}
+/* Genuine camera footage, not canvas/WebGL. */
+.cin-canvas{pointer-events:none}
+.cin-film{display:block;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transform:scale(1.025);transition:opacity .55s ease;filter:saturate(.85) contrast(1.08) brightness(.82)}
+.cin-canvas.is-ready .cin-film{opacity:1}
+.cin-film-vignette{position:absolute;inset:0;pointer-events:none;background:linear-gradient(0deg,rgba(3,12,19,.91) 0%,rgba(3,12,19,.2) 43%,rgba(3,12,19,.46) 100%),linear-gradient(90deg,rgba(5,16,24,.22),transparent 70%);z-index:2}
+.cin-canvas:not(.is-ready) .cin-film-vignette{opacity:0}
+.cin-note a{color:#d8b46b;text-decoration:underline;text-underline-offset:3px}
+@media(prefers-reduced-motion:reduce){.cin-film{transition:none;transform:none}}
