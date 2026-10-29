@@ -13,8 +13,8 @@ for(const path of routes){
  assert.ok(html.includes('href="/landing-glass.css"')&&html.includes('src="/landing-glass.js"'),path+': photographic hero assets connected');
  assert.ok(html.includes('id="quote-form"')&&html.includes('id="immersive"')&&html.includes('id="capabilities"'),path+': quote and studio protected');
  assert.ok(html.includes('aria-controls="main-nav"')&&html.includes('id="main-nav"'),path+': accessible navigation retained');
- for(const label of ['Company','Capabilities','Government Supply','How We Work','RFQ Checklist','Guides','Catering Menu','Company Profile','Sectors','Request a Quote'])
-  assert.ok(html.includes('>'+label+'</a>'),path+': navigation retains '+label);
+ for(const label of ['Company','Services','Catering Menu','Government Supply','How It Works','Company Profile','Contact','Request a Quote'])
+  assert.ok(html.includes('>'+label+'</a>'),path+': streamlined navigation retains '+label);
  for(const service of services){
   const filename='public/assets/service-scenes/'+service+'.webp';
   const raw=readFileSync(filename);
