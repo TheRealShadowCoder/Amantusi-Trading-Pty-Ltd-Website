@@ -8,22 +8,56 @@
  const form=document.getElementById('quote-form');
  if(!root||!dialog||!form)return;
  const offers=[
-  {id:'catering',name:'Corporate catering',label:'EVENTS / 01',img:'/assets/catering/boardroom-lunch.webp',link:'/corporate-catering.html',type:'Catering',scope:'Boardroom lunches and hosted meetings',desc:'Planned catering for professional meetings and work functions.'},
-  {id:'buffet',name:'Event buffet service',label:'EVENTS / 02',img:'/assets/catering/gala-buffet.webp',link:'/corporate-catering.html',type:'Catering',scope:'Buffet service and event dining',desc:'Buffet-style meal service for gatherings, functions and events.'},
+  {id:'catering',name:'Corporate catering',label:'EVENTS / 01',img:'/assets/service-scenes/boardroom-lunch-showcase-v2.webp',link:'/corporate-catering.html',type:'Catering',scope:'Boardroom lunches and hosted meetings',desc:'Planned catering for professional meetings and work functions.'},
+  {id:'buffet',name:'Event buffet service',label:'EVENTS / 02',img:'/assets/service-scenes/gala-buffet-showcase-v2.webp',link:'/corporate-catering.html',type:'Catering',scope:'Buffet service and event dining',desc:'Buffet-style meal service for gatherings, functions and events.'},
   {id:'meals',name:'Packed meal supply',label:'MEALS / 03',img:'/assets/service-scenes/packed-meals.webp',link:'/catering-menu.html',type:'Catering',scope:'Prepared meals for groups',desc:'Packed-meal requirements for teams, meetings and institutions.'},
-  {id:'breakfast',name:'Breakfast catering',label:'MEALS / 04',img:'/assets/catering/corporate-breakfast.webp',link:'/catering-menu.html',type:'Catering',scope:'Morning meetings and functions',desc:'Breakfast and refreshment options tailored to the brief.'},
+  {id:'breakfast',name:'Breakfast catering',label:'MEALS / 04',img:'/assets/service-scenes/corporate-breakfast-showcase-v2.webp',link:'/catering-menu.html',type:'Catering',scope:'Morning meetings and functions',desc:'Breakfast and refreshment options tailored to the brief.'},
   {id:'hygiene',name:'Cleaning & hygiene',label:'SUPPLY / 05',img:'/assets/service-scenes/cleaning-hygiene.webp',link:'/cleaning-hygiene.html',type:'Cleaning & Hygiene',scope:'Facility cleaning essentials',desc:'Cleaning consumables, paper products and hygiene supplies.'},
   {id:'stationery',name:'Office & stationery',label:'SUPPLY / 06',img:'/assets/service-scenes/institutional-supply.webp',link:'/office-institutional.html',type:'Office / Institutional Supply',scope:'Institutional working essentials',desc:'Stationery and operational goods sourced to specification.'},
   {id:'trading',name:'General procurement',label:'SUPPLY / 07',img:'/assets/service-scenes/general-trading.webp',link:'/general-trading.html',type:'General Procurement',scope:'Requirement-led sourcing',desc:'General goods and product categories quoted against your list.'},
-  {id:'reception',name:'Canapé reception',label:'EVENTS / 08',img:'/assets/catering/canape-reception.webp',link:'/corporate-catering.html',type:'Catering',scope:'Function and reception catering',desc:'Small bites and service planning for a reception or function.'},
-  {id:'bento',name:'Executive meal boxes',label:'MEALS / 09',img:'/assets/catering/executive-bento.webp',link:'/catering-menu.html',type:'Catering',scope:'Individual meal presentation',desc:'Individual meal requirements for guests and professional meetings.'},
-  {id:'dining',name:'Formal event dining',label:'EVENTS / 10',img:'/assets/catering/formal-dining.webp',link:'/corporate-catering.html',type:'Catering',scope:'Occasion-focused catering',desc:'Catering arrangements for formal events and hosted occasions.'}
+  {id:'reception',name:'Canapé reception',label:'EVENTS / 08',img:'/assets/service-scenes/canape-reception-showcase-v2.webp',link:'/corporate-catering.html',type:'Catering',scope:'Function and reception catering',desc:'Small bites and service planning for a reception or function.'},
+  {id:'bento',name:'Executive meal boxes',label:'MEALS / 09',img:'/assets/service-scenes/executive-bento-showcase-v2.webp',link:'/catering-menu.html',type:'Catering',scope:'Individual meal presentation',desc:'Individual meal requirements for guests and professional meetings.'},
+  {id:'dining',name:'Formal event dining',label:'EVENTS / 10',img:'/assets/service-scenes/formal-dining-showcase-v2.webp',link:'/corporate-catering.html',type:'Catering',scope:'Occasion-focused catering',desc:'Catering arrangements for formal events and hosted occasions.'}
  ];
  const items=new Map(offers.map(x=>[x.id,x]));
  const allCards=[...root.querySelectorAll('[data-offer]')];
+ // Defensive image fallback: errors from a missing/stale static asset must
+ // never expose a broken icon or displace a quotation link.
+ for(const card of allCards){
+  const image=card.querySelector('.am-item-media img');
+  if(!image)continue;
+  image.addEventListener('error',()=>{
+   const backup=image.dataset.fallbackSrc;
+   if(!backup||image.dataset.fallbackUsed==='1')return;
+   image.dataset.fallbackUsed='1';
+   image.src=backup;
+  });
+ }
+
  const title=dialog.querySelector('#am-offer-title'),category=dialog.querySelector('#am-offer-category');
  const summary=dialog.querySelector('#am-offer-summary'),photo=dialog.querySelector('#am-offer-image');
  const serviceLink=dialog.querySelector('#am-offer-link');
+ const serviceImageFallbacks={
+  catering:'/assets/service-scenes/catering.webp',
+  buffet:'/assets/service-scenes/catering.webp',
+  meals:'/assets/service-scenes/packed-meals.webp',
+  breakfast:'/assets/service-scenes/packed-meals.webp',
+  hygiene:'/assets/service-scenes/cleaning-hygiene.webp',
+  stationery:'/assets/service-scenes/institutional-supply.webp',
+  trading:'/assets/service-scenes/general-trading.webp',
+  reception:'/assets/service-scenes/catering.webp',
+  bento:'/assets/service-scenes/packed-meals.webp',
+  dining:'/assets/service-scenes/catering.webp'
+ };
+ photo.addEventListener('error',()=>{
+  const key=photo.dataset.serviceImage;
+  if(photo.dataset.fallbackUsed==='1')return;
+  const backup=serviceImageFallbacks[key];
+  if(!backup)return;
+  photo.dataset.fallbackUsed='1';
+  photo.src=backup;
+ });
+
  const quantity=dialog.querySelector('#am-offer-quantity'),usage=dialog.querySelector('#am-offer-usage');
  const detailForm=dialog.querySelector('#am-offer-request'),feedback=dialog.querySelector('#am-offer-feedback');
  const add=dialog.querySelector('.am-offer-add');
@@ -48,7 +82,7 @@
   category.textContent=offer.label;
   title.textContent=offer.name;
   summary.textContent=offer.desc+' '+offer.scope+'.';
-  photo.src=offer.img;photo.alt=offer.name+' — illustrative service photograph';
+  photo.dataset.serviceImage=offer.id;photo.dataset.fallbackUsed='0';photo.src=offer.img;photo.alt=offer.name+' — illustrative service photograph';
   serviceLink.href=offer.link;
   quantity.value=offer.type==='Catering'?'20':'1';
   usage.value=offer.type==='Catering'?'Event / function':'Business / office';

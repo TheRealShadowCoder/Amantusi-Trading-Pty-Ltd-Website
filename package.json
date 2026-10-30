@@ -10,7 +10,7 @@
     "test:e2e": "playwright test tests/performance-v3.spec.mjs",
     "test:legacy-effects": "playwright test tests/advanced20.spec.mjs tests/advanced40.spec.mjs tests/click3d.spec.mjs tests/click3d-families.spec.mjs tests/service-background.spec.mjs tests/service-background-logo.spec.mjs",
     "test:lighthouse": "node scripts/lighthouse-budget.mjs",
-    "test:cinematic": "playwright test tests/cinematic-experiences.spec.mjs tests/interactive-collection.spec.mjs tests/motionsites-story.spec.mjs tests/ui-ux-upgrade.spec.mjs",
+    "test:cinematic": "playwright test tests/cinematic-experiences.spec.mjs tests/interactive-collection.spec.mjs tests/motionsites-story.spec.mjs tests/ui-ux-upgrade.spec.mjs tests/service-image-health.spec.mjs",
     "check:media-removed": "node scripts/validate-no-stock-videos.mjs"
   },
   "dependencies": {

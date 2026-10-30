@@ -4,21 +4,34 @@ const home=readFileSync('public/index.html','utf8');
 const fast=readFileSync('public/index-fast.html','utf8');
 const js=readFileSync('public/am-collection.js','utf8');
 const css=readFileSync('public/am-collection.css','utf8');
-assert.equal(home,fast,'homepage and fast homepage must share the interaction');
-assert.equal((home.match(/data-offer="/g)||[]).length,10,'Ten interactive service images');
-assert.equal((home.match(/am-shelf-row"/g)||[]).length,2,'Two floating glass shelves');
-for(const text of ['id="collections"','id="am-offer-dialog"','id="am-offer-request"','id="am-offer-image"','id="am-offer-quantity"','id="am-offer-usage"','id="am-offer-link"','data-quote-float','data-quote-count','src="/am-collection.js"','href="/am-collection.css"']){
- assert.ok(home.includes(text),'missing responsive service component: '+text);
+assert.equal(home,fast,'Homepage and fast homepage must match');
+assert.equal((home.match(/data-offer="/g)||[]).length,10,'Ten photographic services required');
+assert.equal((home.match(/am-shelf-row"/g)||[]).length,2,'Two glass shelves required');
+for(const text of ['id="collections"','id="am-offer-dialog"','id="am-offer-request"','id="am-offer-image"','id="am-offer-quantity"','id="am-offer-usage"','id="am-offer-link"','data-quote-float','data-quote-count','src="/am-collection.js"','href="/am-collection.css"'])assert.ok(home.includes(text),'Missing interactive component: '+text);
+const imagePaths=[
+  "public/assets/service-scenes/boardroom-lunch-showcase-v2.webp",
+  "public/assets/service-scenes/gala-buffet-showcase-v2.webp",
+  "public/assets/service-scenes/packed-meals.webp",
+  "public/assets/service-scenes/corporate-breakfast-showcase-v2.webp",
+  "public/assets/service-scenes/cleaning-hygiene.webp",
+  "public/assets/service-scenes/institutional-supply.webp",
+  "public/assets/service-scenes/general-trading.webp",
+  "public/assets/service-scenes/canape-reception-showcase-v2.webp",
+  "public/assets/service-scenes/executive-bento-showcase-v2.webp",
+  "public/assets/service-scenes/formal-dining-showcase-v2.webp"
+];
+for(const path of imagePaths){
+  assert.ok(existsSync(path),'Collection image file is missing: '+path);
+  assert.ok(home.includes('/'+path.slice(7)),'New image URL absent from collection: '+path);
+  const bytes=readFileSync(path);
+  assert.ok(bytes.length>10000,'Image is unexpectedly small: '+path);
+  assert.equal(bytes.toString('ascii',0,4),'RIFF','Not RIFF image: '+path);
+  assert.equal(bytes.toString('ascii',8,12),'WEBP','Not WebP image: '+path);
+  assert.equal(bytes.readUInt32LE(4)+8,bytes.length,'RIFF file length mismatch: '+path);
 }
-for(const path of ['public/assets/catering/boardroom-lunch.webp','public/assets/catering/gala-buffet.webp','public/assets/service-scenes/packed-meals.webp','public/assets/catering/corporate-breakfast.webp','public/assets/service-scenes/cleaning-hygiene.webp','public/assets/service-scenes/institutional-supply.webp','public/assets/service-scenes/general-trading.webp','public/assets/catering/canape-reception.webp','public/assets/catering/executive-bento.webp','public/assets/catering/formal-dining.webp']){
- assert.ok(existsSync(path),'Service image is not present: '+path);
- assert.ok(home.includes('/'+path.replace(/^public\//,'')),'Service image is not present in page: '+path);
-}
-for(const word of ['dialog.showModal()', "dialog.addEventListener('close'", "event.preventDefault()", "new Event('input'", "new Event('change'", "form.elements.namedItem('requirements')","matchMedia","200","120"]){
- assert.ok(js.includes(word),'missing interactive handling: '+word);
-}
-assert.ok(css.includes('scroll-snap-type:x proximity')&&css.includes('.am-offer-dialog::backdrop')&&css.includes('@media(max-width:770px)')&&css.includes('prefers-reduced-motion:reduce'),'Responsive/motion rules missing');
-assert.ok(!home.includes('<video')&&!js.includes('video.play')&&!css.includes('autoplay'),'User requested no videos');
-assert.ok(!home.includes('€249')&&!home.includes('Add to Bag'),'Avoid fictional shopping inventory/prices');
-for(const id of ['quote-form','immersive','capabilities','government','contact'])assert.ok(home.includes('id="'+id+'"'),'Core service section removed: '+id);
-console.log('PASS responsive floating shelves, ten honest service offerings, accessible detail dialog, quote handoff and no video');
+for(const word of ['dialog.showModal()', "dialog.addEventListener('close'",'event.preventDefault()',"new Event('input'","new Event('change'","form.elements.namedItem('requirements')",'matchMedia','200','120',"image.addEventListener('error'","photo.addEventListener('error'"] )assert.ok(js.includes(word),'Missing accessible behavior: '+word);
+assert.ok(css.includes('scroll-snap-type:x proximity')&&css.includes('.am-offer-dialog::backdrop')&&css.includes('@media(max-width:770px)')&&css.includes('prefers-reduced-motion:reduce'),'Missing responsive/motion CSS');
+assert.ok(!home.includes('<video')&&!js.includes('video.play')&&!css.includes('autoplay'),'Video not permitted');
+assert.ok(!home.includes('€249')&&!home.includes('Add to Bag'),'No fake prices or checkout');
+for(const id of ['quote-form','immersive','capabilities','government','contact'])assert.ok(home.includes('id="'+id+'"'),'Core feature missing: '+id);
+console.log('PASS 10 valid WebP assets, cache-busted URLs, fallbacks, dialog interaction and preserved RFQ');
