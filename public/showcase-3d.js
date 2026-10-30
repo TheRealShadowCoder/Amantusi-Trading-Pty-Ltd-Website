@@ -30,7 +30,8 @@
  const coarse=matchMedia('(pointer:coarse)');
  const connection=navigator.connection||navigator.webkitConnection;
  const lowPower=Number(navigator.deviceMemory||4)<=2||Number(navigator.hardwareConcurrency||4)<=2;
- const shouldFallback=()=>reduced.matches||contrast.matches||Boolean(connection?.saveData)||lowPower||coarse.matches;
+ const optionalStudio=section.querySelector('.am-showroom-disclosure');
+ const shouldFallback=()=>reduced.matches||contrast.matches||Boolean(connection?.saveData)||lowPower||coarse.matches||(optionalStudio&&!optionalStudio.open);
  const vertex=String.raw`attribute vec2 position;varying vec2 uv;void main(){uv=(position+1.0)*0.5;gl_Position=vec4(position,0.0,1.0);}`;
  const fragment=String.raw`precision mediump float;
  varying vec2 uv;
@@ -221,6 +222,7 @@
  canvas.addEventListener('webglcontextrestored',()=>{
   try{if(setup()){currentImage=photo.currentSrc||photo.src;upload();play()}}catch(_){abandon()}
  });
+ optionalStudio?.addEventListener('toggle',()=>{if(optionalStudio.open){onScroll();play()}else{stop();stage.dataset.renderer='fallback'}});
  document.addEventListener('visibilitychange',()=>{section.dataset.amLoopVisible=visible&&!document.hidden?'true':'false';document.hidden?stop():play()},{passive:true});
  if('IntersectionObserver' in window){
   observer=new IntersectionObserver(entries=>{visible=entries.some(x=>x.isIntersecting);section.dataset.amLoopVisible=visible&&!document.hidden?'true':'false';if(visible){onScroll();play()}else stop()},{rootMargin:'90px 0px',threshold:0});

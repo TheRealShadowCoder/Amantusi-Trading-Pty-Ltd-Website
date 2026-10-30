@@ -36,14 +36,14 @@
  function close(){
   if(dialog.open)dialog.close();
  }
- function details(key,origin){
+ function details(key,origin,{preserveFocus=false}={}){
   const offer=items.get(key);
   if(!offer)return;
   if(typeof dialog.showModal!=='function')return; // Original links work in older browsers.
   const isSwitch=dialog.open;
   current=offer;trigger=origin;root.classList.add('is-focused');
   if(position)position.textContent=String(offers.indexOf(offer)+1).padStart(2,'0')+' / '+String(offers.length).padStart(2,'0');
-  if(isSwitch){dialog.classList.remove('is-switching');void dialog.offsetWidth;dialog.classList.add('is-switching');}
+  if(isSwitch&&!reduced){dialog.classList.remove('is-switching');requestAnimationFrame(()=>{if(dialog.open)dialog.classList.add('is-switching');});}
   for(const link of allCards)link.classList.toggle('is-selected',link===origin);
   category.textContent=offer.label;
   title.textContent=offer.name;
@@ -57,7 +57,8 @@
   if(resetTimer)clearTimeout(resetTimer);
   if(!dialog.open)dialog.showModal();
   // Browser's dialog provides focus containment and Escape-key behavior natively.
-  dialog.querySelector('[data-close-offer]')?.focus({preventScroll:true});
+  // Keep keyboard focus on Next/Previous during in-dialog navigation.
+  if(!preserveFocus)dialog.querySelector('[data-close-offer]')?.focus({preventScroll:true});
  }
  for(const card of allCards){
   card.addEventListener('click',event=>{
@@ -72,7 +73,7 @@
   const n=offers.findIndex(x=>x.id===current.id);
   const next=offers[(n+delta+offers.length)%offers.length];
   const target=allCards.find(x=>x.dataset.offer===next.id);
-  if(next&&target)details(next.id,target);
+  if(next&&target)details(next.id,target,{preserveFocus:true});
  }
  dialog.querySelector('[data-offer-prev]')?.addEventListener('click',()=>move(-1));
  dialog.querySelector('[data-offer-next]')?.addEventListener('click',()=>move(1));
@@ -112,7 +113,7 @@
    countFloat.hidden=false;
    countLabel.textContent=String(quoteCount);
    countFloat.setAttribute('aria-label',quoteCount+' service ideas added to quotation — jump to form');
-   countFloat.animate?.([{transform:'scale(.82)',opacity:.6},{transform:'scale(1.07)',opacity:1},{transform:'scale(1)',opacity:1}],{duration:480,easing:'cubic-bezier(.22,1,.36,1)'});
+   (!reduced)&&countFloat.animate?.([{transform:'scale(.82)',opacity:.6},{transform:'scale(1.07)',opacity:1},{transform:'scale(1)',opacity:1}],{duration:480,easing:'cubic-bezier(.22,1,.36,1)'});
   }
   const message='Added ✓ '+current.name+' ('+q+') to your quotation form.';
   feedback.textContent=message;

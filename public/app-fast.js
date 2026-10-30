@@ -115,7 +115,7 @@
       }
       window.amantusiTrack?.('generate_lead',{files:payload.files||0});
     }catch(error){
-      if(status){status.className='form-status error';status.textContent=`${error.message||'Submission failed.'} You can also email zodwangema37@gmail.com or call 073 247 6716.`}
+      if(status){status.className='form-status error';status.setAttribute('role','alert');status.tabIndex=-1;status.textContent=`${error.message||'Submission failed.'} You can also email zodwangema37@gmail.com or call 073 247 6716.`;status.focus({preventScroll:true});}
     }finally{quoteForm.dataset.submitting='0';if(submit)submit.disabled=false}
   });
 })();

@@ -1,0 +1,57 @@
+import {test,expect} from '@playwright/test';
+test('primary collection appears before supplementary story and showroom starts closed',async({page})=>{
+ await page.goto('/index-fast.html');
+ const order=await page.evaluate(()=>['about','collections','supply-journey','capabilities','immersive','quote'].map(id=>document.getElementById(id)?.getBoundingClientRect().top+scrollY));
+ expect(order.every((x,i)=>i===0||x>order[i-1])).toBeTruthy();
+ const studio=page.locator('#immersive details.am-showroom-disclosure');
+ await expect(studio).toHaveCount(1);
+ await expect(studio).not.toHaveAttribute('open');
+ await expect(page.locator('#immersive summary')).toBeVisible();
+ await studio.locator('summary').click();
+ await expect(studio).toHaveAttribute('open');
+ await page.locator('[data-amt-item="trading"]').click();
+ await expect(page.locator('[data-amt-title]')).not.toBeEmpty();
+});
+test('keyboard focus stays on Next and Previous when service photos change',async({page})=>{
+ await page.goto('/index-fast.html');
+ const origin=page.locator('[data-offer="catering"]');
+ await origin.click();
+ const dialog=page.locator('#am-offer-dialog');
+ const next=dialog.locator('[data-offer-next]');
+ await next.focus();
+ await page.keyboard.press('Enter');
+ await expect(next).toBeFocused();
+ await expect(dialog.locator('#am-offer-title')).toHaveText('Event buffet service');
+ const previous=dialog.locator('[data-offer-prev]');
+ await previous.focus();
+ await page.keyboard.press('Enter');
+ await expect(previous).toBeFocused();
+ await expect(dialog.locator('#am-offer-title')).toHaveText('Corporate catering');
+ await page.keyboard.press('Escape');
+ await expect(origin).toBeFocused();
+});
+test('mobile detail navigation is touch sized, page stays in viewport and no videos',async({page})=>{
+ await page.setViewportSize({width:375,height:812});
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/index-fast.html');
+ await page.locator('[data-offer="catering"]').click();
+ const next=page.locator('[data-offer-next]');
+ const size=await next.boundingBox();
+ expect(size?.height).toBeGreaterThanOrEqual(44);
+ expect(size?.width).toBeGreaterThanOrEqual(44);
+ await next.click();
+ await expect(page.locator('#am-offer-title')).toHaveText('Event buffet service');
+ await page.keyboard.press('Escape');
+ await expect(page.locator('video')).toHaveCount(0);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBeTruthy();
+});
+test('SEO metadata, honest quotation guidance and functioning inputs are present',async({page})=>{
+ await page.goto('/index-fast.html');
+ await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href',/^https:\/\//);
+ await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content',/\.webp$/);
+ const data=JSON.parse(await page.locator('script[type="application/ld+json"]').textContent());
+ expect(data.name).toBe('Amantusi Trading (Pty) Ltd');
+ await expect(page.locator('.am-quote-guidance span')).toHaveCount(3);
+ await expect(page.locator('#quote-form textarea[name="requirements"]')).toBeAttached();
+ await expect(page.locator('#quote-form input[name="rfqFiles"]')).toBeAttached();
+});

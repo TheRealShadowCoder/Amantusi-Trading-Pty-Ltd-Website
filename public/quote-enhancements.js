@@ -68,7 +68,7 @@
   };
   const fail=(message)=>{
     if(upload)upload.setAttribute('aria-invalid','true');
-    if(status){status.className='form-status error';status.textContent=message;status.scrollIntoView({block:'nearest',behavior:'auto'});}
+    if(status){status.className='form-status error';status.setAttribute('role','alert');status.tabIndex=-1;status.textContent=message;status.scrollIntoView({block:'nearest',behavior:'auto'});status.focus({preventScroll:true});}
   };
   const validate=()=>{
     if(!upload)return true;

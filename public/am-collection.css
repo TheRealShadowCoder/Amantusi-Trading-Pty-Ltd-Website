@@ -122,3 +122,12 @@
  .am-collection.is-focused .am-shelf-viewport{filter:none;transform:none}
  .am-offer-dialog.is-switching .am-offer-art img,.am-collection.is-activated .am-shelf-glass{animation:none!important}
 }
+
+/* 2026 UI/UX audit: legibility, keyboard focus and thumb-friendly controls */
+.am-item-id{font-size:.78rem;letter-spacing:.1em;color:#e8d3a4}
+.am-collection-item{min-height:220px}
+.am-offer-navigator button{min-height:46px;min-width:104px;font-size:.83rem;touch-action:manipulation}
+.am-offer-navigator span{font-size:.81rem}
+.am-offer-navigator button:focus-visible,.am-offer-dialog button:focus-visible{outline:3px solid #f6d38a;outline-offset:3px}
+@media(max-width:770px){.am-offer-navigator button{min-height:46px;min-width:96px;font-size:.78rem;padding:9px 11px}}
+@media(prefers-reduced-motion:reduce){.am-offer-dialog.is-switching .am-offer-art img{animation:none!important}.am-shelf-viewport{transition:none!important}}

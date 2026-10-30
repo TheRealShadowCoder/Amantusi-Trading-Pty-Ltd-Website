@@ -40,3 +40,13 @@
 @media(max-width:420px){.am-route-layout{padding-inline:16px}.am-route-stage{height:230px;top:62px}.am-route-beat{min-height:66svh}.am-route-beat h3{font-size:clamp(2.7rem,10vw,4rem)}}
 @media(prefers-reduced-motion:reduce){.am-route-shot,.am-route-beat{transition:none!important;filter:none!important;transform:none!important}.am-route-stage-scan{display:none}.am-route-shot:not(.is-active){visibility:hidden}}
 @media print{.am-route-layout{display:block}.am-route-stage{position:relative;top:0;height:260px}.am-route-beat{min-height:unset;opacity:1;transform:none;break-inside:avoid}}
+
+/* Reduce long scrollytelling without removing the three stages */
+.am-route-beat{min-height:clamp(380px,64svh,640px)}
+.am-route-stage{height:clamp(420px,65svh,690px)}
+.am-route-label,.am-route-beat-number{font-size:.85rem;letter-spacing:.14em}
+.am-route-stage-index{font-size:.78rem;letter-spacing:.1em}
+.am-route-stage-corner{font-size:.73rem;letter-spacing:.08em}
+.am-route-bottom{font-size:.76rem;letter-spacing:.12em}
+@media(max-width:850px){.am-route-stage{height:clamp(240px,39svh,390px)}.am-route-beat{min-height:clamp(320px,52svh,485px)}}
+@media(max-width:420px){.am-route-stage{height:230px}.am-route-beat{min-height:clamp(300px,50svh,460px)}.am-route-stage-index{font-size:.7rem}.am-route-stage-corner{font-size:.66rem}}
